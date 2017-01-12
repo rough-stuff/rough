@@ -10,8 +10,8 @@ Rough.js borrows some core algorithms from Handy, but it is _not a JS port_ for 
 
 The latest Rough.js release (beta version 0.1): [Download](./rough.zip)
 
-# How to use Rough.js
-## Setup
+## How to use Rough.js
+### Setup
 Initialize a **RoughCanvas** object by passing in the canvas node and the size of the canvas. 
 Following code snippet draws a rectangle.
 ```html
@@ -23,7 +23,7 @@ var rough = new RoughCanvas(document.getElementById('myCanvas'), 500, 500);
 rough.rectangle(10, 10, 200, 200);
 ```
 
-## Drawing lines and shapes
+### Drawing lines and shapes
 
 ### Filling
 
