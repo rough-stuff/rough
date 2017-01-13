@@ -1,12 +1,14 @@
 # Rough.js
 
-This is a light weight [Canvas](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API) based library that lets you draw in a _sketchy_, _hand-drawn-like_, style.
+This is a light weight, stand-alone [Canvas](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API) based library that lets you draw in a _sketchy_, _hand-drawn-like_, style.
 The library defines primitives to draw lines, curves, arcs, polygons, circles, and ellipses. It also supports drawing [SVG paths](https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths).
+
+![Rough,js sample](https://pshihn.github.io/rough/images/cap_demo.png)
+
+## Credits
 
 This project was inspired by [Handy](http://www.gicentre.net/handy/), a java based library for [Processing](https://processing.org/).
 Rough.js borrows some core algorithms from Handy, but it is _not a JS port_ for processing.js.
-
-![Rough,js sample](https://pshihn.github.io/rough/images/cap_demo.png)
 
 ## Releases
 
