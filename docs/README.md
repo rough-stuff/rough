@@ -37,6 +37,24 @@ rough.line(80, 120, 300, 100); // x1, y1, x2, y2
 
 ### Filling
 
+``` javascript
+rough.fill = "red";
+rough.circle(50, 50, 40);
+rough.rectangle(120,15,80,80);
+
+var c2 = rough.circle(50, 150, 40);
+c2.fill = "rgb(10,150,10)";
+c2.fillWeight = 3;
+
+var r2 = rough.rectangle(120,105,80,80);
+r2.fillStyle = "solid";
+r2.fill = "rgba(255,0,200,0.2)";
+
+var r3 = rough.rectangle(220,15,80,80);
+r3.hachureAngle = 60;
+r3.hachureGap = 8;
+```
+
 ### Sketching style
 
 ### Arcs and Curves
