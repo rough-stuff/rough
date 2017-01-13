@@ -81,13 +81,7 @@ openArc.strokeWidth = 10;
 ```
 
 ``` javascript
-var curve = rough.curve([
-	[10, 10],
-	[150, 65],
-	[180, 165],
-	[300, 20],
-	[400, 200]
-]);
+var curve = rough.curve([[10, 10], [150, 65], [180, 165], [300, 20], [400, 200]]);
 ```
 
 ### SVG Paths
