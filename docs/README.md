@@ -17,19 +17,23 @@ The latest Rough.js release (beta version 0.1): [Download](./builds/rough.zip)
 Import rough.js
 
 ```html
-<script src="https://roughjs.com/rough.min.js"></script>
-<canvas id="myCanvas"></canvas>
+<script type="text/javascript" src="https://roughjs.com/rough.min.js"></script>
 ```
 
 Initialize a **RoughCanvas** object by passing in the canvas node and the size of the canvas. 
 Following code snippet draws a 
 
 ``` javascript
-var rough = new RoughCanvas(document.getElementById('myCanvas'), 500, 500);
-rough.rectangle(10, 10, 200, 200);
+var rough = new RoughCanvas(document.getElementById('myCanvas'), 400, 200);
+rough.rectangle(10, 10, 200, 200); // x, y, width, height
 ```
 
 ### Drawing lines and shapes
+``` javascript
+rough.circle(80, 120, 50); // centerX, centerY, radius
+rough.ellipse(300, 100, 150, 80); // centerX, centerY, radiusX, radiusY
+rough.line(80, 120, 300, 100); // x1, y1, x2, y2
+```
 
 ### Filling
 
