@@ -81,7 +81,7 @@ r3.strokeWidth = 3;
 
 ### Arcs and Curves
 
-![Rough,js curve](https://pshihn.github.io/rough/images/cap_curve.png)
+![Rough,js curve](https://pshihn.github.io/rough/images/cap_arc.png)
 
 ``` javascript
 // arc(centerX, centerY, radiusX, radiusY, startAngle, endAngle, closePath)
