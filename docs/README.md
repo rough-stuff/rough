@@ -72,6 +72,24 @@ r3.strokeWidth = 3;
 
 ### Arcs and Curves
 
+``` javascript
+var arc1 = rough.arc(200, 100, 200, 180, -Math.PI + (Math.PI / 3), -Math.PI / 2, true);
+arc1.fill = "red";
+rough.arc(200, 100, 200, 180, -Math.PI, -0.75 * Math.PI, true);
+var openArc = rough.arc(200, 100, 150, 130, -0.2 * Math.PI, 0.6 * Math.PI, false);
+openArc.strokeWidth = 10;
+```
+
+``` javascript
+var curve = rough.curve([
+	[10, 10],
+	[150, 65],
+	[180, 165],
+	[300, 20],
+	[400, 200]
+]);
+```
+
 ### SVG Paths
 
 ### Dynamic shapes
