@@ -21,14 +21,19 @@ Import rough.js
 ```
 
 Initialize a **RoughCanvas** object by passing in the canvas node and the size of the canvas. 
-Following code snippet draws a 
+Following code snippet draws a rectangle.
+
+![Rough,js rectangle](https://pshihn.github.io/rough/images/cap_rect.png)
 
 ``` javascript
 var rough = new RoughCanvas(document.getElementById('myCanvas'), 400, 200);
 rough.rectangle(10, 10, 200, 200); // x, y, width, height
 ```
 
-### Drawing lines and shapes
+### Drawing lines and ellipses
+
+![Rough,js ellipses](https://pshihn.github.io/rough/images/cap_ellipse.png)
+
 ``` javascript
 rough.circle(80, 120, 50); // centerX, centerY, radius
 rough.ellipse(300, 100, 150, 80); // centerX, centerY, radiusX, radiusY
@@ -36,6 +41,8 @@ rough.line(80, 120, 300, 100); // x1, y1, x2, y2
 ```
 
 ### Filling
+
+![Rough,js fill examples](https://pshihn.github.io/rough/images/cap_fill.png)
 
 ``` javascript
 rough.fill = "red";
@@ -57,6 +64,8 @@ r3.hachureGap = 8;
 
 ### Sketching style
 
+![Rough,js styles examples](https://pshihn.github.io/rough/images/cap_styles.png)
+
 ``` javascript
 var r1 = rough.rectangle(15,15,80,80);
 r1.roughness = 0.5;
@@ -72,6 +81,8 @@ r3.strokeWidth = 3;
 
 ### Arcs and Curves
 
+![Rough,js curve](https://pshihn.github.io/rough/images/cap_curve.png)
+
 ``` javascript
 // arc(centerX, centerY, radiusX, radiusY, startAngle, endAngle, closePath)
 var arc1 = rough.arc(200, 100, 200, 180, -Math.PI + (Math.PI / 3), -Math.PI / 2, true);
@@ -81,11 +92,15 @@ var openArc = rough.arc(200, 100, 150, 130, -0.2 * Math.PI, 0.6 * Math.PI, false
 openArc.strokeWidth = 10;
 ```
 
+![Rough,js curve](https://pshihn.github.io/rough/images/cap_curve.png)
+
 ``` javascript
 var curve = rough.curve([[10, 10], [150, 65], [180, 165], [300, 20], [400, 200]]);
 ```
 
 ### SVG Paths
+
+![Rough,js svg](https://pshihn.github.io/rough/images/cap_svg.png)
 
 ``` javascript
 var path = rough.path("M213.1,6.7c-32.4-14.4-73.7,0-88.1,30.6C110.6,4.9,67.5-9.5,36.9,6.7C2.8,22.9-13.4,62.4,13.5,110.9 C33.3,145.1,67.5,170.3,125,217c59.3-46.7,93.5-71.9,111.5-106.1C263.4,64.2,247.2,22.9,213.1,6.7z");
@@ -94,6 +109,8 @@ path.hachureAngle = 90;
 ```
 
 ### Dynamic shapes
+
+![Rough,js animating rectangle](https://pshihn.github.io/rough/images/rect_animation.gif)
 
 ``` javascript
 var rect = rough.rectangle(10,10,20,100);
