@@ -95,5 +95,17 @@ path.hachureAngle = 90;
 
 ### Dynamic shapes
 
+``` javascript
+var rect = rough.rectangle(10,10,20,100);
+var increaseWidth = function() {
+	if (rect.width < 300) {
+	  rect.width = rect.width + 10;
+    setTimeout(increaseWidth, 100);
+  }
+};
+setTimeout(increaseWidth, 100);
+```
+
+
 ## API
 
