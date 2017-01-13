@@ -57,6 +57,19 @@ r3.hachureGap = 8;
 
 ### Sketching style
 
+``` javascript
+var r1 = rough.rectangle(15,15,80,80);
+r1.roughness = 0.5;
+r1.fill = "red";
+var r2 = rough.rectangle(120,15,80,80);
+r2.roughness = 2.8;
+r2.fill = "blue";
+var r3 = rough.rectangle(220,15,80,80);
+r3.bowing = 15;
+r3.stroke = "green"
+r3.strokeWidth = 3;
+```
+
 ### Arcs and Curves
 
 ### SVG Paths
