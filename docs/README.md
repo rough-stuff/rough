@@ -6,6 +6,8 @@ The library defines primitives to draw lines, curves, arcs, polygons, circles, a
 This project was inspired by [Handy](http://www.gicentre.net/handy/), a java based library for [Processing](https://processing.org/).
 Rough.js borrows some core algorithms from Handy, but it is _not a JS port_ for processing.js.
 
+![Rough,js sample](https://pshihn.github.io/rough/images/cap_demo.png)
+
 ## Releases
 
 The latest Rough.js release (beta version 0.1): [Download](./builds/rough.zip)
