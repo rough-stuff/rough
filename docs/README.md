@@ -8,11 +8,18 @@ Rough.js borrows some core algorithms from Handy, but it is _not a JS port_ for 
 
 ## Releases
 
-The latest Rough.js release (beta version 0.1): [Download](./rough.zip)
+The latest Rough.js release (beta version 0.1): [Download](./builds/rough.zip)
 
 ## How to use Rough.js
 
 ### Setup
+
+Import rough.js
+
+```html
+<script src="https://roughjs.com/rough.min.js"></script>
+<canvas id="myCanvas"></canvas>
+```
 
 Initialize a **RoughCanvas** object by passing in the canvas node and the size of the canvas. 
 Following code snippet draws a 
