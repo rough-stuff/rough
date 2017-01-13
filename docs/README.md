@@ -73,6 +73,7 @@ r3.strokeWidth = 3;
 ### Arcs and Curves
 
 ``` javascript
+// arc(centerX, centerY, radiusX, radiusY, startAngle, endAngle, closePath)
 var arc1 = rough.arc(200, 100, 200, 180, -Math.PI + (Math.PI / 3), -Math.PI / 2, true);
 arc1.fill = "red";
 rough.arc(200, 100, 200, 180, -Math.PI, -0.75 * Math.PI, true);
