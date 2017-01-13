@@ -24,6 +24,7 @@ Initialize a **RoughCanvas** object by passing in the canvas node and the size o
 Following code snippet draws a rectangle.
 
 ![Rough,js rectangle](https://pshihn.github.io/rough/images/cap_rect.png)
+
 ``` javascript
 var rough = new RoughCanvas(document.getElementById('myCanvas'), 400, 200);
 rough.rectangle(10, 10, 200, 200); // x, y, width, height
