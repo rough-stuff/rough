@@ -3,7 +3,7 @@
 This is a light weight, stand-alone [Canvas](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API) based library that lets you draw in a _sketchy_, _hand-drawn-like_, style.
 The library defines primitives to draw lines, curves, arcs, polygons, circles, and ellipses. It also supports drawing [SVG paths](https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths).
 
-![Rough,js sample](https://pshihn.github.io/rough/images/cap_demo.png)
+![Rough.js sample](https://pshihn.github.io/rough/images/cap_demo.png)
 
 ## Credits
 
@@ -36,7 +36,7 @@ rough.rectangle(10, 10, 200, 200); // x, y, width, height
 
 ### Drawing lines and ellipses
 
-![Rough,js ellipses](https://pshihn.github.io/rough/images/cap_ellipse.png)
+![Rough.js ellipses](https://pshihn.github.io/rough/images/cap_ellipse.png)
 
 ``` javascript
 rough.circle(80, 120, 50); // centerX, centerY, radius
@@ -46,7 +46,7 @@ rough.line(80, 120, 300, 100); // x1, y1, x2, y2
 
 ### Filling
 
-![Rough,js fill examples](https://pshihn.github.io/rough/images/cap_fill.png)
+![Rough.js fill examples](https://pshihn.github.io/rough/images/cap_fill.png)
 
 ``` javascript
 rough.fill = "red";
@@ -68,7 +68,7 @@ r3.hachureGap = 8;
 
 ### Sketching style
 
-![Rough,js styles examples](https://pshihn.github.io/rough/images/cap_styles.png)
+![Rough.js styles examples](https://pshihn.github.io/rough/images/cap_styles.png)
 
 ``` javascript
 var r1 = rough.rectangle(15,15,80,80);
@@ -85,7 +85,7 @@ r3.strokeWidth = 3;
 
 ### Arcs and Curves
 
-![Rough,js curve](https://pshihn.github.io/rough/images/cap_arc.png)
+![Rough.js curve](https://pshihn.github.io/rough/images/cap_arc.png)
 
 ``` javascript
 // arc(centerX, centerY, radiusX, radiusY, startAngle, endAngle, closePath)
@@ -96,7 +96,7 @@ var openArc = rough.arc(200, 100, 150, 130, -0.2 * Math.PI, 0.6 * Math.PI, false
 openArc.strokeWidth = 10;
 ```
 
-![Rough,js curve](https://pshihn.github.io/rough/images/cap_curve.png)
+![Rough.js curve](https://pshihn.github.io/rough/images/cap_curve.png)
 
 ``` javascript
 var curve = rough.curve([[10, 10], [150, 65], [180, 165], [300, 20], [400, 200]]);
@@ -104,7 +104,7 @@ var curve = rough.curve([[10, 10], [150, 65], [180, 165], [300, 20], [400, 200]]
 
 ### SVG Paths
 
-![Rough,js svg](https://pshihn.github.io/rough/images/cap_svg.png)
+![Rough.js svg](https://pshihn.github.io/rough/images/cap_svg.png)
 
 ``` javascript
 var path = rough.path("M213.1,6.7c-32.4-14.4-73.7,0-88.1,30.6C110.6,4.9,67.5-9.5,36.9,6.7C2.8,22.9-13.4,62.4,13.5,110.9 C33.3,145.1,67.5,170.3,125,217c59.3-46.7,93.5-71.9,111.5-106.1C263.4,64.2,247.2,22.9,213.1,6.7z");
@@ -114,7 +114,7 @@ path.hachureAngle = 90;
 
 ### Dynamic shapes
 
-![Rough,js animating rectangle](https://pshihn.github.io/rough/images/rect_animation.gif)
+![Rough.js animating rectangle](https://pshihn.github.io/rough/images/rect_animation.gif)
 
 ``` javascript
 var rect = rough.rectangle(10,10,20,100);
