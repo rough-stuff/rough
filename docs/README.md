@@ -130,3 +130,4 @@ setTimeout(increaseWidth, 100);
 
 ## API
 
+[Rough.js API](https://github.com/pshihn/rough/wiki)
