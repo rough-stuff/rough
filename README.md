@@ -11,7 +11,7 @@ Check out the website: [roughjs.com](https://pshihn.github.io/rough/)
 
 ## API
 
-[Rough.js API](https://github.com/pshihn/rough/wiki/API)
+[Rough.js API](https://github.com/pshihn/rough/wiki)
 
 ## Releases
 
