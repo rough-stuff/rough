@@ -1,37 +1,21 @@
-## Welcome to GitHub Pages
+<b>[roughjs.com](https://pshihn.github.io/rough/)</b>
 
-You can use the [editor on GitHub](https://github.com/pshihn/rough/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+<b>Rough.js</b> is a light weight, stand-alone [Canvas](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API) based library that lets you draw in a _sketchy_, _hand-drawn-like_, style.
+The library defines primitives to draw lines, curves, arcs, polygons, circles, and ellipses. It also supports drawing [SVG paths](https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths).
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+## Documentation & Examples
 
-### Markdown
+Check out the website: [roughjs.com](https://pshihn.github.io/rough/)
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+## API
 
-```markdown
-Syntax highlighted code block
+[Rough.js API](https://github.com/pshihn/rough/wiki/API)
 
-# Header 1
-## Header 2
-### Header 3
+## Releases
 
-- Bulleted
-- List
+The latest Rough.js release (beta version 0.1): [Download](./builds/rough.zip)
 
-1. Numbered
-2. List
+## Credits
 
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/pshihn/rough/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+This project was inspired by [Handy](http://www.gicentre.net/handy/), a java based library for [Processing](https://processing.org/).
+Rough.js borrows some core algorithms from Handy, but it is _not a JS port_ for processing.js.
