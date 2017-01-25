@@ -148,3 +148,7 @@ setTimeout(increaseWidth, 100);
 ## API
 
 [Rough.js API](https://github.com/pshihn/rough/wiki)
+
+## Licesnse
+
+[MIT License](https://roughjs.com/LICENSE.txt)
