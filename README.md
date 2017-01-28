@@ -15,7 +15,7 @@ Check out the website: [roughjs.com](https://roughjs.com)
 
 ## Releases
 
-The latest Rough.js release (beta version 0.1): [Download](https://roughjs.com/builds/rough.min.js)
+The latest Rough.js release (beta version 0.1): [Download](https://roughjs.com/builds/rough.zip)
 
 ## Credits
 
