@@ -1,3 +1,5 @@
+![Rough.js sample](https://roughjs.com/images/cap_demo.png)
+
 # Rough.js
 
 <b>[roughjs.com](https://roughjs.com)</b>
