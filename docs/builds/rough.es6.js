@@ -1898,6 +1898,4 @@ class RoughCanvas {
   }
 }
 
-if (exports || window) {
-  (exports || window).RoughCanvas = RoughCanvas;
-}
+if (RoughCanvas) { console.log(); }

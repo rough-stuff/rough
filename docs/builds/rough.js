@@ -2040,7 +2040,7 @@ var RoughCanvas = function () {
   return RoughCanvas;
 }();
 
-if (exports || window) {
-  (exports || window).RoughCanvas = RoughCanvas;
+if (RoughCanvas) {
+  console.log();
 }
 //# sourceMappingURL=rough.js.map
