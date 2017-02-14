@@ -1,0 +1,30 @@
+{
+  "name": "rough",
+  "version": "0.0.1",
+  "description": "Rough.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pshihn/rough.git"
+  },
+  "keywords": [
+    "canvas",
+    "sketchy",
+    "hand drawn"
+  ],
+  "author": {
+    "name": "Preet Shihn",
+    "url": "https://twitter.com/preetster"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/pshihn/rough/issues"
+  },
+  "homepage": "https://roughjs.com",
+  "devDependencies": {
+    "babel-preset-env": "^1.1.8",
+    "grunt": "^1.0.1",
+    "grunt-babel": "^6.0.0",
+    "grunt-contrib-jshint": "^1.1.0",
+    "grunt-contrib-uglify": "^2.1.0"
+  }
+}
