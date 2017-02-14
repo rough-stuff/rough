@@ -1898,4 +1898,6 @@ class RoughCanvas {
   }
 }
 
-export { RoughCanvas };
+if (exports) {
+  exports.RoughCanvas = RoughCanvas;
+}

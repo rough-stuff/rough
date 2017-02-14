@@ -6,7 +6,7 @@ module.exports = function (grunt) {
       options: {},
       files: {
         'dest': "dist/<%= pkg.name %>.es6.js",
-        'src': "src/rough-canvas.js"
+        'src': "index.js"
       },
     },
 

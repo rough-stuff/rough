@@ -1,5 +1,3 @@
-"use strict";
-
 export const RoughSegmentRelation = {
   LEFT: 0,
   RIGHT: 1,
