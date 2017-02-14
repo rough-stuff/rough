@@ -1,5 +1,5 @@
 import { RoughHachureIterator } from './geom/hachure-iterator';
-import { _RELATION_, RoughSegment } from './geom/segment';
+import { RoughSegmentRelation, RoughSegment } from './geom/segment';
 
 export class RoughDrawable {
   constructor(propertyNames) {
@@ -436,7 +436,7 @@ export class RoughDrawable {
     var s1 = new RoughSegment(lineCoords[0], lineCoords[1], lineCoords[2], lineCoords[3]);
     for (var i = 0; i < xCoords.length; i++) {
       let s2 = new RoughSegment(xCoords[i], yCoords[i], xCoords[(i + 1) % xCoords.length], yCoords[(i + 1) % xCoords.length]);
-      if (s1.compare(s2) == _RELATION_.INTERSECTS) {
+      if (s1.compare(s2) == RoughSegmentRelation.INTERSECTS) {
         intersections.push([s1.xi, s1.yi]);
       }
     }

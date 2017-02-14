@@ -1,4 +1,4 @@
-import { _RELATION_, RoughSegment } from "./segment";
+import { RoughSegmentRelation, RoughSegment } from "./segment";
 
 export class RoughHachureIterator {
   constructor(top, bottom, left, right, gap, sinAngle, cosAngle, tanAngle) {
@@ -51,11 +51,11 @@ export class RoughHachureIterator {
           }
         }
         let s = new RoughSegment(xLower, yLower, xUpper, yUpper);
-        if (s.compare(this.sLeft) == _RELATION_.INTERSECTS) {
+        if (s.compare(this.sLeft) == RoughSegmentRelation.INTERSECTS) {
           xLower = s.xi;
           yLower = s.yi;
         }
-        if (s.compare(this.sRight) == _RELATION_.INTERSECTS) {
+        if (s.compare(this.sRight) == RoughSegmentRelation.INTERSECTS) {
           xUpper = s.xi;
           yUpper = s.yi;
         }
