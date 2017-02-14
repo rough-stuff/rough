@@ -1,4 +1,8 @@
-"use strict";
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -8,9 +12,230 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Drawable = function () {
-  function Drawable(propertyNames) {
-    _classCallCheck(this, Drawable);
+var RoughSegmentRelation = {
+  LEFT: 0,
+  RIGHT: 1,
+  INTERSECTS: 2,
+  AHEAD: 3,
+  BEHIND: 4,
+  SEPARATE: 5,
+  UNDEFINED: 6
+};
+
+var RoughSegment = function () {
+  function RoughSegment(px1, py1, px2, py2) {
+    _classCallCheck(this, RoughSegment);
+
+    this.px1 = px1;
+    this.py1 = py1;
+    this.px2 = px2;
+    this.py2 = py2;
+    this.xi = Number.MAX_VALUE;
+    this.yi = Number.MAX_VALUE;
+    this.a = py2 - py1;
+    this.b = px1 - px2;
+    this.c = px2 * py1 - px1 * py2;
+    this._undefined = this.a == 0 && this.b == 0 && this.c == 0;
+  }
+
+  _createClass(RoughSegment, [{
+    key: 'isUndefined',
+    value: function isUndefined() {
+      return this._undefined;
+    }
+  }, {
+    key: 'compare',
+    value: function compare(otherSegment) {
+      if (this.isUndefined() || otherSegment.isUndefined()) {
+        return RoughSegmentRelation.UNDEFINED;
+      }
+      var grad1 = Number.MAX_VALUE;
+      var grad2 = Number.MAX_VALUE;
+      var int1 = 0,
+          int2 = 0;
+      var a = this.a,
+          b = this.b,
+          c = this.c;
+
+      if (Math.abs(b) > 0.00001) {
+        grad1 = -a / b;
+        int1 = -c / b;
+      }
+      if (Math.abs(otherSegment.b) > 0.00001) {
+        grad2 = -otherSegment.a / otherSegment.b;
+        int2 = -otherSegment.c / otherSegment.b;
+      }
+
+      if (grad1 == Number.MAX_VALUE) {
+        if (grad2 == Number.MAX_VALUE) {
+          if (-c / a != -otherSegment.c / otherSegment.a) {
+            return RoughSegmentRelation.SEPARATE;
+          }
+          if (this.py1 >= Math.min(otherSegment.py1, otherSegment.py2) && this.py1 <= Math.max(otherSegment.py1, otherSegment.py2)) {
+            this.xi = this.px1;
+            this.yi = this.py1;
+            return RoughSegmentRelation.INTERSECTS;
+          }
+          if (this.py2 >= Math.min(otherSegment.py1, otherSegment.py2) && this.py2 <= Math.max(otherSegment.py1, otherSegment.py2)) {
+            this.xi = this.px2;
+            this.yi = this.py2;
+            return RoughSegmentRelation.INTERSECTS;
+          }
+          return RoughSegmentRelation.SEPARATE;
+        }
+        this.xi = this.px1;
+        this.yi = grad2 * this.xi + int2;
+        if ((this.py1 - this.yi) * (this.yi - this.py2) < -0.00001 || (otherSegment.py1 - this.yi) * (this.yi - otherSegment.py2) < -0.00001) {
+          return RoughSegmentRelation.SEPARATE;
+        }
+        if (Math.abs(otherSegment.a) < 0.00001) {
+          if ((otherSegment.px1 - this.xi) * (this.xi - otherSegment.px2) < -0.00001) {
+            return RoughSegmentRelation.SEPARATE;
+          }
+          return RoughSegmentRelation.INTERSECTS;
+        }
+        return RoughSegmentRelation.INTERSECTS;
+      }
+
+      if (grad2 == Number.MAX_VALUE) {
+        this.xi = otherSegment.px1;
+        this.yi = grad1 * this.xi + int1;
+        if ((otherSegment.py1 - this.yi) * (this.yi - otherSegment.py2) < -0.00001 || (this.py1 - this.yi) * (this.yi - this.py2) < -0.00001) {
+          return RoughSegmentRelation.SEPARATE;
+        }
+        if (Math.abs(a) < 0.00001) {
+          if ((this.px1 - this.xi) * (this.xi - this.px2) < -0.00001) {
+            return RoughSegmentRelation.SEPARATE;
+          }
+          return RoughSegmentRelation.INTERSECTS;
+        }
+        return RoughSegmentRelation.INTERSECTS;
+      }
+
+      if (grad1 == grad2) {
+        if (int1 != int2) {
+          return RoughSegmentRelation.SEPARATE;
+        }
+        if (this.px1 >= Math.min(otherSegment.px1, otherSegment.px2) && this.px1 <= Math.max(otherSegment.py1, otherSegment.py2)) {
+          this.xi = this.px1;
+          this.yi = this.py1;
+          return RoughSegmentRelation.INTERSECTS;
+        }
+        if (this.px2 >= Math.min(otherSegment.px1, otherSegment.px2) && this.px2 <= Math.max(otherSegment.px1, otherSegment.px2)) {
+          this.xi = this.px2;
+          this.yi = this.py2;
+          return RoughSegmentRelation.INTERSECTS;
+        }
+        return RoughSegmentRelation.SEPARATE;
+      }
+
+      this.xi = (int2 - int1) / (grad1 - grad2);
+      this.yi = grad1 * this.xi + int1;
+
+      if ((this.px1 - this.xi) * (this.xi - this.px2) < -0.00001 || (otherSegment.px1 - this.xi) * (this.xi - otherSegment.px2) < -0.00001) {
+        return RoughSegmentRelation.SEPARATE;
+      }
+      return RoughSegmentRelation.INTERSECTS;
+    }
+  }, {
+    key: 'getLength',
+    value: function getLength() {
+      return this._getLength(this.px1, this.py1, this.px2, this.py2);
+    }
+  }, {
+    key: '_getLength',
+    value: function _getLength(x1, y1, x2, y2) {
+      var dx = x2 - x1;
+      var dy = y2 - y1;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+  }]);
+
+  return RoughSegment;
+}();
+
+var RoughHachureIterator = function () {
+  function RoughHachureIterator(top, bottom, left, right, gap, sinAngle, cosAngle, tanAngle) {
+    _classCallCheck(this, RoughHachureIterator);
+
+    this.top = top;
+    this.bottom = bottom;
+    this.left = left;
+    this.right = right;
+    this.gap = gap;
+    this.sinAngle = sinAngle;
+    this.tanAngle = tanAngle;
+
+    if (Math.abs(sinAngle) < 0.0001) {
+      this.pos = left + gap;
+    } else if (Math.abs(sinAngle) > 0.9999) {
+      this.pos = top + gap;
+    } else {
+      this.deltaX = (bottom - top) * Math.abs(tanAngle);
+      this.pos = left - Math.abs(this.deltaX);
+      this.hGap = Math.abs(gap / cosAngle);
+      this.sLeft = new RoughSegment(left, bottom, left, top);
+      this.sRight = new RoughSegment(right, bottom, right, top);
+    }
+  }
+
+  _createClass(RoughHachureIterator, [{
+    key: 'getNextLine',
+    value: function getNextLine() {
+      if (Math.abs(this.sinAngle) < 0.0001) {
+        if (this.pos < this.right) {
+          var line = [this.pos, this.top, this.pos, this.bottom];
+          this.pos += this.gap;
+          return line;
+        }
+      } else if (Math.abs(this.sinAngle) > 0.9999) {
+        if (this.pos < this.bottom) {
+          var _line = [this.left, this.pos, this.right, this.pos];
+          this.pos += this.gap;
+          return _line;
+        }
+      } else {
+        var xLower = this.pos - this.deltaX / 2;
+        var xUpper = this.pos + this.deltaX / 2;
+        var yLower = this.bottom;
+        var yUpper = this.top;
+        if (this.pos < this.right + this.deltaX) {
+          while (xLower < this.left && xUpper < this.left || xLower > this.right && xUpper > this.right) {
+            this.pos += this.hGap;
+            xLower = this.pos - this.deltaX / 2;
+            xUpper = this.pos + this.deltaX / 2;
+            if (this.pos > this.right + this.deltaX) {
+              return null;
+            }
+          }
+          var s = new RoughSegment(xLower, yLower, xUpper, yUpper);
+          if (s.compare(this.sLeft) == RoughSegmentRelation.INTERSECTS) {
+            xLower = s.xi;
+            yLower = s.yi;
+          }
+          if (s.compare(this.sRight) == RoughSegmentRelation.INTERSECTS) {
+            xUpper = s.xi;
+            yUpper = s.yi;
+          }
+          if (this.tanAngle > 0) {
+            xLower = this.right - (xLower - this.left);
+            xUpper = this.right - (xUpper - this.left);
+          }
+          var _line2 = [xLower, yLower, xUpper, yUpper];
+          this.pos += this.hGap;
+          return _line2;
+        }
+      }
+      return null;
+    }
+  }]);
+
+  return RoughHachureIterator;
+}();
+
+var RoughDrawable = function () {
+  function RoughDrawable(propertyNames) {
+    _classCallCheck(this, RoughDrawable);
 
     this._fields = {};
     this._dirty = false;
@@ -36,7 +261,7 @@ var Drawable = function () {
     }
   }
 
-  _createClass(Drawable, [{
+  _createClass(RoughDrawable, [{
     key: '_defineRenderProperty',
     value: function _defineRenderProperty(name) {
       Object.defineProperty(this, name, {
@@ -219,10 +444,10 @@ var Drawable = function () {
     key: 'getIntersectingLines',
     value: function getIntersectingLines(lineCoords, xCoords, yCoords) {
       var intersections = [];
-      var s1 = new Segment(lineCoords[0], lineCoords[1], lineCoords[2], lineCoords[3]);
+      var s1 = new RoughSegment(lineCoords[0], lineCoords[1], lineCoords[2], lineCoords[3]);
       for (var i = 0; i < xCoords.length; i++) {
-        var s2 = new Segment(xCoords[i], yCoords[i], xCoords[(i + 1) % xCoords.length], yCoords[(i + 1) % xCoords.length]);
-        if (s1.compare(s2) == _RELATION_.INTERSECTS) {
+        var s2 = new RoughSegment(xCoords[i], yCoords[i], xCoords[(i + 1) % xCoords.length], yCoords[(i + 1) % xCoords.length]);
+        if (s1.compare(s2) == RoughSegmentRelation.INTERSECTS) {
           intersections.push([s1.xi, s1.yi]);
         }
       }
@@ -264,7 +489,7 @@ var Drawable = function () {
         ctx.strokeStyle = this.fill;
         ctx.lineWidth = fweight;
 
-        var it = new HachureIterator(top - 1, bottom + 1, left - 1, right + 1, gap, sinAngle, cosAngle, tanAngle);
+        var it = new RoughHachureIterator(top - 1, bottom + 1, left - 1, right + 1, gap, sinAngle, cosAngle, tanAngle);
         var rectCoords;
         while ((rectCoords = it.getNextLine()) != null) {
           var lines = this.getIntersectingLines(rectCoords, xCoords, yCoords);
@@ -496,28 +721,146 @@ var Drawable = function () {
     }
   }]);
 
-  return Drawable;
+  return RoughDrawable;
 }();
 
-"use strict";
+var RoughArc = function (_RoughDrawable) {
+  _inherits(RoughArc, _RoughDrawable);
 
-var Ellipse = function (_Drawable) {
-  _inherits(Ellipse, _Drawable);
+  function RoughArc(x, y, width, height, start, stop, closed) {
+    _classCallCheck(this, RoughArc);
 
-  function Ellipse(x, y, width, height) {
-    _classCallCheck(this, Ellipse);
-
-    var _this = _possibleConstructorReturn(this, (Ellipse.__proto__ || Object.getPrototypeOf(Ellipse)).call(this, ['x', 'y', 'width', 'height', 'numSteps']));
+    var _this = _possibleConstructorReturn(this, (RoughArc.__proto__ || Object.getPrototypeOf(RoughArc)).call(this, ['x', 'y', 'width', 'height', 'start', 'stop', 'numSteps', 'closed']));
 
     _this.x = x;
     _this.y = y;
     _this.width = width;
     _this.height = height || width;
+    _this.start = start;
+    _this.stop = stop;
     _this.numSteps = 9;
+    _this.closed = closed ? true : false;
     return _this;
   }
 
-  _createClass(Ellipse, [{
+  _createClass(RoughArc, [{
+    key: 'draw',
+    value: function draw(ctx) {
+      var cx = this.x;
+      var cy = this.y;
+      var rx = Math.abs(this.width / 2);
+      var ry = Math.abs(this.height / 2);
+      rx += this.getOffset(-rx * 0.01, rx * 0.01);
+      ry += this.getOffset(-ry * 0.01, ry * 0.01);
+      var strt = this.start;
+      var stp = this.stop;
+      while (strt < 0) {
+        strt += Math.PI * 2;
+        stp += Math.PI * 2;
+      }
+      if (stp - strt > Math.PI * 2) {
+        strt = 0;
+        stp = Math.PI * 2;
+      }
+      var ellipseInc = Math.PI * 2 / this.numSteps;
+      var arcInc = Math.min(ellipseInc / 2, (stp - strt) / 2);
+
+      var points = [];
+      points.push([cx + rx * Math.cos(strt), cy + ry * Math.sin(strt)]);
+      for (var theta = strt; theta <= stp; theta += arcInc) {
+        points.push([cx + rx * Math.cos(theta), cy + ry * Math.sin(theta)]);
+      }
+      points.push([cx + rx * Math.cos(stp), cy + ry * Math.sin(stp)]);
+      points.push([cx + rx * Math.cos(stp), cy + ry * Math.sin(stp)]);
+
+      if (this.fill && this.closed) {
+        this._doFill(ctx, points, [cx, cy]);
+      }
+
+      ctx.save();
+      ctx.strokeStyle = this.stroke;
+      ctx.lineWidth = this.strokeWidth;
+      this.drawCurve(ctx, points);
+      if (this.closed) {
+        var lindex = points.length - 1;
+        this.drawLine(ctx, points[0][0], points[0][1], cx, cy);
+        this.drawLine(ctx, points[lindex][0], points[lindex][1], cx, cy);
+      }
+      ctx.restore();
+    }
+  }, {
+    key: '_doFill',
+    value: function _doFill(ctx, points, center) {
+      var fillStyle = this.fillStyle || "hachure";
+      switch (fillStyle) {
+        case "solid":
+          {
+            ctx.save();
+            ctx.fillStyle = this.fill;
+            ctx.beginPath();
+            this.drawCurve(ctx, points, true, true, center);
+            ctx.fill();
+            ctx.restore();
+            break;
+          }
+        default:
+          {
+            var cx = this.x;
+            var cy = this.y;
+            var strt = this.start;
+            var stp = this.stop;
+            var rx = Math.abs(this.width / 2);
+            var ry = Math.abs(this.height / 2);
+            while (strt < 0) {
+              strt += Math.PI * 2;
+              stp += Math.PI * 2;
+            }
+            if (stp - strt > Math.PI * 2) {
+              strt = 0;
+              stp = Math.PI * 2;
+            }
+            var arcInc = (stp - strt) / this.numSteps;
+            var vertices = [];
+            vertices.push([cx, cy]);
+            vertices.push([cx + rx * Math.cos(strt), cy + ry * Math.sin(strt)]);
+            for (var theta = strt; theta <= stp; theta += arcInc) {
+              vertices.push([cx + rx * Math.cos(theta), cy + ry * Math.sin(theta)]);
+            }
+            vertices.push([cx + rx * Math.cos(stp), cy + ry * Math.sin(stp)]);
+
+            var xc = [];
+            var yc = [];
+            vertices.forEach(function (p) {
+              xc.push(p[0]);
+              yc.push(p[1]);
+            });
+            this.hachureFillShape(ctx, xc, yc);
+            break;
+          }
+      }
+    }
+  }]);
+
+  return RoughArc;
+}(RoughDrawable);
+
+var RoughEllipse = function (_RoughDrawable2) {
+  _inherits(RoughEllipse, _RoughDrawable2);
+
+  function RoughEllipse(x, y, width, height) {
+    _classCallCheck(this, RoughEllipse);
+
+    var _this2 = _possibleConstructorReturn(this, (RoughEllipse.__proto__ || Object.getPrototypeOf(RoughEllipse)).call(this, ['x', 'y', 'width', 'height', 'numSteps']));
+
+    _this2.x = x;
+    _this2.y = y;
+    _this2.width = width;
+    _this2.height = height || width;
+    _this2.numSteps = 9;
+    return _this2;
+  }
+
+  _createClass(RoughEllipse, [{
     key: 'draw',
     value: function draw(ctx) {
       this.ellipseInc = Math.PI * 2 / this.numSteps;
@@ -617,153 +960,19 @@ var Ellipse = function (_Drawable) {
     }
   }]);
 
-  return Ellipse;
-}(Drawable);
+  return RoughEllipse;
+}(RoughDrawable);
 
-"use strict";
+var RoughCircle = function (_RoughEllipse) {
+  _inherits(RoughCircle, _RoughEllipse);
 
-var Arc = function (_Drawable2) {
-  _inherits(Arc, _Drawable2);
+  function RoughCircle(x, y, radius) {
+    _classCallCheck(this, RoughCircle);
 
-  function Arc(x, y, width, height, start, stop, closed) {
-    _classCallCheck(this, Arc);
-
-    var _this2 = _possibleConstructorReturn(this, (Arc.__proto__ || Object.getPrototypeOf(Arc)).call(this, ['x', 'y', 'width', 'height', 'start', 'stop', 'numSteps', 'closed']));
-
-    _this2.x = x;
-    _this2.y = y;
-    _this2.width = width;
-    _this2.height = height || width;
-    _this2.start = start;
-    _this2.stop = stop;
-    _this2.numSteps = 9;
-    _this2.closed = closed ? true : false;
-    return _this2;
+    return _possibleConstructorReturn(this, (RoughCircle.__proto__ || Object.getPrototypeOf(RoughCircle)).call(this, x, y, radius * 2));
   }
 
-  _createClass(Arc, [{
-    key: 'draw',
-    value: function draw(ctx) {
-      var cx = this.x;
-      var cy = this.y;
-      var rx = Math.abs(this.width / 2);
-      var ry = Math.abs(this.height / 2);
-      rx += this.getOffset(-rx * 0.01, rx * 0.01);
-      ry += this.getOffset(-ry * 0.01, ry * 0.01);
-      var strt = this.start;
-      var stp = this.stop;
-      while (strt < 0) {
-        strt += Math.PI * 2;
-        stp += Math.PI * 2;
-      }
-      if (stp - strt > Math.PI * 2) {
-        strt = 0;
-        stp = Math.PI * 2;
-      }
-      var ellipseInc = Math.PI * 2 / this.numSteps;
-      var arcInc = Math.min(ellipseInc / 2, (stp - strt) / 2);
-
-      var points = [];
-      points.push([cx + rx * Math.cos(strt), cy + ry * Math.sin(strt)]);
-      for (var theta = strt; theta <= stp; theta += arcInc) {
-        points.push([cx + rx * Math.cos(theta), cy + ry * Math.sin(theta)]);
-      }
-      points.push([cx + rx * Math.cos(stp), cy + ry * Math.sin(stp)]);
-      points.push([cx + rx * Math.cos(stp), cy + ry * Math.sin(stp)]);
-
-      if (this.fill && this.closed) {
-        this._doFill(ctx, points, [cx, cy]);
-      }
-
-      ctx.save();
-      ctx.strokeStyle = this.stroke;
-      ctx.lineWidth = this.strokeWidth;
-      this.drawCurve(ctx, points);
-      if (this.closed) {
-        var lindex = points.length - 1;
-        this.drawLine(ctx, points[0][0], points[0][1], cx, cy);
-        this.drawLine(ctx, points[lindex][0], points[lindex][1], cx, cy);
-      }
-      ctx.restore();
-    }
-  }, {
-    key: '_doFill',
-    value: function _doFill(ctx, points, center) {
-      var _this3 = this;
-
-      var fillStyle = this.fillStyle || "hachure";
-      switch (fillStyle) {
-        case "solid":
-          {
-            ctx.save();
-            ctx.fillStyle = this.fill;
-            ctx.beginPath();
-            this.drawCurve(ctx, points, true, true, center);
-            ctx.fill();
-            ctx.restore();
-            break;
-          }
-        default:
-          {
-            var vertices;
-            var theta;
-
-            var _ret = function () {
-              var cx = _this3.x;
-              var cy = _this3.y;
-              var strt = _this3.start;
-              var stp = _this3.stop;
-              var rx = Math.abs(_this3.width / 2);
-              var ry = Math.abs(_this3.height / 2);
-              while (strt < 0) {
-                strt += Math.PI * 2;
-                stp += Math.PI * 2;
-              }
-              if (stp - strt > Math.PI * 2) {
-                strt = 0;
-                stp = Math.PI * 2;
-              }
-              var arcInc = (stp - strt) / _this3.numSteps;
-              vertices = [];
-
-              vertices.push([cx, cy]);
-              vertices.push([cx + rx * Math.cos(strt), cy + ry * Math.sin(strt)]);
-              for (theta = strt; theta <= stp; theta += arcInc) {
-                vertices.push([cx + rx * Math.cos(theta), cy + ry * Math.sin(theta)]);
-              }
-              vertices.push([cx + rx * Math.cos(stp), cy + ry * Math.sin(stp)]);
-
-              var xc = [];
-              var yc = [];
-              vertices.forEach(function (p) {
-                xc.push(p[0]);
-                yc.push(p[1]);
-              });
-              _this3.hachureFillShape(ctx, xc, yc);
-              return 'break';
-            }();
-
-            if (_ret === 'break') break;
-          }
-      }
-    }
-  }]);
-
-  return Arc;
-}(Drawable);
-
-"use strict";
-
-var Circle = function (_Ellipse) {
-  _inherits(Circle, _Ellipse);
-
-  function Circle(x, y, radius) {
-    _classCallCheck(this, Circle);
-
-    return _possibleConstructorReturn(this, (Circle.__proto__ || Object.getPrototypeOf(Circle)).call(this, x, y, radius * 2));
-  }
-
-  _createClass(Circle, [{
+  _createClass(RoughCircle, [{
     key: 'radius',
     get: function get() {
       return this.width / 2;
@@ -774,24 +983,22 @@ var Circle = function (_Ellipse) {
     }
   }]);
 
-  return Circle;
-}(Ellipse);
+  return RoughCircle;
+}(RoughEllipse);
 
-"use strict";
+var RoughCurve = function (_RoughDrawable3) {
+  _inherits(RoughCurve, _RoughDrawable3);
 
-var Curve = function (_Drawable3) {
-  _inherits(Curve, _Drawable3);
+  function RoughCurve(points) {
+    _classCallCheck(this, RoughCurve);
 
-  function Curve(points) {
-    _classCallCheck(this, Curve);
+    var _this4 = _possibleConstructorReturn(this, (RoughCurve.__proto__ || Object.getPrototypeOf(RoughCurve)).call(this));
 
-    var _this5 = _possibleConstructorReturn(this, (Curve.__proto__ || Object.getPrototypeOf(Curve)).call(this));
-
-    _this5._points = points;
-    return _this5;
+    _this4._points = points;
+    return _this4;
   }
 
-  _createClass(Curve, [{
+  _createClass(RoughCurve, [{
     key: 'setPoint',
     value: function setPoint(index, x, y) {
       this._points[index] = [x, y];
@@ -844,118 +1051,97 @@ var Curve = function (_Drawable3) {
     }
   }]);
 
-  return Curve;
-}(Drawable);
+  return RoughCurve;
+}(RoughDrawable);
 
-"use strict";
+var RoughLine = function (_RoughDrawable4) {
+  _inherits(RoughLine, _RoughDrawable4);
 
-var ArcConverter = function () {
-  // Algorithm as described in https://www.w3.org/TR/SVG/implnote.html
-  // Code adapted from nsSVGPathDataParser.cpp in Mozilla 
-  // https://hg.mozilla.org/mozilla-central/file/17156fbebbc8/content/svg/content/src/nsSVGPathDataParser.cpp#l887
+  function RoughLine(x1, y1, x2, y2) {
+    _classCallCheck(this, RoughLine);
 
-  function ArcConverter(from, to, radii, angle, largeArcFlag, sweepFlag) {
-    _classCallCheck(this, ArcConverter);
+    var _this5 = _possibleConstructorReturn(this, (RoughLine.__proto__ || Object.getPrototypeOf(RoughLine)).call(this, ['x1', 'y1', 'x2', 'y2']));
 
-    var radPerDeg = Math.PI / 180;
-    this._segIndex = 0;
-    this._numSegs = 0;
-    if (from[0] == to[0] && from[1] == to[1]) {
-      return;
-    }
-    this._rx = Math.abs(radii[0]);
-    this._ry = Math.abs(radii[1]);
-    this._sinPhi = Math.sin(angle * radPerDeg);
-    this._cosPhi = Math.cos(angle * radPerDeg);
-    var x1dash = this._cosPhi * (from[0] - to[0]) / 2.0 + this._sinPhi * (from[1] - to[1]) / 2.0;
-    var y1dash = -this._sinPhi * (from[0] - to[0]) / 2.0 + this._cosPhi * (from[1] - to[1]) / 2.0;
-    var root;
-    var numerator = this._rx * this._rx * this._ry * this._ry - this._rx * this._rx * y1dash * y1dash - this._ry * this._ry * x1dash * x1dash;
-    if (numerator < 0) {
-      var s = Math.sqrt(1 - numerator / (this._rx * this._rx * this._ry * this._ry));
-      this._rx = s;
-      this._ry = s;
-      root = 0;
-    } else {
-      root = (largeArcFlag == sweepFlag ? -1.0 : 1.0) * Math.sqrt(numerator / (this._rx * this._rx * y1dash * y1dash + this._ry * this._ry * x1dash * x1dash));
-    }
-    var cxdash = root * this._rx * y1dash / this._ry;
-    var cydash = -root * this._ry * x1dash / this._rx;
-    this._C = [0, 0];
-    this._C[0] = this._cosPhi * cxdash - this._sinPhi * cydash + (from[0] + to[0]) / 2.0;
-    this._C[1] = this._sinPhi * cxdash + this._cosPhi * cydash + (from[1] + to[1]) / 2.0;
-    this._theta = this.calculateVectorAngle(1.0, 0.0, (x1dash - cxdash) / this._rx, (y1dash - cydash) / this._ry);
-    var dtheta = this.calculateVectorAngle((x1dash - cxdash) / this._rx, (y1dash - cydash) / this._ry, (-x1dash - cxdash) / this._rx, (-y1dash - cydash) / this._ry);
-    if (!sweepFlag && dtheta > 0) {
-      dtheta -= 2 * Math.PI;
-    } else if (sweepFlag && dtheta < 0) {
-      dtheta += 2 * Math.PI;
-    }
-    this._numSegs = Math.ceil(Math.abs(dtheta / (Math.PI / 2)));
-    this._delta = dtheta / this._numSegs;
-    this._T = 8 / 3 * Math.sin(this._delta / 4) * Math.sin(this._delta / 4) / Math.sin(this._delta / 2);
-    this._from = from;
+    _this5.x1 = x1;
+    _this5.x2 = x2;
+    _this5.y1 = y1;
+    _this5.y2 = y2;
+    return _this5;
   }
 
-  _createClass(ArcConverter, [{
-    key: 'getNextSegment',
-    value: function getNextSegment() {
-      var cp1, cp2, to;
-      if (this._segIndex == this._numSegs) {
-        return null;
-      }
-      var cosTheta1 = Math.cos(this._theta);
-      var sinTheta1 = Math.sin(this._theta);
-      var theta2 = this._theta + this._delta;
-      var cosTheta2 = Math.cos(theta2);
-      var sinTheta2 = Math.sin(theta2);
-
-      to = [this._cosPhi * this._rx * cosTheta2 - this._sinPhi * this._ry * sinTheta2 + this._C[0], this._sinPhi * this._rx * cosTheta2 + this._cosPhi * this._ry * sinTheta2 + this._C[1]];
-      cp1 = [this._from[0] + this._T * (-this._cosPhi * this._rx * sinTheta1 - this._sinPhi * this._ry * cosTheta1), this._from[1] + this._T * (-this._sinPhi * this._rx * sinTheta1 + this._cosPhi * this._ry * cosTheta1)];
-      cp2 = [to[0] + this._T * (this._cosPhi * this._rx * sinTheta2 + this._sinPhi * this._ry * cosTheta2), to[1] + this._T * (this._sinPhi * this._rx * sinTheta2 - this._cosPhi * this._ry * cosTheta2)];
-
-      this._theta = theta2;
-      this._from = [to[0], to[1]];
-      this._segIndex++;
-
-      return {
-        cp1: cp1,
-        cp2: cp2,
-        to: to
-      };
-    }
-  }, {
-    key: 'calculateVectorAngle',
-    value: function calculateVectorAngle(ux, uy, vx, vy) {
-      var ta = Math.atan2(uy, ux);
-      var tb = Math.atan2(vy, vx);
-      if (tb >= ta) return tb - ta;
-      return 2 * Math.PI - (ta - tb);
+  _createClass(RoughLine, [{
+    key: 'draw',
+    value: function draw(ctx) {
+      ctx.save();
+      ctx.strokeStyle = this.stroke;
+      ctx.lineWidth = this.strokeWidth;
+      this.drawLine(ctx, this.x1, this.y1, this.x2, this.y2);
+      ctx.restore();
     }
   }]);
 
-  return ArcConverter;
-}();
+  return RoughLine;
+}(RoughDrawable);
 
-"use strict";
+var RoughLinearPath = function (_RoughDrawable5) {
+  _inherits(RoughLinearPath, _RoughDrawable5);
+
+  function RoughLinearPath(points) {
+    _classCallCheck(this, RoughLinearPath);
+
+    var _this6 = _possibleConstructorReturn(this, (RoughLinearPath.__proto__ || Object.getPrototypeOf(RoughLinearPath)).call(this));
+
+    _this6._points = points;
+    return _this6;
+  }
+
+  _createClass(RoughLinearPath, [{
+    key: 'setPoint',
+    value: function setPoint(index, x, y) {
+      this._points[index] = [x, y];
+      if (this._canvas) {
+        this._canvas.requestDraw();
+      }
+    }
+  }, {
+    key: 'getPoint',
+    value: function getPoint(index) {
+      if (index > 0 && index < this._points.length) {
+        return this._points[index];
+      }
+      return null;
+    }
+  }, {
+    key: 'draw',
+    value: function draw(ctx) {
+      ctx.save();
+      ctx.strokeStyle = this.stroke;
+      ctx.lineWidth = this.strokeWidth;
+      this.drawLinearPath(ctx, this._points, false);
+      ctx.restore();
+    }
+  }]);
+
+  return RoughLinearPath;
+}(RoughDrawable);
 
 // Path parsing adapted from http://www.kevlindev.com/geometry/index.htm
 
-function GeomToken(type, text) {
+function RoughGeomToken(type, text) {
   if (arguments.length > 0) {
     this.init(type, text);
   }
 }
-GeomToken.prototype.init = function (type, text) {
+RoughGeomToken.prototype.init = function (type, text) {
   this.type = type;this.text = text;
 };
-GeomToken.prototype.typeis = function (type) {
+RoughGeomToken.prototype.typeis = function (type) {
   return this.type == type;
 };
 
-var GeomPath = function () {
-  function GeomPath(d) {
-    _classCallCheck(this, GeomPath);
+var RoughGeomPath = function () {
+  function RoughGeomPath(d) {
+    _classCallCheck(this, RoughGeomPath);
 
     this.PARAMS = {
       A: ["rx", "ry", "x-axis-rotation", "large-arc-flag", "sweep-flag", "x", "y"],
@@ -988,7 +1174,7 @@ var GeomPath = function () {
     this.parseData(d);
   }
 
-  _createClass(GeomPath, [{
+  _createClass(RoughGeomPath, [{
     key: 'parseData',
     value: function parseData(d) {
       var tokens = this.tokenize(d);
@@ -1053,349 +1239,134 @@ var GeomPath = function () {
         if (d.match(/^([ \t\r\n,]+)/)) {
           d = d.substr(RegExp.$1.length);
         } else if (d.match(/^([aAcChHlLmMqQsStTvVzZ])/)) {
-          tokens[tokens.length] = new GeomToken(this.COMMAND, RegExp.$1);
+          tokens[tokens.length] = new RoughGeomToken(this.COMMAND, RegExp.$1);
           d = d.substr(RegExp.$1.length);
         } else if (d.match(/^(([-+]?[0-9]+(\.[0-9]*)?|[-+]?\.[0-9]+)([eE][-+]?[0-9]+)?)/)) {
-          tokens[tokens.length] = new GeomToken(this.NUMBER, parseFloat(RegExp.$1));
+          tokens[tokens.length] = new RoughGeomToken(this.NUMBER, parseFloat(RegExp.$1));
           d = d.substr(RegExp.$1.length);
         } else {
           console.error("Unrecognized segment command: " + d);
           return null;
         }
       }
-      tokens[tokens.length] = new GeomToken(this.EOD, null);
+      tokens[tokens.length] = new RoughGeomToken(this.EOD, null);
       return tokens;
     }
   }]);
 
-  return GeomPath;
+  return RoughGeomPath;
 }();
 
-"use strict";
+var RoughArcConverter = function () {
+  // Algorithm as described in https://www.w3.org/TR/SVG/implnote.html
+  // Code adapted from nsSVGPathDataParser.cpp in Mozilla 
+  // https://hg.mozilla.org/mozilla-central/file/17156fbebbc8/content/svg/content/src/nsSVGPathDataParser.cpp#l887
 
-var HachureIterator = function () {
-  function HachureIterator(top, bottom, left, right, gap, sinAngle, cosAngle, tanAngle) {
-    _classCallCheck(this, HachureIterator);
+  function RoughArcConverter(from, to, radii, angle, largeArcFlag, sweepFlag) {
+    _classCallCheck(this, RoughArcConverter);
 
-    this.top = top;
-    this.bottom = bottom;
-    this.left = left;
-    this.right = right;
-    this.gap = gap;
-    this.sinAngle = sinAngle;
-    this.tanAngle = tanAngle;
-
-    if (Math.abs(sinAngle) < 0.0001) {
-      this.pos = left + gap;
-    } else if (Math.abs(sinAngle) > 0.9999) {
-      this.pos = top + gap;
+    var radPerDeg = Math.PI / 180;
+    this._segIndex = 0;
+    this._numSegs = 0;
+    if (from[0] == to[0] && from[1] == to[1]) {
+      return;
+    }
+    this._rx = Math.abs(radii[0]);
+    this._ry = Math.abs(radii[1]);
+    this._sinPhi = Math.sin(angle * radPerDeg);
+    this._cosPhi = Math.cos(angle * radPerDeg);
+    var x1dash = this._cosPhi * (from[0] - to[0]) / 2.0 + this._sinPhi * (from[1] - to[1]) / 2.0;
+    var y1dash = -this._sinPhi * (from[0] - to[0]) / 2.0 + this._cosPhi * (from[1] - to[1]) / 2.0;
+    var root;
+    var numerator = this._rx * this._rx * this._ry * this._ry - this._rx * this._rx * y1dash * y1dash - this._ry * this._ry * x1dash * x1dash;
+    if (numerator < 0) {
+      var s = Math.sqrt(1 - numerator / (this._rx * this._rx * this._ry * this._ry));
+      this._rx = s;
+      this._ry = s;
+      root = 0;
     } else {
-      this.deltaX = (bottom - top) * Math.abs(tanAngle);
-      this.pos = left - Math.abs(this.deltaX);
-      this.hGap = Math.abs(gap / cosAngle);
-      this.sLeft = new Segment(left, bottom, left, top);
-      this.sRight = new Segment(right, bottom, right, top);
+      root = (largeArcFlag == sweepFlag ? -1.0 : 1.0) * Math.sqrt(numerator / (this._rx * this._rx * y1dash * y1dash + this._ry * this._ry * x1dash * x1dash));
     }
+    var cxdash = root * this._rx * y1dash / this._ry;
+    var cydash = -root * this._ry * x1dash / this._rx;
+    this._C = [0, 0];
+    this._C[0] = this._cosPhi * cxdash - this._sinPhi * cydash + (from[0] + to[0]) / 2.0;
+    this._C[1] = this._sinPhi * cxdash + this._cosPhi * cydash + (from[1] + to[1]) / 2.0;
+    this._theta = this.calculateVectorAngle(1.0, 0.0, (x1dash - cxdash) / this._rx, (y1dash - cydash) / this._ry);
+    var dtheta = this.calculateVectorAngle((x1dash - cxdash) / this._rx, (y1dash - cydash) / this._ry, (-x1dash - cxdash) / this._rx, (-y1dash - cydash) / this._ry);
+    if (!sweepFlag && dtheta > 0) {
+      dtheta -= 2 * Math.PI;
+    } else if (sweepFlag && dtheta < 0) {
+      dtheta += 2 * Math.PI;
+    }
+    this._numSegs = Math.ceil(Math.abs(dtheta / (Math.PI / 2)));
+    this._delta = dtheta / this._numSegs;
+    this._T = 8 / 3 * Math.sin(this._delta / 4) * Math.sin(this._delta / 4) / Math.sin(this._delta / 2);
+    this._from = from;
   }
 
-  _createClass(HachureIterator, [{
-    key: 'getNextLine',
-    value: function getNextLine() {
-      if (Math.abs(this.sinAngle) < 0.0001) {
-        if (this.pos < this.right) {
-          var line = [this.pos, this.top, this.pos, this.bottom];
-          this.pos += this.gap;
-          return line;
-        }
-      } else if (Math.abs(this.sinAngle) > 0.9999) {
-        if (this.pos < this.bottom) {
-          var _line = [this.left, this.pos, this.right, this.pos];
-          this.pos += this.gap;
-          return _line;
-        }
-      } else {
-        var xLower = this.pos - this.deltaX / 2;
-        var xUpper = this.pos + this.deltaX / 2;
-        var yLower = this.bottom;
-        var yUpper = this.top;
-        if (this.pos < this.right + this.deltaX) {
-          while (xLower < this.left && xUpper < this.left || xLower > this.right && xUpper > this.right) {
-            this.pos += this.hGap;
-            xLower = this.pos - this.deltaX / 2;
-            xUpper = this.pos + this.deltaX / 2;
-            if (this.pos > this.right + this.deltaX) {
-              return null;
-            }
-          }
-          var s = new Segment(xLower, yLower, xUpper, yUpper);
-          if (s.compare(this.sLeft) == _RELATION_.INTERSECTS) {
-            xLower = s.xi;
-            yLower = s.yi;
-          }
-          if (s.compare(this.sRight) == _RELATION_.INTERSECTS) {
-            xUpper = s.xi;
-            yUpper = s.yi;
-          }
-          if (this.tanAngle > 0) {
-            xLower = this.right - (xLower - this.left);
-            xUpper = this.right - (xUpper - this.left);
-          }
-          var _line2 = [xLower, yLower, xUpper, yUpper];
-          this.pos += this.hGap;
-          return _line2;
-        }
+  _createClass(RoughArcConverter, [{
+    key: 'getNextSegment',
+    value: function getNextSegment() {
+      var cp1, cp2, to;
+      if (this._segIndex == this._numSegs) {
+        return null;
       }
-      return null;
+      var cosTheta1 = Math.cos(this._theta);
+      var sinTheta1 = Math.sin(this._theta);
+      var theta2 = this._theta + this._delta;
+      var cosTheta2 = Math.cos(theta2);
+      var sinTheta2 = Math.sin(theta2);
+
+      to = [this._cosPhi * this._rx * cosTheta2 - this._sinPhi * this._ry * sinTheta2 + this._C[0], this._sinPhi * this._rx * cosTheta2 + this._cosPhi * this._ry * sinTheta2 + this._C[1]];
+      cp1 = [this._from[0] + this._T * (-this._cosPhi * this._rx * sinTheta1 - this._sinPhi * this._ry * cosTheta1), this._from[1] + this._T * (-this._sinPhi * this._rx * sinTheta1 + this._cosPhi * this._ry * cosTheta1)];
+      cp2 = [to[0] + this._T * (this._cosPhi * this._rx * sinTheta2 + this._sinPhi * this._ry * cosTheta2), to[1] + this._T * (this._sinPhi * this._rx * sinTheta2 - this._cosPhi * this._ry * cosTheta2)];
+
+      this._theta = theta2;
+      this._from = [to[0], to[1]];
+      this._segIndex++;
+
+      return {
+        cp1: cp1,
+        cp2: cp2,
+        to: to
+      };
+    }
+  }, {
+    key: 'calculateVectorAngle',
+    value: function calculateVectorAngle(ux, uy, vx, vy) {
+      var ta = Math.atan2(uy, ux);
+      var tb = Math.atan2(vy, vx);
+      if (tb >= ta) return tb - ta;
+      return 2 * Math.PI - (ta - tb);
     }
   }]);
 
-  return HachureIterator;
+  return RoughArcConverter;
 }();
 
-"use strict";
+var RoughPath = function (_RoughDrawable6) {
+  _inherits(RoughPath, _RoughDrawable6);
 
-var _RELATION_ = {
-  LEFT: 0,
-  RIGHT: 1,
-  INTERSECTS: 2,
-  AHEAD: 3,
-  BEHIND: 4,
-  SEPARATE: 5,
-  UNDEFINED: 6
-};
+  function RoughPath(path) {
+    _classCallCheck(this, RoughPath);
 
-var Segment = function () {
-  function Segment(px1, py1, px2, py2) {
-    _classCallCheck(this, Segment);
+    var _this7 = _possibleConstructorReturn(this, (RoughPath.__proto__ || Object.getPrototypeOf(RoughPath)).call(this, ['path', 'numSteps']));
 
-    this.px1 = px1;
-    this.py1 = py1;
-    this.px2 = px2;
-    this.py2 = py2;
-    this.xi = Number.MAX_VALUE;
-    this.yi = Number.MAX_VALUE;
-    this.a = py2 - py1;
-    this.b = px1 - px2;
-    this.c = px2 * py1 - px1 * py2;
-    this._undefined = this.a == 0 && this.b == 0 && this.c == 0;
-  }
-
-  _createClass(Segment, [{
-    key: 'isUndefined',
-    value: function isUndefined() {
-      return this._undefined;
-    }
-  }, {
-    key: 'compare',
-    value: function compare(otherSegment) {
-      if (this.isUndefined() || otherSegment.isUndefined()) {
-        return _RELATION_.UNDEFINED;
-      }
-      var grad1 = Number.MAX_VALUE;
-      var grad2 = Number.MAX_VALUE;
-      var int1 = 0,
-          int2 = 0;
-      var a = this.a,
-          b = this.b,
-          c = this.c;
-
-      if (Math.abs(b) > 0.00001) {
-        grad1 = -a / b;
-        int1 = -c / b;
-      }
-      if (Math.abs(otherSegment.b) > 0.00001) {
-        grad2 = -otherSegment.a / otherSegment.b;
-        int2 = -otherSegment.c / otherSegment.b;
-      }
-
-      if (grad1 == Number.MAX_VALUE) {
-        if (grad2 == Number.MAX_VALUE) {
-          if (-c / a != -otherSegment.c / otherSegment.a) {
-            return _RELATION_.SEPARATE;
-          }
-          if (this.py1 >= Math.min(otherSegment.py1, otherSegment.py2) && this.py1 <= Math.max(otherSegment.py1, otherSegment.py2)) {
-            this.xi = this.px1;
-            this.yi = this.py1;
-            return _RELATION_.INTERSECTS;
-          }
-          if (this.py2 >= Math.min(otherSegment.py1, otherSegment.py2) && this.py2 <= Math.max(otherSegment.py1, otherSegment.py2)) {
-            this.xi = this.px2;
-            this.yi = this.py2;
-            return _RELATION_.INTERSECTS;
-          }
-          return _RELATION_.SEPARATE;
-        }
-        this.xi = this.px1;
-        this.yi = grad2 * this.xi + int2;
-        if ((this.py1 - this.yi) * (this.yi - this.py2) < -0.00001 || (otherSegment.py1 - this.yi) * (this.yi - otherSegment.py2) < -0.00001) {
-          return _RELATION_.SEPARATE;
-        }
-        if (Math.abs(otherSegment.a) < 0.00001) {
-          if ((otherSegment.px1 - this.xi) * (this.xi - otherSegment.px2) < -0.00001) {
-            return _RELATION_.SEPARATE;
-          }
-          return _RELATION_.INTERSECTS;
-        }
-        return _RELATION_.INTERSECTS;
-      }
-
-      if (grad2 == Number.MAX_VALUE) {
-        this.xi = otherSegment.px1;
-        this.yi = grad1 * this.xi + int1;
-        if ((otherSegment.py1 - this.yi) * (this.yi - otherSegment.py2) < -0.00001 || (this.py1 - this.yi) * (this.yi - this.py2) < -0.00001) {
-          return _RELATION_.SEPARATE;
-        }
-        if (Math.abs(a) < 0.00001) {
-          if ((this.px1 - this.xi) * (this.xi - this.px2) < -0.00001) {
-            return _RELATION_.SEPARATE;
-          }
-          return _RELATION_.INTERSECTS;
-        }
-        return _RELATION_.INTERSECTS;
-      }
-
-      if (grad1 == grad2) {
-        if (int1 != int2) {
-          return _RELATION_.SEPARATE;
-        }
-        if (this.px1 >= Math.min(otherSegment.px1, otherSegment.px2) && this.px1 <= Math.max(otherSegment.py1, otherSegment.py2)) {
-          this.xi = this.px1;
-          this.yi = this.py1;
-          return _RELATION_.INTERSECTS;
-        }
-        if (this.px2 >= Math.min(otherSegment.px1, otherSegment.px2) && this.px2 <= Math.max(otherSegment.px1, otherSegment.px2)) {
-          this.xi = this.px2;
-          this.yi = this.py2;
-          return _RELATION_.INTERSECTS;
-        }
-        return _RELATION_.SEPARATE;
-      }
-
-      this.xi = (int2 - int1) / (grad1 - grad2);
-      this.yi = grad1 * this.xi + int1;
-
-      if ((this.px1 - this.xi) * (this.xi - this.px2) < -0.00001 || (otherSegment.px1 - this.xi) * (this.xi - otherSegment.px2) < -0.00001) {
-        return _RELATION_.SEPARATE;
-      }
-      return _RELATION_.INTERSECTS;
-    }
-  }, {
-    key: 'getLength',
-    value: function getLength() {
-      return this._getLength(this.px1, this.py1, this.px2, this.py2);
-    }
-  }, {
-    key: '_getLength',
-    value: function _getLength(x1, y1, x2, y2) {
-      var dx = x2 - x1;
-      var dy = y2 - y1;
-      return Math.sqrt(dx * dx + dy * dy);
-    }
-  }]);
-
-  return Segment;
-}();
-
-"use strict";
-
-var Line = function (_Drawable4) {
-  _inherits(Line, _Drawable4);
-
-  function Line(x1, y1, x2, y2) {
-    _classCallCheck(this, Line);
-
-    var _this6 = _possibleConstructorReturn(this, (Line.__proto__ || Object.getPrototypeOf(Line)).call(this, ['x1', 'y1', 'x2', 'y2']));
-
-    _this6.x1 = x1;
-    _this6.x2 = x2;
-    _this6.y1 = y1;
-    _this6.y2 = y2;
-    return _this6;
-  }
-
-  _createClass(Line, [{
-    key: 'draw',
-    value: function draw(ctx) {
-      ctx.save();
-      ctx.strokeStyle = this.stroke;
-      ctx.lineWidth = this.strokeWidth;
-      this.drawLine(ctx, this.x1, this.y1, this.x2, this.y2);
-      ctx.restore();
-    }
-  }]);
-
-  return Line;
-}(Drawable);
-
-"use strict";
-
-var LinearPath = function (_Drawable5) {
-  _inherits(LinearPath, _Drawable5);
-
-  function LinearPath(points) {
-    _classCallCheck(this, LinearPath);
-
-    var _this7 = _possibleConstructorReturn(this, (LinearPath.__proto__ || Object.getPrototypeOf(LinearPath)).call(this));
-
-    _this7._points = points;
+    _this7.numSteps = 9;
+    _this7.path = path;
+    _this7._keys = ['C', 'c', 'Q', 'q', 'M', 'm', 'L', 'l', 'A', 'a', 'H', 'h', 'V', 'v', 'S', 's', 'T', 't', 'Z', 'z'];
     return _this7;
   }
 
-  _createClass(LinearPath, [{
-    key: 'setPoint',
-    value: function setPoint(index, x, y) {
-      this._points[index] = [x, y];
-      if (this._canvas) {
-        this._canvas.requestDraw();
-      }
-    }
-  }, {
-    key: 'getPoint',
-    value: function getPoint(index) {
-      if (index > 0 && index < this._points.length) {
-        return this._points[index];
-      }
-      return null;
-    }
-  }, {
-    key: 'draw',
-    value: function draw(ctx) {
-      ctx.save();
-      ctx.strokeStyle = this.stroke;
-      ctx.lineWidth = this.strokeWidth;
-      this.drawLinearPath(ctx, this._points, false);
-      ctx.restore();
-    }
-  }]);
-
-  return LinearPath;
-}(Drawable);
-
-"use strict";
-
-var Path = function (_Drawable6) {
-  _inherits(Path, _Drawable6);
-
-  function Path(path) {
-    _classCallCheck(this, Path);
-
-    var _this8 = _possibleConstructorReturn(this, (Path.__proto__ || Object.getPrototypeOf(Path)).call(this, ['path', 'numSteps']));
-
-    _this8.numSteps = 9;
-    _this8.path = path;
-    _this8._keys = ['C', 'c', 'Q', 'q', 'M', 'm', 'L', 'l', 'A', 'a', 'H', 'h', 'V', 'v', 'S', 's', 'T', 't', 'Z', 'z'];
-    return _this8;
-  }
-
-  _createClass(Path, [{
+  _createClass(RoughPath, [{
     key: 'draw',
     value: function draw(ctx) {
       if (this.path) {
         var path = (this.path || "").replace(/\n/g, " ").replace(/(-)/g, " -").replace(/(-\s)/g, "-").replace("/(\s\s)/g", " ");
 
-        this.gp = new GeomPath(path);
+        this.gp = new RoughGeomPath(path);
         var segments = this.gp.segments || [];
-        // console.log("Segments", segments);
 
         this._position = [0, 0];
         this._bezierReflectionPoint = null;
@@ -1719,7 +1690,7 @@ var Path = function (_Drawable6) {
           var final;
           for (var i = 0; i < 2; i++) {
             ctx.moveTo(this._position[0], this._position[1]);
-            var arcConverter = new ArcConverter([this._position[0], this._position[1]], [x, y], [rx, ry], angle, largeArcFlag ? true : false, sweepFlag ? true : false);
+            var arcConverter = new RoughArcConverter([this._position[0], this._position[1]], [x, y], [rx, ry], angle, largeArcFlag ? true : false, sweepFlag ? true : false);
             var segment = arcConverter.getNextSegment();
             while (segment) {
               final = this._drawBezierTo(ctx, segment.cp1[0], segment.cp1[1], segment.cp2[0], segment.cp2[1], segment.to[0], segment.to[1]);
@@ -1734,65 +1705,24 @@ var Path = function (_Drawable6) {
         }
       }
     }
-
-    // _parse(path, index, currentWord = "", current = {}, segments) {
-    //   if (index >= path.length) {
-    //     if (current && current.key) {
-    //       if (currentWord) {
-    //         current.data.push(currentWord);
-    //       }
-    //       segments.push(current);
-    //       currentWord = "";
-    //       current = {};
-    //     }
-    //     return;
-    //   }
-    //   current.data = current.data || [];
-    //   var c = path.charAt(index);
-    //   if ((!c) || (c == ' ') || (c == ',')) {
-    //     if (currentWord) {
-    //       current.data.push(currentWord);
-    //       currentWord = "";
-    //     }
-    //   } else {
-    //     if (this._keys.indexOf(c) >= 0) {
-    //       if (current && current.key) {
-    //         if (currentWord) {
-    //           current.data.push(currentWord);
-    //         }
-    //         segments.push(current);
-    //         currentWord = "";
-    //         current = {};
-    //       }
-    //       current.key = c;
-    //       current.data = [];
-    //     } else {
-    //       currentWord += c;
-    //     }
-    //   }
-    //   this._parse(path, index + 1, currentWord, current, segments);
-    // }
-
   }]);
 
-  return Path;
-}(Drawable);
+  return RoughPath;
+}(RoughDrawable);
 
-"use strict";
+var RoughPolygon = function (_RoughDrawable7) {
+  _inherits(RoughPolygon, _RoughDrawable7);
 
-var Polygon = function (_Drawable7) {
-  _inherits(Polygon, _Drawable7);
+  function RoughPolygon(points) {
+    _classCallCheck(this, RoughPolygon);
 
-  function Polygon(points) {
-    _classCallCheck(this, Polygon);
+    var _this8 = _possibleConstructorReturn(this, (RoughPolygon.__proto__ || Object.getPrototypeOf(RoughPolygon)).call(this));
 
-    var _this9 = _possibleConstructorReturn(this, (Polygon.__proto__ || Object.getPrototypeOf(Polygon)).call(this));
-
-    _this9._points = points;
-    return _this9;
+    _this8._points = points;
+    return _this8;
   }
 
-  _createClass(Polygon, [{
+  _createClass(RoughPolygon, [{
     key: 'setPoint',
     value: function setPoint(index, x, y) {
       this._points[index] = [x, y];
@@ -1823,8 +1753,6 @@ var Polygon = function (_Drawable7) {
   }, {
     key: '_doFill',
     value: function _doFill(ctx, points) {
-      var _this10 = this;
-
       var fillStyle = this.fillStyle || "hachure";
       switch (fillStyle) {
         case "solid":
@@ -1846,44 +1774,38 @@ var Polygon = function (_Drawable7) {
           }
         default:
           {
-            var _ret2 = function () {
-              var xc = [];
-              var yc = [];
-              points.forEach(function (p) {
-                xc.push(p[0]);
-                yc.push(p[1]);
-              });
-              _this10.hachureFillShape(ctx, xc, yc);
-              return 'break';
-            }();
-
-            if (_ret2 === 'break') break;
+            var xc = [];
+            var yc = [];
+            points.forEach(function (p) {
+              xc.push(p[0]);
+              yc.push(p[1]);
+            });
+            this.hachureFillShape(ctx, xc, yc);
+            break;
           }
       }
     }
   }]);
 
-  return Polygon;
-}(Drawable);
+  return RoughPolygon;
+}(RoughDrawable);
 
-"use strict";
+var RoughRectangle = function (_RoughDrawable8) {
+  _inherits(RoughRectangle, _RoughDrawable8);
 
-var Rectangle = function (_Drawable8) {
-  _inherits(Rectangle, _Drawable8);
+  function RoughRectangle(x, y, width, height) {
+    _classCallCheck(this, RoughRectangle);
 
-  function Rectangle(x, y, width, height) {
-    _classCallCheck(this, Rectangle);
+    var _this9 = _possibleConstructorReturn(this, (RoughRectangle.__proto__ || Object.getPrototypeOf(RoughRectangle)).call(this, ['x', 'y', 'width', 'height']));
 
-    var _this11 = _possibleConstructorReturn(this, (Rectangle.__proto__ || Object.getPrototypeOf(Rectangle)).call(this, ['x', 'y', 'width', 'height']));
-
-    _this11.x = x;
-    _this11.y = y;
-    _this11.width = width;
-    _this11.height = height;
-    return _this11;
+    _this9.x = x;
+    _this9.y = y;
+    _this9.width = width;
+    _this9.height = height;
+    return _this9;
   }
 
-  _createClass(Rectangle, [{
+  _createClass(RoughRectangle, [{
     key: 'draw',
     value: function draw(ctx) {
       var left = this.x;
@@ -1935,10 +1857,8 @@ var Rectangle = function (_Drawable8) {
     }
   }]);
 
-  return Rectangle;
-}(Drawable);
-
-"use strict";
+  return RoughRectangle;
+}(RoughDrawable);
 
 var RoughCanvas = function () {
   function RoughCanvas(canvas, width, height) {
@@ -1970,7 +1890,7 @@ var RoughCanvas = function () {
   _createClass(RoughCanvas, [{
     key: 'add',
     value: function add(drawable) {
-      if (drawable instanceof Drawable) {
+      if (drawable instanceof RoughDrawable) {
         if (drawable.attached) {
           return;
         }
@@ -1984,7 +1904,7 @@ var RoughCanvas = function () {
   }, {
     key: 'remove',
     value: function remove(drawable) {
-      if (drawable instanceof Drawable) {
+      if (drawable instanceof RoughDrawable) {
         if (drawable.attached) {
           this._objects.splice(drawable.z, 1);
           drawable.detach();
@@ -2008,13 +1928,13 @@ var RoughCanvas = function () {
   }, {
     key: 'requestDraw',
     value: function requestDraw() {
-      var _this12 = this;
+      var _this10 = this;
 
       if (!this._drawRequested) {
         this._drawRequested = true;
         window.requestAnimationFrame(function () {
-          _this12._drawRequested = false;
-          _this12._draw();
+          _this10._drawRequested = false;
+          _this10._draw();
         });
       }
     }
@@ -2059,63 +1979,63 @@ var RoughCanvas = function () {
   }, {
     key: 'arc',
     value: function arc(x, y, width, height, start, stop, closed) {
-      var d = new Arc(x, y, width, height, start, stop, closed);
+      var d = new RoughArc(x, y, width, height, start, stop, closed);
       this.add(d);
       return d;
     }
   }, {
     key: 'circle',
     value: function circle(x, y, radius) {
-      var d = new Circle(x, y, radius);
+      var d = new RoughCircle(x, y, radius);
       this.add(d);
       return d;
     }
   }, {
     key: 'ellipse',
     value: function ellipse(x, y, width, height) {
-      var d = new Ellipse(x, y, width, height);
+      var d = new RoughEllipse(x, y, width, height);
       this.add(d);
       return d;
     }
   }, {
     key: 'curve',
     value: function curve(points) {
-      var d = new Curve(points);
+      var d = new RoughCurve(points);
       this.add(d);
       return d;
     }
   }, {
     key: 'line',
     value: function line(x1, y1, x2, y2) {
-      var d = new Line(x1, y1, x2, y2);
+      var d = new RoughLine(x1, y1, x2, y2);
       this.add(d);
       return d;
     }
   }, {
     key: 'rectangle',
     value: function rectangle(x, y, width, height) {
-      var d = new Rectangle(x, y, width, height);
+      var d = new RoughRectangle(x, y, width, height);
       this.add(d);
       return d;
     }
   }, {
     key: 'linearPath',
     value: function linearPath(points) {
-      var d = new LinearPath(points);
+      var d = new RoughLinearPath(points);
       this.add(d);
       return d;
     }
   }, {
     key: 'polygon',
     value: function polygon(points) {
-      var d = new Polygon(points);
+      var d = new RoughPolygon(points);
       this.add(d);
       return d;
     }
   }, {
     key: 'path',
     value: function path(d) {
-      var p = new Path(d);
+      var p = new RoughPath(d);
       this.add(p);
       return p;
     }
@@ -2123,4 +2043,6 @@ var RoughCanvas = function () {
 
   return RoughCanvas;
 }();
+
+exports.RoughCanvas = RoughCanvas;
 //# sourceMappingURL=rough.js.map

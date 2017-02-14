@@ -1,6 +1,6 @@
 import { RoughDrawable } from './drawable';
 import { RoughGeomPath } from './geom/geom-path';
-import { ArcConverter } from './geom/arc-converter';
+import { RoughArcConverter } from './geom/arc-converter';
 
 export class RoughPath extends RoughDrawable {
   constructor(path) {
@@ -325,7 +325,7 @@ export class RoughPath extends RoughDrawable {
         var final;
         for (var i = 0; i < 2; i++) {
           ctx.moveTo(this._position[0], this._position[1]);
-          var arcConverter = new ArcConverter(
+          var arcConverter = new RoughArcConverter(
             [this._position[0], this._position[1]],
             [x, y],
             [rx, ry],

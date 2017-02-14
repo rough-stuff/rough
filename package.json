@@ -25,6 +25,7 @@
     "grunt": "^1.0.1",
     "grunt-babel": "^6.0.0",
     "grunt-contrib-jshint": "^1.1.0",
-    "grunt-contrib-uglify": "^2.1.0"
+    "grunt-contrib-uglify": "^2.1.0",
+    "grunt-rollup": "^1.0.1"
   }
 }
