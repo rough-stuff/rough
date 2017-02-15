@@ -29,7 +29,7 @@ The latest Rough.js release (beta version 0.1): [Download](https://roughjs.com/b
   </tr>
 </table>
 
-[Examples page](https://github.com/pshihn/rough/wiki/Examples)
+[More Examples...](https://github.com/pshihn/rough/wiki/Examples)
 
 ## How to use Rough.js
 
