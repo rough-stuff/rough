@@ -31,6 +31,11 @@ The latest Rough.js release (beta version 0.1): [Download](https://roughjs.com/b
 
 [More Examples...](https://github.com/pshihn/rough/wiki/Examples)
 
+## API
+
+[Rough.js API](https://github.com/pshihn/rough/wiki)
+
+
 ## How to use Rough.js
 
 ### Setup
