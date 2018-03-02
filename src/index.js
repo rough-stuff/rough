@@ -9,7 +9,7 @@ import { RoughPath } from './path';
 import { RoughPolygon } from './polygon';
 import { RoughRectangle } from './rectangle';
 
-export class RoughCanvas {
+export default class RoughCanvas {
   constructor(canvas, width, height) {
     this._canvas = canvas;
     this.width = width || canvas.width;
