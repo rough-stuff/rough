@@ -23,5 +23,8 @@
     "url": "https://github.com/pshihn/rough/issues"
   },
   "homepage": "https://roughjs.com",
-  "devDependencies": {}
+  "devDependencies": {
+    "babel-minify": "^0.3.0",
+    "rollup": "^0.56.3"
+  }
 }
