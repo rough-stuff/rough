@@ -1,7 +1,13 @@
 {
-  "name": "rough",
-  "version": "0.0.1",
-  "description": "Rough.js",
+  "name": "roughjs",
+  "version": "1.0.0",
+  "description": "Create graphics on HTML Canvas with a hand-drawn, sketchy, appearance.",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "rollup src/index.js --o dist/rough.js --f iife  --name \"RoughCanvas\" && npm run minify",
+    "minify": "babel-minify --mangle dist/rough.js >> dist/rough.min.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pshihn/rough.git"
@@ -11,21 +17,11 @@
     "sketchy",
     "hand drawn"
   ],
-  "author": {
-    "name": "Preet Shihn",
-    "url": "https://twitter.com/preetster"
-  },
+  "author": "Preet Shihn <preetshihn@gmail.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/pshihn/rough/issues"
   },
   "homepage": "https://roughjs.com",
-  "devDependencies": {
-    "babel-preset-env": "^1.1.8",
-    "grunt": "^1.0.1",
-    "grunt-babel": "^6.0.0",
-    "grunt-contrib-jshint": "^1.1.0",
-    "grunt-contrib-uglify": "^2.1.0",
-    "grunt-rollup": "^1.0.1"
-  }
+  "devDependencies": {}
 }
