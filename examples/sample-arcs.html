@@ -1,0 +1,23 @@
+<html>
+
+<head>
+  <title>RoughJS arcs example</title>
+  <script src="../dist/rough.min.js"></script>
+</head>
+
+<body>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    (() => {
+      const rough = new RoughCanvas(document.getElementById('canvas'), 800, 800);
+      var arc1 = rough.arc(200, 100, 200, 180, -Math.PI + (Math.PI / 3), -Math.PI / 2, true);
+      arc1.fill = "red";
+      rough.arc(200, 100, 200, 180, -Math.PI, -0.75 * Math.PI, true);
+      var openArc = rough.arc(200, 100, 150, 130, -0.2 * Math.PI, 0.6 * Math.PI, false);
+      openArc.strokeWidth = 10;
+    })();
+  </script>
+</body>
+
+</html>
