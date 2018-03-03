@@ -219,12 +219,12 @@ class RoughRenderer {
       for (let i = 0; i < (len - 1); i++) {
         let o1 = this._line(points[i][0], points[i][1], points[i + 1][0], points[i + 1][1], o, true, false);
         let o2 = this._line(points[i][0], points[i][1], points[i + 1][0], points[i + 1][1], o, true, true);
-        ops.concat(o1, o2);
+        ops = ops.concat(o1, o2);
       }
       if (close) {
         let o1 = this._line(points[len - 1][0], points[len - 1][1], points[0][0], points[0][1], o, true, false);
         let o2 = this._line(points[len - 1][0], points[len - 1][1], points[0][0], points[0][1], o, true, false);
-        ops.concat(o1, o2);
+        ops = ops.concat(o1, o2);
       }
       return { type: 'path', ops };
     } else if (len === 2) {
@@ -238,7 +238,7 @@ class RoughRenderer {
 
   rectangle(x, y, width, height, o) {
     let points = [
-      [x, y], [x + width, y], [x + width, y + height]
+      [x, y], [x + width, y], [x + width, y + height], [x, y + height]
     ];
     return this.polygon(points, o);
   }
@@ -257,6 +257,7 @@ class RoughRenderer {
   }
 
   hachureFillShape(xCoords, yCoords, o) {
+    let ops = [];
     if (xCoords && yCoords && xCoords.length && yCoords.length) {
       let left = xCoords[0];
       let right = xCoords[0];
@@ -268,36 +269,31 @@ class RoughRenderer {
         top = Math.min(top, yCoords[i]);
         bottom = Math.max(bottom, yCoords[i]);
       }
-    }
-    const angle = o.hachureAngle;
-    let gap = o.hachureGap;
-    if (gap < 0) {
-      gap = o.strokeWidth * 4;
-    }
-    gap = Math.max(gap, 0.1);
-    let fweight = o.fillWeight;
-    if (fweight < 0) {
-      fweight = o.strokeWidth / 2;
-    }
+      const angle = o.hachureAngle;
+      let gap = o.hachureGap;
+      if (gap < 0) {
+        gap = o.strokeWidth * 4;
+      }
+      gap = Math.max(gap, 0.1);
 
-    const radPerDeg = Math.PI / 180;
-    const hachureAngle = (angle % 180) * radPerDeg;
-    const cosAngle = Math.cos(hachureAngle);
-    const sinAngle = Math.sin(hachureAngle);
-    const tanAngle = Math.tan(hachureAngle);
+      const radPerDeg = Math.PI / 180;
+      const hachureAngle = (angle % 180) * radPerDeg;
+      const cosAngle = Math.cos(hachureAngle);
+      const sinAngle = Math.sin(hachureAngle);
+      const tanAngle = Math.tan(hachureAngle);
 
-    const it = new RoughHachureIterator(top - 1, bottom + 1, left - 1, right + 1, gap, sinAngle, cosAngle, tanAngle);
-    let rectCoords;
-    const ops = [];
-    while ((rectCoords = it.getNextLine()) != null) {
-      let lines = this._getIntersectingLines(rectCoords, xCoords, yCoords);
-      for (let i = 0; i < lines.length; i++) {
-        if (i < (lines.length - 1)) {
-          let p1 = lines[i];
-          let p2 = lines[i + 1];
-          const o1 = this._line(p1[0], p1[1], p2[0], p2[1], o, true, false);
-          const o2 = this._line(p1[0], p1[1], p2[0], p2[1], o, true, true);
-          ops.concat(o1, o2);
+      const it = new RoughHachureIterator(top - 1, bottom + 1, left - 1, right + 1, gap, sinAngle, cosAngle, tanAngle);
+      let rectCoords;
+      while ((rectCoords = it.getNextLine()) != null) {
+        let lines = this._getIntersectingLines(rectCoords, xCoords, yCoords);
+        for (let i = 0; i < lines.length; i++) {
+          if (i < (lines.length - 1)) {
+            let p1 = lines[i];
+            let p2 = lines[i + 1];
+            const o1 = this._line(p1[0], p1[1], p2[0], p2[1], o, true, false);
+            const o2 = this._line(p1[0], p1[1], p2[0], p2[1], o, true, true);
+            ops = ops.concat(o1, o2);
+          }
         }
       }
     }
@@ -397,7 +393,7 @@ class RoughRenderer {
     } else if (len === 2) {
       let o1 = this._line(points[0][0], points[0][1], points[1][0], points[1][1], o, true, false);
       let o2 = this._line(points[0][0], points[0][1], points[1][0], points[1][1], o, true, true);
-      ops.concat(o1, o2);
+      ops = ops.concat(o1, o2);
     }
     return ops;
   }
@@ -468,7 +464,27 @@ class RoughCanvas {
     return options ? Object.assign({}, this.defaultOptions, options) : this.defaultOptions;
   }
 
-  _draw(ctx, drawing) {
+  _draw(ctx, drawing, o) {
+    ctx.save();
+    ctx.strokeStyle = o.stroke;
+    ctx.lineWidth = o.strokeWidth;
+    this._drawToContext(ctx, drawing);
+    ctx.restore();
+  }
+
+  _fill(ctx, drawing, o) {
+    let fweight = o.fillWeight;
+    if (fweight < 0) {
+      fweight = o.strokeWidth / 2;
+    }
+    ctx.save();
+    ctx.strokeStyle = o.fill;
+    ctx.lineWidth = fweight;
+    this._drawToContext(ctx, drawing);
+    ctx.restore();
+  }
+
+  _drawToContext(ctx, drawing) {
     if (drawing.type === 'path') {
       ctx.beginPath();
       for (let item of drawing.ops) {
@@ -506,12 +522,29 @@ class RoughCanvas {
     let o = this._options(options);
     let lib = await this.lib();
     let drawing = await lib.line(x1, y1, x2, y2, o);
+    this._draw(this.ctx, drawing, o);
+  }
+
+  async rectangle(x, y, width, height, options) {
+    let o = this._options(options);
+    let lib = await this.lib();
+    let drawing = await lib.rectangle(x, y, width, height, o);
     let ctx = this.ctx;
-    ctx.save();
-    ctx.strokeStyle = o.stroke;
-    ctx.lineWidth = o.strokeWidth;
-    this._draw(ctx, drawing);
-    ctx.restore();
+
+    // fill
+    console.log(o.fill);
+    if (o.fill) {
+      if (o.fillStyle === 'solid') {
+
+      } else {
+        let xc = [x, x + width, x + width, x];
+        let yc = [y, y, y + height, y + height];
+        let fillShape = await lib.hachureFillShape(xc, yc, o);
+        this._fill(ctx, fillShape, o);
+      }
+    }
+
+    this._draw(this.ctx, drawing, o);
   }
 
   async arc() {

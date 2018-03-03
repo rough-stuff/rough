@@ -25,7 +25,27 @@ export default class RoughCanvas {
     return options ? Object.assign({}, this.defaultOptions, options) : this.defaultOptions;
   }
 
-  _draw(ctx, drawing) {
+  _draw(ctx, drawing, o) {
+    ctx.save();
+    ctx.strokeStyle = o.stroke;
+    ctx.lineWidth = o.strokeWidth;
+    this._drawToContext(ctx, drawing);
+    ctx.restore();
+  }
+
+  _fill(ctx, drawing, o) {
+    let fweight = o.fillWeight;
+    if (fweight < 0) {
+      fweight = o.strokeWidth / 2;
+    }
+    ctx.save();
+    ctx.strokeStyle = o.fill;
+    ctx.lineWidth = fweight;
+    this._drawToContext(ctx, drawing);
+    ctx.restore();
+  }
+
+  _drawToContext(ctx, drawing) {
     if (drawing.type === 'path') {
       ctx.beginPath();
       for (let item of drawing.ops) {
@@ -63,12 +83,29 @@ export default class RoughCanvas {
     let o = this._options(options);
     let lib = await this.lib();
     let drawing = await lib.line(x1, y1, x2, y2, o);
+    this._draw(this.ctx, drawing, o);
+  }
+
+  async rectangle(x, y, width, height, options) {
+    let o = this._options(options);
+    let lib = await this.lib();
+    let drawing = await lib.rectangle(x, y, width, height, o);
     let ctx = this.ctx;
-    ctx.save();
-    ctx.strokeStyle = o.stroke;
-    ctx.lineWidth = o.strokeWidth;
-    this._draw(ctx, drawing);
-    ctx.restore();
+
+    // fill
+    console.log(o.fill);
+    if (o.fill) {
+      if (o.fillStyle === 'solid') {
+
+      } else {
+        let xc = [x, x + width, x + width, x];
+        let yc = [y, y, y + height, y + height];
+        let fillShape = await lib.hachureFillShape(xc, yc, o);
+        this._fill(ctx, fillShape, o);
+      }
+    }
+
+    this._draw(this.ctx, drawing, o);
   }
 
   async arc() {

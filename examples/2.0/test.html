@@ -12,10 +12,14 @@
     (async () => {
       const rough = new RoughCanvas(document.getElementById('canvas'));
       await rough.line(10, 10, 100, 180);
-      await rough.line(300, 40, 100, 180, {
-        stroke: 'red',
-        strokeWidth: 3,
-        bowing: 60
+      await rough.rectangle(180, 10, 100, 100);
+      await rough.rectangle(180, 130, 100, 100, {
+        fill: 'red',
+        stroke: 'blue',
+        hachureAngle: 60,
+        hachureGap: 10,
+        fillWeight: 5,
+        strokeWidth: 5
       });
     })();
   </script>
