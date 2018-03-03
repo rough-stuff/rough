@@ -11,8 +11,13 @@
   <script>
     (async () => {
       const rough = new RoughCanvas(document.getElementById('canvas'));
-      await rough.line(10, 10, 100, 180);
+      await rough.line(180 + 50, 60, 350, 60);
       await rough.rectangle(180, 10, 100, 100);
+      await rough.rectangle(300, 10, 100, 100, {
+        fill: 'rgba(255,0,0,0.2)',
+        fillStyle: 'solid',
+        roughness: 2
+      });
       await rough.rectangle(180, 130, 100, 100, {
         fill: 'red',
         stroke: 'blue',

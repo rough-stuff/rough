@@ -45,8 +45,15 @@ export default class RoughCanvas {
     ctx.restore();
   }
 
+  _fill(ctx, drawing, o) {
+    ctx.save();
+    ctx.fillStyle = o.fill;
+    this._drawToContext(ctx, drawing, o);
+    ctx.restore();
+  }
+
   _drawToContext(ctx, drawing) {
-    if (drawing.type === 'path') {
+    if (drawing.type === 'path' || drawing.type === 'fillPath') {
       ctx.beginPath();
       for (let item of drawing.ops) {
         const data = item.data;
@@ -58,11 +65,15 @@ export default class RoughCanvas {
             ctx.bezierCurveTo(data[0], data[1], data[2], data[3], data[4], data[5]);
             break;
           case 'lineTo':
-            console.warn("lineTo not implemented yet");
+            ctx.lineTo(data[0], data[1]);
             break;
         }
       }
-      ctx.stroke();
+      if (drawing.type === 'fillPath') {
+        ctx.fill();
+      } else {
+        ctx.stroke();
+      }
     }
   }
 
@@ -94,11 +105,12 @@ export default class RoughCanvas {
 
     // fill
     if (o.fill) {
+      const xc = [x, x + width, x + width, x];
+      const yc = [y, y, y + height, y + height];
       if (o.fillStyle === 'solid') {
-
+        let fillShape = await lib.solidFillShape(xc, yc, o);
+        this._fill(ctx, fillShape, o);
       } else {
-        let xc = [x, x + width, x + width, x];
-        let yc = [y, y, y + height, y + height];
         let fillShape = await lib.hachureFillShape(xc, yc, o);
         this._fillSketch(ctx, fillShape, o);
       }

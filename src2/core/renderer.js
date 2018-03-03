@@ -55,6 +55,21 @@ export class RoughRenderer {
     return { type: 'path', ops: o1.concat(o2) };
   }
 
+  solidFillShape(xCoords, yCoords, o) {
+    let ops = [];
+    if (xCoords && yCoords && xCoords.length && yCoords.length && xCoords.length === yCoords.length) {
+      let offset = o.maxRandomnessOffset || 0;
+      const len = xCoords.length;
+      if (len > 2) {
+        ops.push({ op: 'move', data: [xCoords[0] + this._getOffset(-offset, offset, o), yCoords[0] + this._getOffset(-offset, offset, o)] });
+        for (var i = 1; i < len; i++) {
+          ops.push({ op: 'lineTo', data: [xCoords[i] + this._getOffset(-offset, offset, o), yCoords[i] + this._getOffset(-offset, offset, o)] });
+        }
+      }
+    }
+    return { type: 'fillPath', ops };
+  }
+
   hachureFillShape(xCoords, yCoords, o) {
     let ops = [];
     if (xCoords && yCoords && xCoords.length && yCoords.length) {
