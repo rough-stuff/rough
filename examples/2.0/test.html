@@ -1,0 +1,24 @@
+<html>
+
+<head>
+  <title>RoughJS sample</title>
+  <script src="../../dist/rough.2.0.js"></script>
+</head>
+
+<body>
+  <canvas id="canvas" width="800" height="600"></canvas>
+
+  <script>
+    (async () => {
+      const rough = new RoughCanvas(document.getElementById('canvas'));
+      await rough.line(10, 10, 100, 180);
+      await rough.line(300, 40, 100, 180, {
+        stroke: 'red',
+        strokeWidth: 3,
+        bowing: 60
+      });
+    })();
+  </script>
+</body>
+
+</html>

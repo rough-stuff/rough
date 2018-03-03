@@ -1,7 +1,208 @@
-import { RoughHachureIterator } from './hachure.js';
-import { RoughSegmentRelation, RoughSegment } from './segment.js';
+var RoughCanvas = (function () {
+'use strict';
 
-export class RoughRenderer {
+const RoughSegmentRelation = {
+  LEFT: 0,
+  RIGHT: 1,
+  INTERSECTS: 2,
+  AHEAD: 3,
+  BEHIND: 4,
+  SEPARATE: 5,
+  UNDEFINED: 6
+};
+
+class RoughSegment {
+  constructor(px1, py1, px2, py2) {
+    this.px1 = px1;
+    this.py1 = py1;
+    this.px2 = px2;
+    this.py2 = py2;
+    this.xi = Number.MAX_VALUE;
+    this.yi = Number.MAX_VALUE;
+    this.a = py2 - py1;
+    this.b = px1 - px2;
+    this.c = px2 * py1 - px1 * py2;
+    this._undefined = ((this.a == 0) && (this.b == 0) && (this.c == 0));
+  }
+
+  isUndefined() {
+    return this._undefined;
+  }
+
+  compare(otherSegment) {
+    if (this.isUndefined() || otherSegment.isUndefined()) {
+      return RoughSegmentRelation.UNDEFINED;
+    }
+    var grad1 = Number.MAX_VALUE;
+    var grad2 = Number.MAX_VALUE;
+    var int1 = 0, int2 = 0;
+    var a = this.a, b = this.b, c = this.c;
+
+    if (Math.abs(b) > 0.00001) {
+      grad1 = -a / b;
+      int1 = -c / b;
+    }
+    if (Math.abs(otherSegment.b) > 0.00001) {
+      grad2 = -otherSegment.a / otherSegment.b;
+      int2 = -otherSegment.c / otherSegment.b;
+    }
+
+    if (grad1 == Number.MAX_VALUE) {
+      if (grad2 == Number.MAX_VALUE) {
+        if ((-c / a) != (-otherSegment.c / otherSegment.a)) {
+          return RoughSegmentRelation.SEPARATE;
+        }
+        if ((this.py1 >= Math.min(otherSegment.py1, otherSegment.py2)) && (this.py1 <= Math.max(otherSegment.py1, otherSegment.py2))) {
+          this.xi = this.px1;
+          this.yi = this.py1;
+          return RoughSegmentRelation.INTERSECTS;
+        }
+        if ((this.py2 >= Math.min(otherSegment.py1, otherSegment.py2)) && (this.py2 <= Math.max(otherSegment.py1, otherSegment.py2))) {
+          this.xi = this.px2;
+          this.yi = this.py2;
+          return RoughSegmentRelation.INTERSECTS;
+        }
+        return RoughSegmentRelation.SEPARATE;
+      }
+      this.xi = this.px1;
+      this.yi = (grad2 * this.xi + int2);
+      if (((this.py1 - this.yi) * (this.yi - this.py2) < -0.00001) || ((otherSegment.py1 - this.yi) * (this.yi - otherSegment.py2) < -0.00001)) {
+        return RoughSegmentRelation.SEPARATE;
+      }
+      if (Math.abs(otherSegment.a) < 0.00001) {
+        if ((otherSegment.px1 - this.xi) * (this.xi - otherSegment.px2) < -0.00001) {
+          return RoughSegmentRelation.SEPARATE;
+        }
+        return RoughSegmentRelation.INTERSECTS;
+      }
+      return RoughSegmentRelation.INTERSECTS;
+    }
+
+    if (grad2 == Number.MAX_VALUE) {
+      this.xi = otherSegment.px1;
+      this.yi = grad1 * this.xi + int1;
+      if (((otherSegment.py1 - this.yi) * (this.yi - otherSegment.py2) < -0.00001) || ((this.py1 - this.yi) * (this.yi - this.py2) < -0.00001)) {
+        return RoughSegmentRelation.SEPARATE;
+      }
+      if (Math.abs(a) < 0.00001) {
+        if ((this.px1 - this.xi) * (this.xi - this.px2) < -0.00001) {
+          return RoughSegmentRelation.SEPARATE;
+        }
+        return RoughSegmentRelation.INTERSECTS;
+      }
+      return RoughSegmentRelation.INTERSECTS;
+    }
+
+    if (grad1 == grad2) {
+      if (int1 != int2) {
+        return RoughSegmentRelation.SEPARATE;
+      }
+      if ((this.px1 >= Math.min(otherSegment.px1, otherSegment.px2)) && (this.px1 <= Math.max(otherSegment.py1, otherSegment.py2))) {
+        this.xi = this.px1;
+        this.yi = this.py1;
+        return RoughSegmentRelation.INTERSECTS;
+      }
+      if ((this.px2 >= Math.min(otherSegment.px1, otherSegment.px2)) && (this.px2 <= Math.max(otherSegment.px1, otherSegment.px2))) {
+        this.xi = this.px2;
+        this.yi = this.py2;
+        return RoughSegmentRelation.INTERSECTS;
+      }
+      return RoughSegmentRelation.SEPARATE;
+    }
+
+    this.xi = ((int2 - int1) / (grad1 - grad2));
+    this.yi = (grad1 * this.xi + int1);
+
+    if (((this.px1 - this.xi) * (this.xi - this.px2) < -0.00001) || ((otherSegment.px1 - this.xi) * (this.xi - otherSegment.px2) < -0.00001)) {
+      return RoughSegmentRelation.SEPARATE;
+    }
+    return RoughSegmentRelation.INTERSECTS;
+  }
+
+  getLength() {
+    return this._getLength(this.px1, this.py1, this.px2, this.py2);
+  }
+
+  _getLength(x1, y1, x2, y2) {
+    var dx = x2 - x1;
+    var dy = y2 - y1;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+}
+
+class RoughHachureIterator {
+  constructor(top, bottom, left, right, gap, sinAngle, cosAngle, tanAngle) {
+    this.top = top;
+    this.bottom = bottom;
+    this.left = left;
+    this.right = right;
+    this.gap = gap;
+    this.sinAngle = sinAngle;
+    this.tanAngle = tanAngle;
+
+    if (Math.abs(sinAngle) < 0.0001) {
+      this.pos = left + gap;
+    } else if (Math.abs(sinAngle) > 0.9999) {
+      this.pos = top + gap;
+    } else {
+      this.deltaX = (bottom - top) * Math.abs(tanAngle);
+      this.pos = left - Math.abs(this.deltaX);
+      this.hGap = Math.abs(gap / cosAngle);
+      this.sLeft = new RoughSegment(left, bottom, left, top);
+      this.sRight = new RoughSegment(right, bottom, right, top);
+    }
+  }
+
+  getNextLine() {
+    if (Math.abs(this.sinAngle) < 0.0001) {
+      if (this.pos < this.right) {
+        let line = [this.pos, this.top, this.pos, this.bottom];
+        this.pos += this.gap;
+        return line;
+      }
+    } else if (Math.abs(this.sinAngle) > 0.9999) {
+      if (this.pos < this.bottom) {
+        let line = [this.left, this.pos, this.right, this.pos];
+        this.pos += this.gap;
+        return line;
+      }
+    } else {
+      let xLower = this.pos - this.deltaX / 2;
+      let xUpper = this.pos + this.deltaX / 2;
+      let yLower = this.bottom;
+      let yUpper = this.top;
+      if (this.pos < (this.right + this.deltaX)) {
+        while (((xLower < this.left) && (xUpper < this.left)) || ((xLower > this.right) && (xUpper > this.right))) {
+          this.pos += this.hGap;
+          xLower = this.pos - this.deltaX / 2;
+          xUpper = this.pos + this.deltaX / 2;
+          if (this.pos > (this.right + this.deltaX)) {
+            return null;
+          }
+        }
+        let s = new RoughSegment(xLower, yLower, xUpper, yUpper);
+        if (s.compare(this.sLeft) == RoughSegmentRelation.INTERSECTS) {
+          xLower = s.xi;
+          yLower = s.yi;
+        }
+        if (s.compare(this.sRight) == RoughSegmentRelation.INTERSECTS) {
+          xUpper = s.xi;
+          yUpper = s.yi;
+        }
+        if (this.tanAngle > 0) {
+          xLower = this.right - (xLower - this.left);
+          xUpper = this.right - (xUpper - this.left);
+        }
+        let line = [xLower, yLower, xUpper, yUpper];
+        this.pos += this.hGap;
+        return line;
+      }
+    }
+    return null;
+  }
+}
+
+class RoughRenderer {
   line(x1, y1, x2, y2, o) {
     let o1 = this._line(x1, y1, x2, y2, o, true, false);
     let o2 = this._line(x1, y1, x2, y2, o, true, true);
@@ -118,7 +319,7 @@ export class RoughRenderer {
     const halfOffset = offset / 2;
     const divergePoint = 0.2 + Math.random() * 0.2;
     let midDispX = o.bowing * o.maxRandomnessOffset * (y2 - y1) / 200;
-    let midDispY = o.bowing * o.maxRandomnessOffset * (x1, x2) / 200;
+    let midDispY = o.bowing * o.maxRandomnessOffset * (x2) / 200;
     midDispX = this._getOffset(-midDispX, midDispX, o);
     midDispY = this._getOffset(-midDispY, midDispY, o);
     let ops = [];
@@ -183,7 +384,7 @@ export class RoughRenderer {
       if (closePoint && closePoint.length === 2) {
         let ro = o.maxRandomnessOffset;
         // TODO: more roughness here?
-        ops.push({ ops: 'lineTo', data: [closePoint[0] + this._getOffset(-ro, ro, o), closePoint[1] + + this._getOffset(-ro, ro, o)] })
+        ops.push({ ops: 'lineTo', data: [closePoint[0] + this._getOffset(-ro, ro, o), closePoint[1] + + this._getOffset(-ro, ro, o)] });
       }
     } else if (len === 3) {
       ops.push({ op: 'move', data: [points[1][0], points[1][1]] });
@@ -241,3 +442,83 @@ export class RoughRenderer {
     return intersections;
   }
 }
+
+class RoughCanvas {
+  constructor(canvas, useWorker) {
+    this.canvas = canvas;
+    this.ctx = this.canvas.getContext("2d");
+    this.useWorker = useWorker;
+    this.defaultOptions = {
+      maxRandomnessOffset: 2,
+      roughness: 1,
+      bowing: 1,
+      stroke: '#000',
+      strokeWidth: 1,
+      curveTightness: 0,
+      curveStepCount: 9,
+      fill: null,
+      fillStyle: 'hachure',
+      fillWeight: -1,
+      hachureAngle: -41,
+      hachureGap: -1
+    };
+  }
+
+  _options(options) {
+    return options ? Object.assign({}, this.defaultOptions, options) : this.defaultOptions;
+  }
+
+  _draw(ctx, drawing) {
+    if (drawing.type === 'path') {
+      ctx.beginPath();
+      for (let item of drawing.ops) {
+        const data = item.data;
+        switch (item.op) {
+          case 'move':
+            ctx.moveTo(data[0], data[1]);
+            break;
+          case 'bcurveTo':
+            ctx.bezierCurveTo(data[0], data[1], data[2], data[3], data[4], data[5]);
+            break;
+          case 'lineTo':
+            console.warn("lineTo not implemented yet");
+            break;
+        }
+      }
+      ctx.stroke();
+    }
+  }
+
+  async lib() {
+    if (!this._renderer) {
+      if (this.useWorker) {
+        // let Renderer = workly.proxy(RoughRenderer);
+        // this._renderer = await new Renderer();
+        this._renderer = new RoughRenderer();
+      } else {
+        this._renderer = new RoughRenderer();
+      }
+    }
+    return this._renderer;
+  }
+
+  async line(x1, y1, x2, y2, options) {
+    let o = this._options(options);
+    let lib = await this.lib();
+    let drawing = await lib.line(x1, y1, x2, y2, o);
+    let ctx = this.ctx;
+    ctx.save();
+    ctx.strokeStyle = o.stroke;
+    ctx.lineWidth = o.strokeWidth;
+    this._draw(ctx, drawing);
+    ctx.restore();
+  }
+
+  async arc() {
+    // TODO: 
+  }
+}
+
+return RoughCanvas;
+
+}());
