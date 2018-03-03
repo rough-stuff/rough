@@ -26,5 +26,8 @@
   "devDependencies": {
     "babel-minify": "^0.3.0",
     "rollup": "^0.56.3"
+  },
+  "dependencies": {
+    "workly": "^0.1.1"
   }
 }
