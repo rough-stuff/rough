@@ -472,7 +472,7 @@ class RoughCanvas {
     ctx.restore();
   }
 
-  _fill(ctx, drawing, o) {
+  _fillSketch(ctx, drawing, o) {
     let fweight = o.fillWeight;
     if (fweight < 0) {
       fweight = o.strokeWidth / 2;
@@ -532,7 +532,6 @@ class RoughCanvas {
     let ctx = this.ctx;
 
     // fill
-    console.log(o.fill);
     if (o.fill) {
       if (o.fillStyle === 'solid') {
 
@@ -540,7 +539,7 @@ class RoughCanvas {
         let xc = [x, x + width, x + width, x];
         let yc = [y, y, y + height, y + height];
         let fillShape = await lib.hachureFillShape(xc, yc, o);
-        this._fill(ctx, fillShape, o);
+        this._fillSketch(ctx, fillShape, o);
       }
     }
 
