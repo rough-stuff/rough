@@ -244,8 +244,6 @@ class RoughRenderer {
   }
 
   ellipse(x, y, width, height, o) {
-    width = Math.max(width > 10 ? width - 4 : width - 1, 1);
-    height = Math.max(height > 10 ? height - 4 : height - 1, 1);
     const increment = (Math.PI / 2) / o.curveStepCount;
     let rx = Math.abs(width / 2);
     let ry = Math.abs(height / 2);
@@ -378,7 +376,7 @@ class RoughRenderer {
   }
 
   _curve(points, closePoint, o) {
-    const len = points.len;
+    const len = points.length;
     let ops = [];
     if (len > 3) {
       const b = [];
@@ -475,6 +473,59 @@ class RoughCanvas {
     };
   }
 
+  async lib() {
+    if (!this._renderer) {
+      if (this.useWorker) {
+        // let Renderer = workly.proxy(RoughRenderer);
+        // this._renderer = await new Renderer();
+        this._renderer = new RoughRenderer();
+      } else {
+        this._renderer = new RoughRenderer();
+      }
+    }
+    return this._renderer;
+  }
+
+  async line(x1, y1, x2, y2, options) {
+    let o = this._options(options);
+    let lib = await this.lib();
+    let drawing = await lib.line(x1, y1, x2, y2, o);
+    this._draw(this.ctx, drawing, o);
+  }
+
+  async rectangle(x, y, width, height, options) {
+    let o = this._options(options);
+    let lib = await this.lib();
+    let drawing = await lib.rectangle(x, y, width, height, o);
+
+    // fill
+    if (o.fill) {
+      let ctx = this.ctx;
+      const xc = [x, x + width, x + width, x];
+      const yc = [y, y, y + height, y + height];
+      if (o.fillStyle === 'solid') {
+        let fillShape = await lib.solidFillShape(xc, yc, o);
+        this._fill(ctx, fillShape, o);
+      } else {
+        let fillShape = await lib.hachureFillShape(xc, yc, o);
+        this._fillSketch(ctx, fillShape, o);
+      }
+    }
+
+    this._draw(this.ctx, drawing, o);
+  }
+
+  async ellipse(x, y, width, height, options) {
+    let o = this._options(options);
+    let lib = await this.lib();
+    let drawing = await lib.ellipse(x, y, width, height, o);
+    this._draw(this.ctx, drawing, o);
+  }
+
+  async arc() {
+    // TODO: 
+  }
+
   _options(options) {
     return options ? Object.assign({}, this.defaultOptions, options) : this.defaultOptions;
   }
@@ -529,52 +580,6 @@ class RoughCanvas {
         ctx.stroke();
       }
     }
-  }
-
-  async lib() {
-    if (!this._renderer) {
-      if (this.useWorker) {
-        // let Renderer = workly.proxy(RoughRenderer);
-        // this._renderer = await new Renderer();
-        this._renderer = new RoughRenderer();
-      } else {
-        this._renderer = new RoughRenderer();
-      }
-    }
-    return this._renderer;
-  }
-
-  async line(x1, y1, x2, y2, options) {
-    let o = this._options(options);
-    let lib = await this.lib();
-    let drawing = await lib.line(x1, y1, x2, y2, o);
-    this._draw(this.ctx, drawing, o);
-  }
-
-  async rectangle(x, y, width, height, options) {
-    let o = this._options(options);
-    let lib = await this.lib();
-    let drawing = await lib.rectangle(x, y, width, height, o);
-    let ctx = this.ctx;
-
-    // fill
-    if (o.fill) {
-      const xc = [x, x + width, x + width, x];
-      const yc = [y, y, y + height, y + height];
-      if (o.fillStyle === 'solid') {
-        let fillShape = await lib.solidFillShape(xc, yc, o);
-        this._fill(ctx, fillShape, o);
-      } else {
-        let fillShape = await lib.hachureFillShape(xc, yc, o);
-        this._fillSketch(ctx, fillShape, o);
-      }
-    }
-
-    this._draw(this.ctx, drawing, o);
-  }
-
-  async arc() {
-    // TODO: 
   }
 }
 

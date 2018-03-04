@@ -43,8 +43,6 @@ export class RoughRenderer {
   }
 
   ellipse(x, y, width, height, o) {
-    width = Math.max(width > 10 ? width - 4 : width - 1, 1);
-    height = Math.max(height > 10 ? height - 4 : height - 1, 1);
     const increment = (Math.PI / 2) / o.curveStepCount;
     let rx = Math.abs(width / 2);
     let ry = Math.abs(height / 2);
@@ -177,7 +175,7 @@ export class RoughRenderer {
   }
 
   _curve(points, closePoint, o) {
-    const len = points.len;
+    const len = points.length;
     let ops = [];
     if (len > 3) {
       const b = [];
