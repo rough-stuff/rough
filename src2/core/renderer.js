@@ -22,7 +22,7 @@ export class RoughRenderer {
       }
       if (close) {
         let o1 = this._line(points[len - 1][0], points[len - 1][1], points[0][0], points[0][1], o, true, false);
-        let o2 = this._line(points[len - 1][0], points[len - 1][1], points[0][0], points[0][1], o, true, false);
+        let o2 = this._line(points[len - 1][0], points[len - 1][1], points[0][0], points[0][1], o, true, true);
         ops = ops.concat(o1, o2);
       }
       return { type: 'path', ops };
@@ -51,6 +51,73 @@ export class RoughRenderer {
     let o1 = this._ellipse(increment, x, y, rx, ry, 1, increment * this._getOffset(0.1, this._getOffset(0.4, 1, o), o), o);
     let o2 = this._ellipse(increment, x, y, rx, ry, 1.5, 0, o);
     return { type: 'path', ops: o1.concat(o2) };
+  }
+
+  arc(x, y, width, height, start, stop, closed, roughClosure, o) {
+    let cx = x;
+    let cy = y;
+    let rx = Math.abs(width / 2);
+    let ry = Math.abs(height / 2);
+    rx += this._getOffset(-rx * 0.01, rx * 0.01, o);
+    ry += this._getOffset(-ry * 0.01, ry * 0.01, o);
+    let strt = start;
+    let stp = stop;
+    while (strt < 0) {
+      strt += Math.PI * 2;
+      stp += Math.PI * 2;
+    }
+    if ((stp - strt) > (Math.PI * 2)) {
+      strt = 0;
+      stp = Math.PI * 2;
+    }
+    let ellipseInc = (Math.PI * 2) / o.curveStepCount;
+    let arcInc = Math.min(ellipseInc / 2, (stp - strt) / 2);
+    let o1 = this._arc(arcInc, cx, cy, rx, ry, strt, stp, 1, o);
+    let o2 = this._arc(arcInc, cx, cy, rx, ry, strt, stp, 1.5, o);
+    let ops = o1.concat(o2);
+    if (closed) {
+      if (roughClosure) {
+        ops = ops.concat(this._line(cx, cy, cx + rx * Math.cos(strt), cy + ry * Math.sin(strt), o, true, false));
+        ops = ops.concat(this._line(cx, cy, cx + rx * Math.cos(strt), cy + ry * Math.sin(strt), o, true, true));
+        ops = ops.concat(this._line(cx, cy, cx + rx * Math.cos(stp), cy + ry * Math.sin(stp), o, true, false));
+        ops = ops.concat(this._line(cx, cy, cx + rx * Math.cos(stp), cy + ry * Math.sin(stp), o, true, true));
+      } else {
+        ops.push({ op: 'lineTo', data: [cx, cy] });
+        ops.push({ op: 'lineTo', data: [cx + rx * Math.cos(strt), cy + ry * Math.sin(strt)] });
+      }
+    }
+    return { type: 'path', ops };
+  }
+
+  hachureFillArc(x, y, width, height, start, stop, o) {
+    let cx = x;
+    let cy = y;
+    let rx = Math.abs(width / 2);
+    let ry = Math.abs(height / 2);
+    rx += this._getOffset(-rx * 0.01, rx * 0.01, o);
+    ry += this._getOffset(-ry * 0.01, ry * 0.01, o);
+    let strt = start;
+    let stp = stop;
+    while (strt < 0) {
+      strt += Math.PI * 2;
+      stp += Math.PI * 2;
+    }
+    if ((stp - strt) > (Math.PI * 2)) {
+      strt = 0;
+      stp = Math.PI * 2;
+    }
+    let increment = (stp - strt) / o.curveStepCount;
+    let offset = 1;
+    let xc = [], yc = [];
+    for (let angle = strt; angle <= stp; angle = angle + increment) {
+      xc.push(cx + rx * Math.cos(angle));
+      yc.push(cy + ry * Math.sin(angle));
+    }
+    xc.push(cx + rx * Math.cos(stp));
+    yc.push(cy + ry * Math.sin(stp));
+    xc.push(cx);
+    yc.push(cy);
+    return this.hachureFillShape(xc, yc, o);
   }
 
   solidFillShape(xCoords, yCoords, o) {
@@ -282,6 +349,30 @@ export class RoughRenderer {
     points.push([
       this._getOffset(-offset, offset, o) + cx + 0.9 * rx * Math.cos(radOffset + overlap * 0.5),
       this._getOffset(-offset, offset, o) + cy + 0.9 * ry * Math.sin(radOffset + overlap * 0.5)
+    ]);
+    return this._curve(points, null, o);
+  }
+
+  _arc(increment, cx, cy, rx, ry, strt, stp, offset, o) {
+    const radOffset = strt + this._getOffset(-0.1, 0.1, o);
+    const points = [];
+    points.push([
+      this._getOffset(-offset, offset, o) + cx + 0.9 * rx * Math.cos(radOffset - increment),
+      this._getOffset(-offset, offset, o) + cy + 0.9 * ry * Math.sin(radOffset - increment)
+    ]);
+    for (let angle = radOffset; angle <= stp; angle = angle + increment) {
+      points.push([
+        this._getOffset(-offset, offset, o) + cx + rx * Math.cos(angle),
+        this._getOffset(-offset, offset, o) + cy + ry * Math.sin(angle)
+      ]);
+    }
+    points.push([
+      cx + rx * Math.cos(stp),
+      cy + ry * Math.sin(stp)
+    ]);
+    points.push([
+      cx + rx * Math.cos(stp),
+      cy + ry * Math.sin(stp)
     ]);
     return this._curve(points, null, o);
   }

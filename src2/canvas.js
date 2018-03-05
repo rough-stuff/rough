@@ -108,7 +108,23 @@ export default class RoughCanvas {
     this._draw(this.ctx, drawing, o);
   }
 
-  async arc() {
+  async arc(x, y, width, height, start, stop, closed, options) {
+    let o = this._options(options);
+    let lib = await this.lib();
+    if (closed && o.fill) {
+      if (o.fillStyle === 'solid') {
+        let fillShape = await lib.arc(x, y, width, height, start, stop, true, false, o);
+        this._fill(this.ctx, fillShape, o);
+      } else {
+        let fillShape = await lib.hachureFillArc(x, y, width, height, start, stop, o);
+        this._fillSketch(this.ctx, fillShape, o);
+      }
+    }
+    let drawing = await lib.arc(x, y, width, height, start, stop, closed, true, o);
+    this._draw(this.ctx, drawing, o);
+  }
+
+  curve(points) {
     // TODO: 
   }
 

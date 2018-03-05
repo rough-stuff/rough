@@ -55,6 +55,17 @@
         hachureAngle: 65,
         fill: 'rgba(0,0,255,0.6)'
       });
+
+      await rough.arc(350, 200, 200, 180, Math.PI, Math.PI * 1.6);
+      await rough.arc(350, 300, 200, 180, Math.PI, Math.PI * 1.6, true);
+      await rough.arc(350, 300, 200, 180, 0, Math.PI / 2, true, {
+        stroke: 'red', strokeWidth: 4,
+        fill: 'rgba(255,255,0,0.4)', fillStyle: 'solid'
+      });
+      await rough.arc(350, 300, 200, 180, Math.PI / 2, Math.PI, true, {
+        stroke: 'blue', strokeWidth: 2,
+        fill: 'rgba(255,0,255,0.4)'
+      });
     })();
   </script>
 </body>
