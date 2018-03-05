@@ -42,6 +42,12 @@ export class RoughRenderer {
     return this.polygon(points, o);
   }
 
+  curve(points, o) {
+    let o1 = this._curveWithOffset(points, 1 * (1 + o.roughness * 0.2), o);
+    let o2 = this._curveWithOffset(points, 1.5 * (1 + o.roughness * 0.22), o);
+    return { type: 'path', ops: o1.concat(o2) };
+  }
+
   ellipse(x, y, width, height, o) {
     const increment = (Math.PI * 2) / o.curveStepCount;
     let rx = Math.abs(width / 2);
@@ -351,6 +357,31 @@ export class RoughRenderer {
       this._getOffset(-offset, offset, o) + cy + 0.9 * ry * Math.sin(radOffset + overlap * 0.5)
     ]);
     return this._curve(points, null, o);
+  }
+
+  _curveWithOffset(points, offset, o) {
+    const ps = [];
+    ps.push([
+      points[0][0] + this._getOffset(-offset, offset, o),
+      points[0][1] + this._getOffset(-offset, offset, o),
+    ]);
+    ps.push([
+      points[0][0] + this._getOffset(-offset, offset, o),
+      points[0][1] + this._getOffset(-offset, offset, o),
+    ]);
+    for (let i = 1; i < points.length; i++) {
+      ps.push([
+        points[i][0] + this._getOffset(-offset, offset, o),
+        points[i][1] + this._getOffset(-offset, offset, o),
+      ]);
+      if (i === (points.length - 1)) {
+        ps.push([
+          points[i][0] + this._getOffset(-offset, offset, o),
+          points[i][1] + this._getOffset(-offset, offset, o),
+        ]);
+      }
+    }
+    return this._curve(ps, null, o);
   }
 
   _arc(increment, cx, cy, rx, ry, strt, stp, offset, o) {

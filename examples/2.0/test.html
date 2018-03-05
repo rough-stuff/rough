@@ -66,6 +66,19 @@
         stroke: 'blue', strokeWidth: 2,
         fill: 'rgba(255,0,255,0.4)'
       });
+
+      // draw sine curve
+      let points = [];
+      for (let i = 0; i < 20; i++) {
+        // 4pi - 400px
+        let x = (400 / 20) * i + 10;
+        let xdeg = (Math.PI / 100) * x;
+        let y = Math.round(Math.sin(xdeg) * 90) + 500;
+        points.push([x, y]);
+      }
+      await rough.curve(points, {
+        roughness: 1.2, stroke: 'red', strokeWidth: 3
+      });
     })();
   </script>
 </body>

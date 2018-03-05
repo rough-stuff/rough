@@ -124,9 +124,14 @@ export default class RoughCanvas {
     this._draw(this.ctx, drawing, o);
   }
 
-  curve(points) {
-    // TODO: 
+  async curve(points, options) {
+    let o = this._options(options);
+    let lib = await this.lib();
+    let drawing = await lib.curve(points, o);
+    this._draw(this.ctx, drawing, o);
   }
+
+  // private
 
   _options(options) {
     return options ? Object.assign({}, this.defaultOptions, options) : this.defaultOptions;
