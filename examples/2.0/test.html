@@ -40,6 +40,21 @@
         stroke: 'red', strokeWidth: 2,
         fill: 'rgba(0,255,0,0.3)', fillStyle: 'solid'
       });
+
+      await rough.linearPath([[690, 10], [790, 20], [750, 120], [690, 100]], {
+        roughness: 0.7,
+        stroke: 'red', strokeWidth: 4
+      });
+      await rough.polygon([[690, 130], [790, 140], [750, 240], [690, 220]]);
+      await rough.polygon([[690, 250], [790, 260], [750, 360], [690, 340]], {
+        stroke: 'red', strokeWidth: 4,
+        fill: 'rgba(0,0,255,0.2)', fillStyle: 'solid'
+      });
+      await rough.polygon([[690, 370], [790, 385], [750, 480], [690, 460]], {
+        stroke: 'red',
+        hachureAngle: 65,
+        fill: 'rgba(0,0,255,0.6)'
+      });
     })();
   </script>
 </body>

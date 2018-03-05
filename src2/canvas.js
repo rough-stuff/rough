@@ -80,6 +80,34 @@ export default class RoughCanvas {
     return await this.ellipse(x, y, radius, radius, options);
   }
 
+  async linearPath(points, options) {
+    let o = this._options(options);
+    let lib = await this.lib();
+    let drawing = await lib.linearPath(points, false, o);
+    this._draw(this.ctx, drawing, o);
+  }
+
+  async polygon(points, options) {
+    let o = this._options(options);
+    let lib = await this.lib();
+    if (o.fill) {
+      let xc = [], yc = [];
+      for (let p of points) {
+        xc.push(p[0]);
+        yc.push(p[1]);
+      }
+      if (o.fillStyle === 'solid') {
+        let fillShape = await lib.solidFillShape(xc, yc, o);
+        this._fill(this.ctx, fillShape, o);
+      } else {
+        let fillShape = await lib.hachureFillShape(xc, yc, o);
+        this._fillSketch(this.ctx, fillShape, o);
+      }
+    }
+    let drawing = await lib.linearPath(points, true, o);
+    this._draw(this.ctx, drawing, o);
+  }
+
   async arc() {
     // TODO: 
   }
