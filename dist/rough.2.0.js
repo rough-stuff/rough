@@ -576,6 +576,10 @@ class RoughCanvas {
     this._draw(this.ctx, drawing, o);
   }
 
+  async circle(x, y, radius, options) {
+    return await this.ellipse(x, y, radius, radius, options);
+  }
+
   async arc() {
     // TODO: 
   }
