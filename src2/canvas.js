@@ -44,9 +44,6 @@ export default class RoughCanvas {
   async rectangle(x, y, width, height, options) {
     let o = this._options(options);
     let lib = await this.lib();
-    let drawing = await lib.rectangle(x, y, width, height, o);
-
-    // fill
     if (o.fill) {
       let ctx = this.ctx;
       const xc = [x, x + width, x + width, x];
@@ -59,13 +56,22 @@ export default class RoughCanvas {
         this._fillSketch(ctx, fillShape, o);
       }
     }
-
+    let drawing = await lib.rectangle(x, y, width, height, o);
     this._draw(this.ctx, drawing, o);
   }
 
   async ellipse(x, y, width, height, options) {
     let o = this._options(options);
     let lib = await this.lib();
+    if (o.fill) {
+      if (o.fillStyle === 'solid') {
+        let fillShape = await lib.ellipse(x, y, width, height, o);
+        this._fill(this.ctx, fillShape, o);
+      } else {
+        let fillShape = await lib.hachureFillEllipse(x, y, width, height, o);
+        this._fillSketch(this.ctx, fillShape, o);
+      }
+    }
     let drawing = await lib.ellipse(x, y, width, height, o);
     this._draw(this.ctx, drawing, o);
   }
@@ -101,6 +107,7 @@ export default class RoughCanvas {
   _fill(ctx, drawing, o) {
     ctx.save();
     ctx.fillStyle = o.fill;
+    drawing.type = 'fillPath';
     this._drawToContext(ctx, drawing, o);
     ctx.restore();
   }

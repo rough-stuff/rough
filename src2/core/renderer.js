@@ -43,7 +43,7 @@ export class RoughRenderer {
   }
 
   ellipse(x, y, width, height, o) {
-    const increment = (Math.PI / 2) / o.curveStepCount;
+    const increment = (Math.PI * 2) / o.curveStepCount;
     let rx = Math.abs(width / 2);
     let ry = Math.abs(height / 2);
     rx += this._getOffset(-rx * 0.05, rx * 0.05, o);
@@ -112,10 +112,58 @@ export class RoughRenderer {
     return { type: 'path', ops };
   }
 
+  hachureFillEllipse(cx, cy, width, height, o) {
+    let ops = [];
+    let rx = Math.abs(width / 2);
+    let ry = Math.abs(height / 2);
+    rx += this._getOffset(-rx * 0.05, rx * 0.05, o);
+    ry += this._getOffset(-ry * 0.05, ry * 0.05, o);
+    let angle = o.hachureAngle;
+    let gap = o.hachureGap;
+    if (gap <= 0) {
+      gap = o.strokeWidth * 4;
+    }
+    let fweight = o.fillWeight;
+    if (fweight < 0) {
+      fweight = o.strokeWidth / 2;
+    }
+    const radPerDeg = Math.PI / 180;
+    let hachureAngle = (angle % 180) * radPerDeg;
+    let tanAngle = Math.tan(hachureAngle);
+    let aspectRatio = ry / rx;
+    let hyp = Math.sqrt(aspectRatio * tanAngle * aspectRatio * tanAngle + 1);
+    let sinAnglePrime = aspectRatio * tanAngle / hyp;
+    let cosAnglePrime = 1 / hyp;
+    let gapPrime = gap / ((rx * ry / Math.sqrt((ry * cosAnglePrime) * (ry * cosAnglePrime) + (rx * sinAnglePrime) * (rx * sinAnglePrime))) / rx);
+    let halfLen = Math.sqrt((rx * rx) - (cx - rx + gapPrime) * (cx - rx + gapPrime));
+    for (var xPos = cx - rx + gapPrime; xPos < cx + rx; xPos += gapPrime) {
+      halfLen = Math.sqrt((rx * rx) - (cx - xPos) * (cx - xPos));
+      let p1 = this._affine(xPos, cy - halfLen, cx, cy, sinAnglePrime, cosAnglePrime, aspectRatio);
+      let p2 = this._affine(xPos, cy + halfLen, cx, cy, sinAnglePrime, cosAnglePrime, aspectRatio);
+      const o1 = this._line(p1[0], p1[1], p2[0], p2[1], o, true, false);
+      const o2 = this._line(p1[0], p1[1], p2[0], p2[1], o, true, true);
+      ops = ops.concat(o1, o2);
+    }
+    return { type: 'path', ops };
+  }
+
   // privates
 
   _getOffset(min, max, ops) {
     return ops.roughness * ((Math.random() * (max - min)) + min);
+  }
+
+  _affine(x, y, cx, cy, sinAnglePrime, cosAnglePrime, R) {
+    var A = -cx * cosAnglePrime - cy * sinAnglePrime + cx;
+    var B = R * (cx * sinAnglePrime - cy * cosAnglePrime) + cy;
+    var C = cosAnglePrime;
+    var D = sinAnglePrime;
+    var E = -R * sinAnglePrime;
+    var F = R * cosAnglePrime;
+    return [
+      A + C * x + D * y,
+      B + E * x + F * y
+    ];
   }
 
   _line(x1, y1, x2, y2, o, move, overlay) {

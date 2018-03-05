@@ -33,7 +33,13 @@
       });
 
       await rough.ellipse(350, 50, 150, 80);
-      await rough.ellipse(480, 50, 80, 80);
+      await rough.ellipse(480, 50, 80, 80, {
+        stroke: 'red', strokeWidth: 2,
+        fill: 'rgba(0,255,0,0.3)', fillStyle: 'solid'
+      });
+      await rough.ellipse(610, 50, 150, 80, {
+        fill: 'blue'
+      });
     })();
   </script>
 </body>
