@@ -51,11 +51,11 @@ export class RoughHachureIterator {
           }
         }
         let s = new RoughSegment(xLower, yLower, xUpper, yUpper);
-        if (s.compare(this.sLeft) == RoughSegmentRelation.INTERSECTS) {
+        if (s.compare(this.sLeft) == RoughSegmentRelation().INTERSECTS) {
           xLower = s.xi;
           yLower = s.yi;
         }
-        if (s.compare(this.sRight) == RoughSegmentRelation.INTERSECTS) {
+        if (s.compare(this.sRight) == RoughSegmentRelation().INTERSECTS) {
           xUpper = s.xi;
           yUpper = s.yi;
         }

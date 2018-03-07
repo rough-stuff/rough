@@ -413,7 +413,7 @@ export class RoughRenderer {
     var s1 = new RoughSegment(lineCoords[0], lineCoords[1], lineCoords[2], lineCoords[3]);
     for (var i = 0; i < xCoords.length; i++) {
       let s2 = new RoughSegment(xCoords[i], yCoords[i], xCoords[(i + 1) % xCoords.length], yCoords[(i + 1) % xCoords.length]);
-      if (s1.compare(s2) == RoughSegmentRelation.INTERSECTS) {
+      if (s1.compare(s2) == RoughSegmentRelation().INTERSECTS) {
         intersections.push([s1.xi, s1.yi]);
       }
     }
