@@ -10,10 +10,9 @@ export function RoughSegmentRelation() {
   };
 }
 
-const RoughSegmentRelationConst = RoughSegmentRelation();
-
 export class RoughSegment {
   constructor(px1, py1, px2, py2) {
+    this.RoughSegmentRelationConst = RoughSegmentRelation();
     this.px1 = px1;
     this.py1 = py1;
     this.px2 = px2;
@@ -32,7 +31,7 @@ export class RoughSegment {
 
   compare(otherSegment) {
     if (this.isUndefined() || otherSegment.isUndefined()) {
-      return RoughSegmentRelationConst.UNDEFINED;
+      return this.RoughSegmentRelationConst.UNDEFINED;
     }
     var grad1 = Number.MAX_VALUE;
     var grad2 = Number.MAX_VALUE;
@@ -51,73 +50,73 @@ export class RoughSegment {
     if (grad1 == Number.MAX_VALUE) {
       if (grad2 == Number.MAX_VALUE) {
         if ((-c / a) != (-otherSegment.c / otherSegment.a)) {
-          return RoughSegmentRelationConst.SEPARATE;
+          return this.RoughSegmentRelationConst.SEPARATE;
         }
         if ((this.py1 >= Math.min(otherSegment.py1, otherSegment.py2)) && (this.py1 <= Math.max(otherSegment.py1, otherSegment.py2))) {
           this.xi = this.px1;
           this.yi = this.py1;
-          return RoughSegmentRelationConst.INTERSECTS;
+          return this.RoughSegmentRelationConst.INTERSECTS;
         }
         if ((this.py2 >= Math.min(otherSegment.py1, otherSegment.py2)) && (this.py2 <= Math.max(otherSegment.py1, otherSegment.py2))) {
           this.xi = this.px2;
           this.yi = this.py2;
-          return RoughSegmentRelationConst.INTERSECTS;
+          return this.RoughSegmentRelationConst.INTERSECTS;
         }
-        return RoughSegmentRelationConst.SEPARATE;
+        return this.RoughSegmentRelationConst.SEPARATE;
       }
       this.xi = this.px1;
       this.yi = (grad2 * this.xi + int2);
       if (((this.py1 - this.yi) * (this.yi - this.py2) < -0.00001) || ((otherSegment.py1 - this.yi) * (this.yi - otherSegment.py2) < -0.00001)) {
-        return RoughSegmentRelationConst.SEPARATE;
+        return this.RoughSegmentRelationConst.SEPARATE;
       }
       if (Math.abs(otherSegment.a) < 0.00001) {
         if ((otherSegment.px1 - this.xi) * (this.xi - otherSegment.px2) < -0.00001) {
-          return RoughSegmentRelationConst.SEPARATE;
+          return this.RoughSegmentRelationConst.SEPARATE;
         }
-        return RoughSegmentRelationConst.INTERSECTS;
+        return this.RoughSegmentRelationConst.INTERSECTS;
       }
-      return RoughSegmentRelationConst.INTERSECTS;
+      return this.RoughSegmentRelationConst.INTERSECTS;
     }
 
     if (grad2 == Number.MAX_VALUE) {
       this.xi = otherSegment.px1;
       this.yi = grad1 * this.xi + int1;
       if (((otherSegment.py1 - this.yi) * (this.yi - otherSegment.py2) < -0.00001) || ((this.py1 - this.yi) * (this.yi - this.py2) < -0.00001)) {
-        return RoughSegmentRelationConst.SEPARATE;
+        return this.RoughSegmentRelationConst.SEPARATE;
       }
       if (Math.abs(a) < 0.00001) {
         if ((this.px1 - this.xi) * (this.xi - this.px2) < -0.00001) {
-          return RoughSegmentRelationConst.SEPARATE;
+          return this.RoughSegmentRelationConst.SEPARATE;
         }
-        return RoughSegmentRelationConst.INTERSECTS;
+        return this.RoughSegmentRelationConst.INTERSECTS;
       }
-      return RoughSegmentRelationConst.INTERSECTS;
+      return this.RoughSegmentRelationConst.INTERSECTS;
     }
 
     if (grad1 == grad2) {
       if (int1 != int2) {
-        return RoughSegmentRelationConst.SEPARATE;
+        return this.RoughSegmentRelationConst.SEPARATE;
       }
       if ((this.px1 >= Math.min(otherSegment.px1, otherSegment.px2)) && (this.px1 <= Math.max(otherSegment.py1, otherSegment.py2))) {
         this.xi = this.px1;
         this.yi = this.py1;
-        return RoughSegmentRelationConst.INTERSECTS;
+        return this.RoughSegmentRelationConst.INTERSECTS;
       }
       if ((this.px2 >= Math.min(otherSegment.px1, otherSegment.px2)) && (this.px2 <= Math.max(otherSegment.px1, otherSegment.px2))) {
         this.xi = this.px2;
         this.yi = this.py2;
-        return RoughSegmentRelationConst.INTERSECTS;
+        return this.RoughSegmentRelationConst.INTERSECTS;
       }
-      return RoughSegmentRelationConst.SEPARATE;
+      return this.RoughSegmentRelationConst.SEPARATE;
     }
 
     this.xi = ((int2 - int1) / (grad1 - grad2));
     this.yi = (grad1 * this.xi + int1);
 
     if (((this.px1 - this.xi) * (this.xi - this.px2) < -0.00001) || ((otherSegment.px1 - this.xi) * (this.xi - otherSegment.px2) < -0.00001)) {
-      return RoughSegmentRelationConst.SEPARATE;
+      return this.RoughSegmentRelationConst.SEPARATE;
     }
-    return RoughSegmentRelationConst.INTERSECTS;
+    return this.RoughSegmentRelationConst.INTERSECTS;
   }
 
   getLength() {

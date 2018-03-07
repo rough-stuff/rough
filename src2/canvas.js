@@ -24,6 +24,8 @@ export default class RoughCanvas {
   async lib() {
     if (!this._renderer) {
       if (this.useWorker) {
+
+
         // let Renderer = workly.proxy(RoughRenderer);
         // this._renderer = await new Renderer();
         this._renderer = new RoughRenderer();
