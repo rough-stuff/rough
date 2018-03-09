@@ -1,6 +1,6 @@
-import { RoughSegmentRelation, RoughSegment } from './core/segment.js';
-import { RoughHachureIterator } from './core/hachure.js';
-import { RoughRenderer } from './core/renderer.js';
+import { RoughSegmentRelation, RoughSegment } from './segment.js';
+import { RoughHachureIterator } from './hachure.js';
+import { RoughRenderer } from './renderer.js';
 
 self._roughScript = self.document && self.document.currentScript && self.document.currentScript.src;
 
