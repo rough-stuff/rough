@@ -2,6 +2,8 @@ import { RoughSegmentRelation, RoughSegment } from './core/segment.js';
 import { RoughHachureIterator } from './core/hachure.js';
 import { RoughRenderer } from './core/renderer.js';
 
+self._roughScript = self.document && self.document.currentScript && self.document.currentScript.src;
+
 export default class RoughCanvas {
   constructor(canvas, config) {
     this.config = config || {};
@@ -26,15 +28,23 @@ export default class RoughCanvas {
     }
   }
 
+  static createRenderer() {
+    return new RoughRenderer();
+  }
+
   async lib() {
     if (!this._renderer) {
       if (window.workly && (!this.config.noWorker)) {
         const tos = Function.prototype.toString;
         const worklySource = this.config.worklyURL || 'https://cdn.jsdelivr.net/gh/pshihn/workly/dist/workly.min.js';
-        let code = `importScripts('${worklySource}');\n${tos.call(RoughSegmentRelation)}\n${tos.call(RoughSegment)}\n${tos.call(RoughHachureIterator)}\nself._rendererClass=${tos.call(RoughRenderer)}\nworkly.expose(self._rendererClass);`;
-        let ourl = URL.createObjectURL(new Blob([code]));
-        let ProxyRenderer = workly.proxy(ourl);
-        this._renderer = await new ProxyRenderer();
+        const rendererSource = this.config.roughURL || self._roughScript;
+        if (rendererSource && worklySource) {
+          let code = `importScripts('${worklySource}', '${rendererSource}');\nworkly.expose(self.RoughCanvas.createRenderer());`;
+          let ourl = URL.createObjectURL(new Blob([code]));
+          this._renderer = workly.proxy(ourl);
+        } else {
+          this._renderer = new RoughRenderer();
+        }
       } else {
         this._renderer = new RoughRenderer();
       }
