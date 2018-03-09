@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "buildold": "rollup src/index.js --o dist/rough.js --f iife  --name \"RoughCanvas\" && npm run minify",
-    "build": "npm run clean && rollup src2/canvas.js --o dist/rough.js --f iife  --name \"RoughCanvas\" && npm run minify",
+    "build": "npm run clean && rollup src/canvas.js --o dist/rough.js --f iife  --name \"RoughCanvas\" && npm run minify",
     "clean": "rm -rf dist/",
     "minify": "babel-minify --mangle dist/rough.js >> dist/rough.min.js",
     "test": "echo \"Error: no test specified\" && exit 1"
