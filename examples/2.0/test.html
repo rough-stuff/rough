@@ -2,6 +2,7 @@
 
 <head>
   <title>RoughJS sample</title>
+  <script src="https://cdn.jsdelivr.net/gh/pshihn/workly/dist/workly.js"></script>
   <script src="../../dist/rough.2.0.js"></script>
   <style>
     canvas {
@@ -15,7 +16,7 @@
 
   <script>
     (async () => {
-      const rough = new RoughCanvas(document.getElementById('canvas'));
+      const rough = new RoughCanvas(document.getElementById('canvas'), true);
       await rough.line(60, 60, 190, 60);
       await rough.rectangle(10, 10, 100, 100);
       await rough.rectangle(140, 10, 100, 100, {

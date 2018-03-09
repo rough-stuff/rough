@@ -1,3 +1,5 @@
+import { RoughSegmentRelation, RoughSegment } from './core/segment.js';
+import { RoughHachureIterator } from './core/hachure.js';
 import { RoughRenderer } from './core/renderer.js';
 
 export default class RoughCanvas {
@@ -23,12 +25,12 @@ export default class RoughCanvas {
 
   async lib() {
     if (!this._renderer) {
-      if (this.useWorker) {
-
-
-        // let Renderer = workly.proxy(RoughRenderer);
-        // this._renderer = await new Renderer();
-        this._renderer = new RoughRenderer();
+      if (this.useWorker && window.workly) {
+        const tos = Function.prototype.toString;
+        let code = `importScripts('https://cdn.jsdelivr.net/gh/pshihn/workly/dist/workly.min.js');\n${tos.call(RoughSegmentRelation)}\n${tos.call(RoughSegment)}\n${tos.call(RoughHachureIterator)}\n${tos.call(RoughRenderer)}\nworkly.expose(RoughRenderer);`;
+        let ourl = URL.createObjectURL(new Blob([code]));
+        let RenderedWorker = workly.proxy(ourl);
+        this._renderer = await new RenderedWorker();
       } else {
         this._renderer = new RoughRenderer();
       }
