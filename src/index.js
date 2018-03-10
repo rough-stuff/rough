@@ -149,10 +149,54 @@ export default class RoughCanvas {
     this._draw(this.ctx, drawing, o);
   }
 
-  async path(path, options) {
+  async path(d, options) {
     let o = this._options(options);
     let lib = await this.lib();
-    let drawing = await lib.svgPath(path, o);
+    if (o.fill) {
+      if (o.fillStyle === 'solid') {
+        this.ctx.save();
+        this.ctx.fillStyle = o.fill;
+        let p2d = new Path2D(d);
+        this.ctx.fill(p2d);
+        this.ctx.restore();
+      } else {
+        let size = [0, 0];
+        try {
+          const ns = "http://www.w3.org/2000/svg";
+          let svg = document.createElementNS(ns, "svg");
+          svg.setAttribute("width", "0");
+          svg.setAttribute("height", "0");
+          let pathNode = document.createElementNS(ns, "path");
+          pathNode.setAttribute('d', d);
+          svg.appendChild(pathNode);
+          document.body.appendChild(svg);
+          let bb = pathNode.getBBox()
+          if (bb) {
+            size[0] = bb.width || 0;
+            size[1] = bb.height || 0;
+          }
+          document.body.removeChild(svg);
+        } catch (err) { }
+        if (!(size[0] * size[1])) {
+          size = [this.canvas.width || 100, this.canvas.height || 100];
+        }
+        size[0] = size[0] * 2;
+        size[1] = size[1] * 2;
+        let xc = [0, size[0], size[0], 0];
+        let yc = [0, 0, size[1], size[1]];
+        let fillShape = await lib.hachureFillShape(xc, yc, o);
+        let hcanvas = document.createElement('canvas');
+        hcanvas.width = size[0];
+        hcanvas.height = size[1];
+        this._fillSketch(hcanvas.getContext("2d"), fillShape, o);
+        this.ctx.save();
+        this.ctx.fillStyle = this.ctx.createPattern(hcanvas, 'repeat');
+        let p2d = new Path2D(d);
+        this.ctx.fill(p2d);
+        this.ctx.restore();
+      }
+    }
+    let drawing = await lib.svgPath(d, o);
     this._draw(this.ctx, drawing, o);
   }
 

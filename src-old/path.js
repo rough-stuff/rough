@@ -314,7 +314,6 @@ export class RoughPath extends RoughDrawable {
         x += this._position[0];
         y += this._position[1];
       }
-
       if (x == this._position[0] && y == this._position[1]) {
         return;
       }
