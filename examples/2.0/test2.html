@@ -16,7 +16,10 @@
   <script>
     (async () => {
       const rough = new RoughCanvas(document.getElementById('canvas'));
-      await rough.path('M37,17v15H14V17z M50,0H0v50h50z');
+      await rough.path('M37,17v15H14V17z M50,0H0v50h50z', {
+        stroke: 'red',
+        strokeWidth: '5'
+      });
     })();
   </script>
 </body>

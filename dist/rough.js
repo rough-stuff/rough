@@ -587,6 +587,7 @@ class RoughRenderer {
   }
 
   svgPath(path, o) {
+    path = (path || '').replace(/\n/g, " ").replace(/(-)/g, " -").replace(/(-\s)/g, "-").replace("/(\s\s)/g", " ");
     let p = new RoughPath(path);
     let segments = p.segments || [];
     let ops = [];
