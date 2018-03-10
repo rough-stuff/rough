@@ -503,7 +503,6 @@ export class RoughRenderer {
           } else {
             let final = null;
             let ro = o.maxRandomnessOffset || 0;
-            console.log('largeArcFlag', largeArcFlag);
             for (let i = 0; i < 1; i++) {
               let arcConverter = new RoughArcConverter(
                 [path.x, path.y],
