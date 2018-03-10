@@ -367,6 +367,96 @@ class RoughPath {
   }
 }
 
+class RoughArcConverter {
+  // Algorithm as described in https://www.w3.org/TR/SVG/implnote.html
+  // Code adapted from nsSVGPathDataParser.cpp in Mozilla 
+  // https://hg.mozilla.org/mozilla-central/file/17156fbebbc8/content/svg/content/src/nsSVGPathDataParser.cpp#l887
+  constructor(from, to, radii, angle, largeArcFlag, sweepFlag) {
+    const radPerDeg = Math.PI / 180;
+    this._segIndex = 0;
+    this._numSegs = 0;
+    if (from[0] == to[0] && from[1] == to[1]) {
+      return;
+    }
+    this._rx = Math.abs(radii[0]);
+    this._ry = Math.abs(radii[1]);
+    this._sinPhi = Math.sin(angle * radPerDeg);
+    this._cosPhi = Math.cos(angle * radPerDeg);
+    var x1dash = this._cosPhi * (from[0] - to[0]) / 2.0 + this._sinPhi * (from[1] - to[1]) / 2.0;
+    var y1dash = -this._sinPhi * (from[0] - to[0]) / 2.0 + this._cosPhi * (from[1] - to[1]) / 2.0;
+    var root;
+    var numerator = this._rx * this._rx * this._ry * this._ry - this._rx * this._rx * y1dash * y1dash - this._ry * this._ry * x1dash * x1dash;
+    if (numerator < 0) {
+      let s = Math.sqrt(1 - (numerator / (this._rx * this._rx * this._ry * this._ry)));
+      this._rx = s;
+      this._ry = s;
+      root = 0;
+    } else {
+      root = (largeArcFlag == sweepFlag ? -1.0 : 1.0) *
+        Math.sqrt(numerator / (this._rx * this._rx * y1dash * y1dash + this._ry * this._ry * x1dash * x1dash));
+    }
+    let cxdash = root * this._rx * y1dash / this._ry;
+    let cydash = -root * this._ry * x1dash / this._rx;
+    this._C = [0, 0];
+    this._C[0] = this._cosPhi * cxdash - this._sinPhi * cydash + (from[0] + to[0]) / 2.0;
+    this._C[1] = this._sinPhi * cxdash + this._cosPhi * cydash + (from[1] + to[1]) / 2.0;
+    this._theta = this.calculateVectorAngle(1.0, 0.0, (x1dash - cxdash) / this._rx, (y1dash - cydash) / this._ry);
+    let dtheta = this.calculateVectorAngle((x1dash - cxdash) / this._rx, (y1dash - cydash) / this._ry, (-x1dash - cxdash) / this._rx, (-y1dash - cydash) / this._ry);
+    if ((!sweepFlag) && (dtheta > 0)) {
+      dtheta -= 2 * Math.PI;
+    } else if (sweepFlag && (dtheta < 0)) {
+      dtheta += 2 * Math.PI;
+    }
+    this._numSegs = Math.ceil(Math.abs(dtheta / (Math.PI / 2)));
+    this._delta = dtheta / this._numSegs;
+    this._T = (8 / 3) * Math.sin(this._delta / 4) * Math.sin(this._delta / 4) / Math.sin(this._delta / 2);
+    this._from = from;
+  }
+
+  getNextSegment() {
+    var cp1, cp2, to;
+    if (this._segIndex == this._numSegs) {
+      return null;
+    }
+    let cosTheta1 = Math.cos(this._theta);
+    let sinTheta1 = Math.sin(this._theta);
+    let theta2 = this._theta + this._delta;
+    let cosTheta2 = Math.cos(theta2);
+    let sinTheta2 = Math.sin(theta2);
+
+    to = [
+      this._cosPhi * this._rx * cosTheta2 - this._sinPhi * this._ry * sinTheta2 + this._C[0],
+      this._sinPhi * this._rx * cosTheta2 + this._cosPhi * this._ry * sinTheta2 + this._C[1]
+    ];
+    cp1 = [
+      this._from[0] + this._T * (- this._cosPhi * this._rx * sinTheta1 - this._sinPhi * this._ry * cosTheta1),
+      this._from[1] + this._T * (- this._sinPhi * this._rx * sinTheta1 + this._cosPhi * this._ry * cosTheta1)
+    ];
+    cp2 = [
+      to[0] + this._T * (this._cosPhi * this._rx * sinTheta2 + this._sinPhi * this._ry * cosTheta2),
+      to[1] + this._T * (this._sinPhi * this._rx * sinTheta2 - this._cosPhi * this._ry * cosTheta2)
+    ];
+
+    this._theta = theta2;
+    this._from = [to[0], to[1]];
+    this._segIndex++;
+
+    return {
+      cp1: cp1,
+      cp2: cp2,
+      to: to
+    };
+  }
+
+  calculateVectorAngle(ux, uy, vx, vy) {
+    let ta = Math.atan2(uy, ux);
+    let tb = Math.atan2(vy, vx);
+    if (tb >= ta)
+      return tb - ta;
+    return 2 * Math.PI - (ta - tb);
+  }
+}
+
 class RoughRenderer {
   line(x1, y1, x2, y2, o) {
     let o1 = this._line(x1, y1, x2, y2, o, true, false);
@@ -603,6 +693,29 @@ class RoughRenderer {
 
   // privates
 
+  _bezierTo(x1, y1, x2, y2, x, y, path, o) {
+    let ops = [];
+    let ros = [o.maxRandomnessOffset || 1, (o.maxRandomnessOffset || 1) + 0.5];
+    let f = null;
+    for (let i = 0; i < 2; i++) {
+      if (i === 0) {
+        ops.push({ op: 'move', data: [path.x, path.y] });
+      } else {
+        ops.push({ op: 'move', data: [path.x + this._getOffset(-ros[0], ros[0], o), path.y + this._getOffset(-ros[0], ros[0], o)] });
+      }
+      f = [x + this._getOffset(-ros[i], ros[i], o), y + this._getOffset(-ros[i], ros[i], o)];
+      ops.push({
+        op: 'bcurveTo', data: [
+          x1 + this._getOffset(-ros[i], ros[i], o), y1 + this._getOffset(-ros[i], ros[i], o),
+          x2 + this._getOffset(-ros[i], ros[i], o), y2 + this._getOffset(-ros[i], ros[i], o),
+          f[0], f[1]
+        ]
+      });
+    }
+    path.setPosition(f[0], f[1]);
+    return ops;
+  }
+
   _processSegment(path, seg, prevSeg, o) {
     let ops = [];
     switch (seg.key) {
@@ -700,26 +813,8 @@ class RoughRenderer {
             y2 += path.y;
             y += path.y;
           }
-          let offset1 = 1 * (1 + o.roughness * 0.2);
-          let offset2 = 1.5 * (1 + o.roughness * 0.22);
-          let f = [x + this._getOffset(-offset1, offset1, o), y + this._getOffset(-offset1, offset1, o)];
-          ops.push({
-            op: 'bcurveTo', data: [
-              x1 + this._getOffset(-offset1, offset1, o), y1 + this._getOffset(-offset1, offset1, o),
-              x2 + this._getOffset(-offset1, offset1, o), y2 + this._getOffset(-offset1, offset1, o),
-              f[0], f[1]
-            ]
-          });
-          ops.push({ op: 'move', data: [path.x, path.y] });
-          f = [x + this._getOffset(-offset1, offset1, o), y + this._getOffset(-offset1, offset1, o)];
-          ops.push({
-            op: 'bcurveTo', data: [
-              x1 + this._getOffset(-offset2, offset2, o), y1 + this._getOffset(-offset2, offset2, o),
-              x2 + this._getOffset(-offset2, offset2, o), y2 + this._getOffset(-offset2, offset2, o),
-              f[0], f[1]
-            ]
-          });
-          path.setPosition(f[0], f[1]);
+          let ob = this._bezierTo(x1, y1, x2, y2, x, y, path, o);
+          ops = ops.concat(ob);
           path.bezierReflectionPoint = [x + (x - x2), y + (y - y2)];
         }
         break;
@@ -749,27 +844,8 @@ class RoughRenderer {
             x1 = ref[0];
             y1 = ref[1];
           }
-          let offset1 = 1 * (1 + o.roughness * 0.2);
-          let offset2 = 1.5 * (1 + o.roughness * 0.22);
-          ops.push({ op: 'move', data: [path.x + this._getOffset(-offset1, offset1, o), path.y + this._getOffset(-offset1, offset1, o)] });
-          let f = [x + this._getOffset(-offset1, offset1, o), y + this._getOffset(-offset1, offset1, o)];
-          ops.push({
-            op: 'bcurveTo', data: [
-              x1 + this._getOffset(-offset1, offset1, o), y1 + this._getOffset(-offset1, offset1, o),
-              x2 + this._getOffset(-offset1, offset1, o), y2 + this._getOffset(-offset1, offset1, o),
-              f[0], f[1]
-            ]
-          });
-          ops.push({ op: 'move', data: [path.x + this._getOffset(-offset2, offset2, o), path.y + this._getOffset(-offset2, offset2, o)] });
-          f = [x + this._getOffset(-offset2, offset2, o), y + this._getOffset(-offset2, offset2, o)];
-          ops.push({
-            op: 'bcurveTo', data: [
-              x1 + this._getOffset(-offset2, offset2, o), y1 + this._getOffset(-offset2, offset2, o),
-              x2 + this._getOffset(-offset2, offset2, o), y2 + this._getOffset(-offset2, offset2, o),
-              f[0], f[1]
-            ]
-          });
-          path.setPosition(f[0], f[1]);
+          let ob = this._bezierTo(x1, y1, x2, y2, x, y, path, o);
+          ops = ops.concat(ob);
           path.bezierReflectionPoint = [x + (x - x2), y + (y - y2)];
         }
         break;
@@ -856,9 +932,51 @@ class RoughRenderer {
         break;
       }
       case 'A':
-      case 'a':
-        // TODO: this._arcTo(ctx, seg);
+      case 'a': {
+        const delta = seg.key === 'a';
+        if (seg.data.length >= 7) {
+          let rx = +seg.data[0];
+          let ry = +seg.data[1];
+          let angle = +seg.data[2];
+          let largeArcFlag = +seg.data[3];
+          let sweepFlag = +seg.data[4];
+          let x = +seg.data[5];
+          let y = +seg.data[6];
+          if (delta) {
+            x += path.x;
+            y += path.y;
+          }
+          if (x == path.x && y == path.y) {
+            break;
+          }
+          if (rx == 0 || ry == 0) {
+            const o1 = this._line(path.x, path.y, x, y, true, false);
+            const o2 = this._line(path.x, path.y, x, y, true, false);
+            path.setPosition(x, y);
+            ops = ops.concat(o1, o2);
+          } else {
+            let ro = o.maxRandomnessOffset || 0;
+            console.log('largeArcFlag', largeArcFlag);
+            for (let i = 0; i < 1; i++) {
+              let arcConverter = new RoughArcConverter(
+                [path.x, path.y],
+                [x, y],
+                [rx, ry],
+                angle,
+                largeArcFlag ? true : false,
+                sweepFlag ? true : false
+              );
+              let segment = arcConverter.getNextSegment();
+              while (segment) {
+                let ob = this._bezierTo(segment.cp1[0], segment.cp1[1], segment.cp2[0], segment.cp2[1], segment.to[0], segment.to[1], path, o);
+                ops = ops.concat(ob);
+                segment = arcConverter.getNextSegment();
+              }
+            }
+          }
+        }
         break;
+      }
       default:
         break;
     }

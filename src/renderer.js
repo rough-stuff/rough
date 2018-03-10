@@ -1,6 +1,6 @@
 import { RoughHachureIterator } from './hachure.js';
 import { RoughSegmentRelation, RoughSegment } from './segment.js';
-import { RoughPath } from './path.js';
+import { RoughPath, RoughArcConverter } from './path.js';
 
 export class RoughRenderer {
   line(x1, y1, x2, y2, o) {
@@ -239,6 +239,29 @@ export class RoughRenderer {
 
   // privates
 
+  _bezierTo(x1, y1, x2, y2, x, y, path, o) {
+    let ops = [];
+    let ros = [o.maxRandomnessOffset || 1, (o.maxRandomnessOffset || 1) + 0.5];
+    let f = null;
+    for (let i = 0; i < 2; i++) {
+      if (i === 0) {
+        ops.push({ op: 'move', data: [path.x, path.y] });
+      } else {
+        ops.push({ op: 'move', data: [path.x + this._getOffset(-ros[0], ros[0], o), path.y + this._getOffset(-ros[0], ros[0], o)] });
+      }
+      f = [x + this._getOffset(-ros[i], ros[i], o), y + this._getOffset(-ros[i], ros[i], o)];
+      ops.push({
+        op: 'bcurveTo', data: [
+          x1 + this._getOffset(-ros[i], ros[i], o), y1 + this._getOffset(-ros[i], ros[i], o),
+          x2 + this._getOffset(-ros[i], ros[i], o), y2 + this._getOffset(-ros[i], ros[i], o),
+          f[0], f[1]
+        ]
+      });
+    }
+    path.setPosition(f[0], f[1]);
+    return ops;
+  }
+
   _processSegment(path, seg, prevSeg, o) {
     let ops = [];
     switch (seg.key) {
@@ -336,26 +359,8 @@ export class RoughRenderer {
             y2 += path.y;
             y += path.y;
           }
-          let offset1 = 1 * (1 + o.roughness * 0.2);
-          let offset2 = 1.5 * (1 + o.roughness * 0.22);
-          let f = [x + this._getOffset(-offset1, offset1, o), y + this._getOffset(-offset1, offset1, o)];
-          ops.push({
-            op: 'bcurveTo', data: [
-              x1 + this._getOffset(-offset1, offset1, o), y1 + this._getOffset(-offset1, offset1, o),
-              x2 + this._getOffset(-offset1, offset1, o), y2 + this._getOffset(-offset1, offset1, o),
-              f[0], f[1]
-            ]
-          });
-          ops.push({ op: 'move', data: [path.x, path.y] });
-          f = [x + this._getOffset(-offset1, offset1, o), y + this._getOffset(-offset1, offset1, o)];
-          ops.push({
-            op: 'bcurveTo', data: [
-              x1 + this._getOffset(-offset2, offset2, o), y1 + this._getOffset(-offset2, offset2, o),
-              x2 + this._getOffset(-offset2, offset2, o), y2 + this._getOffset(-offset2, offset2, o),
-              f[0], f[1]
-            ]
-          });
-          path.setPosition(f[0], f[1]);
+          let ob = this._bezierTo(x1, y1, x2, y2, x, y, path, o);
+          ops = ops.concat(ob);
           path.bezierReflectionPoint = [x + (x - x2), y + (y - y2)];
         }
         break;
@@ -385,27 +390,8 @@ export class RoughRenderer {
             x1 = ref[0];
             y1 = ref[1];
           }
-          let offset1 = 1 * (1 + o.roughness * 0.2);
-          let offset2 = 1.5 * (1 + o.roughness * 0.22);
-          ops.push({ op: 'move', data: [path.x + this._getOffset(-offset1, offset1, o), path.y + this._getOffset(-offset1, offset1, o)] });
-          let f = [x + this._getOffset(-offset1, offset1, o), y + this._getOffset(-offset1, offset1, o)];
-          ops.push({
-            op: 'bcurveTo', data: [
-              x1 + this._getOffset(-offset1, offset1, o), y1 + this._getOffset(-offset1, offset1, o),
-              x2 + this._getOffset(-offset1, offset1, o), y2 + this._getOffset(-offset1, offset1, o),
-              f[0], f[1]
-            ]
-          });
-          ops.push({ op: 'move', data: [path.x + this._getOffset(-offset2, offset2, o), path.y + this._getOffset(-offset2, offset2, o)] });
-          f = [x + this._getOffset(-offset2, offset2, o), y + this._getOffset(-offset2, offset2, o)];
-          ops.push({
-            op: 'bcurveTo', data: [
-              x1 + this._getOffset(-offset2, offset2, o), y1 + this._getOffset(-offset2, offset2, o),
-              x2 + this._getOffset(-offset2, offset2, o), y2 + this._getOffset(-offset2, offset2, o),
-              f[0], f[1]
-            ]
-          });
-          path.setPosition(f[0], f[1]);
+          let ob = this._bezierTo(x1, y1, x2, y2, x, y, path, o);
+          ops = ops.concat(ob);
           path.bezierReflectionPoint = [x + (x - x2), y + (y - y2)];
         }
         break;
@@ -492,9 +478,52 @@ export class RoughRenderer {
         break;
       }
       case 'A':
-      case 'a':
-        // TODO: this._arcTo(ctx, seg);
+      case 'a': {
+        const delta = seg.key === 'a';
+        if (seg.data.length >= 7) {
+          let rx = +seg.data[0];
+          let ry = +seg.data[1];
+          let angle = +seg.data[2];
+          let largeArcFlag = +seg.data[3];
+          let sweepFlag = +seg.data[4];
+          let x = +seg.data[5];
+          let y = +seg.data[6];
+          if (delta) {
+            x += path.x;
+            y += path.y;
+          }
+          if (x == path.x && y == path.y) {
+            break;
+          }
+          if (rx == 0 || ry == 0) {
+            const o1 = this._line(path.x, path.y, x, y, true, false);
+            const o2 = this._line(path.x, path.y, x, y, true, false);
+            path.setPosition(x, y);
+            ops = ops.concat(o1, o2);
+          } else {
+            let final = null;
+            let ro = o.maxRandomnessOffset || 0;
+            console.log('largeArcFlag', largeArcFlag);
+            for (let i = 0; i < 1; i++) {
+              let arcConverter = new RoughArcConverter(
+                [path.x, path.y],
+                [x, y],
+                [rx, ry],
+                angle,
+                largeArcFlag ? true : false,
+                sweepFlag ? true : false
+              );
+              let segment = arcConverter.getNextSegment();
+              while (segment) {
+                let ob = this._bezierTo(segment.cp1[0], segment.cp1[1], segment.cp2[0], segment.cp2[1], segment.to[0], segment.to[1], path, o);
+                ops = ops.concat(ob);
+                segment = arcConverter.getNextSegment();
+              }
+            }
+          }
+        }
         break;
+      }
       default:
         break;
     }
