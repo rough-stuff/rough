@@ -1,5 +1,6 @@
 import { RoughHachureIterator } from './hachure.js';
 import { RoughSegmentRelation, RoughSegment } from './segment.js';
+import { RoughPath } from './path.js';
 
 export class RoughRenderer {
   line(x1, y1, x2, y2, o) {
@@ -220,7 +221,285 @@ export class RoughRenderer {
     return { type: 'path', ops };
   }
 
+  svgPath(path, o) {
+    let p = new RoughPath(path);
+    let segments = p.segments || [];
+    let ops = [];
+    for (let i = 0; i < segments.length; i++) {
+      let s = segments[i];
+      let prev = i > 0 ? segments[i - 1] : null;
+      let opList = this._processSegment(p, s, prev, o);
+      if (opList && opList.length) {
+        ops = ops.concat(opList);
+      }
+    }
+    return { type: 'path', ops };
+  }
+
   // privates
+
+  _processSegment(path, seg, prevSeg, o) {
+    let ops = [];
+    switch (seg.key) {
+      case 'M':
+      case 'm': {
+        let delta = seg.key === 'm';
+        if (seg.data.length >= 2) {
+          let x = +seg.data[0];
+          let y = +seg.data[1];
+          if (delta) {
+            x += path.x;
+            y += path.y;
+          }
+          let ro = 1 * (o.maxRandomnessOffset || 0);
+          x = x + this._getOffset(-ro, ro, o);
+          y = y + this._getOffset(-ro, ro, o);
+          path.setPosition(x, y);
+          ops.push({ op: 'move', data: [x, y] });
+        }
+        break;
+      }
+      case 'L':
+      case 'l': {
+        let delta = seg.key === 'l';
+        if (seg.data.length >= 2) {
+          let x = +seg.data[0];
+          let y = +seg.data[1];
+          if (delta) {
+            x += path.x;
+            y += path.y;
+          }
+          const o1 = this._line(path.x, path.y, x, y, o, true, false);
+          const o2 = this._line(path.x, path.y, x, y, o, true, true);
+          path.setPosition(x, y);
+          ops = ops.concat(o1, o2);
+        }
+        break;
+      }
+      case 'H':
+      case 'h': {
+        const delta = seg.key === 'h';
+        if (seg.data.length) {
+          let x = +seg.data[0];
+          if (delta) {
+            x += path.x;
+          }
+          const o1 = this._line(path.x, path.y, x, path.y, o, true, false);
+          const o2 = this._line(path.x, path.y, x, path.y, o, true, true);
+          path.setPosition(x, path.y);
+          ops = ops.concat(o1, o2);
+        }
+        break;
+      }
+      case 'V':
+      case 'v': {
+        const delta = seg.key === 'v';
+        if (seg.data.length) {
+          let y = +seg.data[0];
+          if (delta) {
+            y += path.y;
+          }
+          const o1 = this._line(path.x, path.y, path.x, y, o, true, false);
+          const o2 = this._line(path.x, path.y, path.x, y, o, true, true);
+          path.setPosition(path.x, y);
+          ops = ops.concat(o1, o2);
+        }
+        break;
+      }
+      case 'Z':
+      case 'z': {
+        if (path.first) {
+          const o1 = this._line(path.x, path.y, path.first[0], path.first[1], o, true, false);
+          const o2 = this._line(path.x, path.y, path.first[0], path.first[1], o, true, true);
+          path.setPosition(path.first[0], path.first[1]);
+          ops = ops.concat(o1, o2);
+          path.first = null;
+        }
+        break;
+      }
+      case 'C':
+      case 'c': {
+        const delta = seg.key === 'c';
+        if (seg.data.length >= 6) {
+          let x1 = +seg.data[0];
+          let y1 = +seg.data[1];
+          let x2 = +seg.data[2];
+          let y2 = +seg.data[3];
+          let x = +seg.data[4];
+          let y = +seg.data[5];
+          if (delta) {
+            x1 += path.x;
+            x2 += path.x;
+            x += path.x;
+            y1 += path.y;
+            y2 += path.y;
+            y += path.y;
+          }
+          let offset1 = 1 * (1 + o.roughness * 0.2);
+          let offset2 = 1.5 * (1 + o.roughness * 0.22);
+          ops.push({ op: 'move', data: [path.x + this._getOffset(-offset1, offset1, o), path.y + this._getOffset(-offset1, offset1, o)] });
+          let f = [x + this._getOffset(-offset1, offset1, o), y + this._getOffset(-offset1, offset1, o)];
+          ops.push({
+            op: 'bcurveTo', data: [
+              x1 + this._getOffset(-offset1, offset1, o), y1 + this._getOffset(-offset1, offset1, o),
+              x2 + this._getOffset(-offset1, offset1, o), y2 + this._getOffset(-offset1, offset1, o),
+              f[0], f[1]
+            ]
+          });
+          ops.push({ op: 'move', data: [path.x + this._getOffset(-offset2, offset2, o), path.y + this._getOffset(-offset2, offset2, o)] });
+          f = [x + this._getOffset(-offset2, offset2, o), y + this._getOffset(-offset2, offset2, o)];
+          ops.push({
+            op: 'bcurveTo', data: [
+              x1 + this._getOffset(-offset2, offset2, o), y1 + this._getOffset(-offset2, offset2, o),
+              x2 + this._getOffset(-offset2, offset2, o), y2 + this._getOffset(-offset2, offset2, o),
+              f[0], f[1]
+            ]
+          });
+          path.setPosition(f[0], f[1]);
+          path.bezierReflectionPoint = [x + (x - x2), y + (y - y2)];
+        }
+        break;
+      }
+      case 'S':
+      case 's': {
+        const delta = seg.key === 's';
+        if (seg.data.length >= 4) {
+          let x2 = +seg.data[0];
+          let y2 = +seg.data[1];
+          let x = +seg.data[2];
+          let y = +seg.data[3];
+          if (delta) {
+            x2 += path.x;
+            x += path.x;
+            y2 += path.y;
+            y += path.y;
+          }
+          let x1 = x2;
+          let y1 = y2;
+          let prevKey = prevSeg ? prevSeg.key : "";
+          var ref = null;
+          if (prevKey == 'c' || prevKey == 'C' || prevKey == 's' || prevKey == 'S') {
+            ref = path.bezierReflectionPoint;
+          }
+          if (ref) {
+            x1 = ref[0];
+            y1 = ref[1];
+          }
+          let offset1 = 1 * (1 + o.roughness * 0.2);
+          let offset2 = 1.5 * (1 + o.roughness * 0.22);
+          ops.push({ op: 'move', data: [path.x + this._getOffset(-offset1, offset1, o), path.y + this._getOffset(-offset1, offset1, o)] });
+          let f = [x + this._getOffset(-offset1, offset1, o), y + this._getOffset(-offset1, offset1, o)];
+          ops.push({
+            op: 'bcurveTo', data: [
+              x1 + this._getOffset(-offset1, offset1, o), y1 + this._getOffset(-offset1, offset1, o),
+              x2 + this._getOffset(-offset1, offset1, o), y2 + this._getOffset(-offset1, offset1, o),
+              f[0], f[1]
+            ]
+          });
+          ops.push({ op: 'move', data: [path.x + this._getOffset(-offset2, offset2, o), path.y + this._getOffset(-offset2, offset2, o)] });
+          f = [x + this._getOffset(-offset2, offset2, o), y + this._getOffset(-offset2, offset2, o)];
+          ops.push({
+            op: 'bcurveTo', data: [
+              x1 + this._getOffset(-offset2, offset2, o), y1 + this._getOffset(-offset2, offset2, o),
+              x2 + this._getOffset(-offset2, offset2, o), y2 + this._getOffset(-offset2, offset2, o),
+              f[0], f[1]
+            ]
+          });
+          path.setPosition(f[0], f[1]);
+          path.bezierReflectionPoint = [x + (x - x2), y + (y - y2)];
+        }
+        break;
+      }
+      case 'Q':
+      case 'q': {
+        const delta = seg.key === 'q';
+        if (seg.data.length >= 4) {
+          let x1 = +seg.data[0];
+          let y1 = +seg.data[1];
+          let x = +seg.data[2];
+          let y = +seg.data[3];
+          if (delta) {
+            x1 += path.x;
+            x += path.x;
+            y1 += path.y;
+            y += path.y;
+          }
+          let offset1 = 1 * (1 + o.roughness * 0.2);
+          let offset2 = 1.5 * (1 + o.roughness * 0.22);
+          ops.push({ op: 'move', data: [path.x + this._getOffset(-offset1, offset1, o), path.y + this._getOffset(-offset1, offset1, o)] });
+          let f = [x + this._getOffset(-offset1, offset1, o), y + this._getOffset(-offset1, offset1, o)];
+          ops.push({
+            op: 'qcurveTo', data: [
+              x1 + this._getOffset(-offset1, offset1, o), y1 + this._getOffset(-offset1, offset1, o),
+              f[0], f[1]
+            ]
+          });
+          ops.push({ op: 'move', data: [path.x + this._getOffset(-offset2, offset2, o), path.y + this._getOffset(-offset2, offset2, o)] });
+          f = [x + this._getOffset(-offset2, offset2, o), y + this._getOffset(-offset2, offset2, o)];
+          ops.push({
+            op: 'qcurveTo', data: [
+              x1 + this._getOffset(-offset2, offset2, o), y1 + this._getOffset(-offset2, offset2, o),
+              f[0], f[1]
+            ]
+          });
+          path.setPosition(f[0], f[1]);
+          path.quadReflectionPoint = [x + (x - x1), y + (y - y1)];
+        }
+        break;
+      }
+      case 'T':
+      case 't': {
+        const delta = seg.key === 't';
+        if (seg.data.length >= 2) {
+          let x = +seg.data[0];
+          let y = +seg.data[1];
+          if (delta) {
+            x += path.x;
+            y += path.y;
+          }
+          let x1 = x;
+          let y1 = y;
+          let prevKey = prevSeg ? prevSeg.key : "";
+          var ref = null;
+          if (prevKey == 'q' || prevKey == 'Q' || prevKey == 't' || prevKey == 'T') {
+            ref = path.quadReflectionPoint;
+          }
+          if (ref) {
+            x1 = ref[0];
+            y1 = ref[1];
+          }
+          let offset1 = 1 * (1 + o.roughness * 0.2);
+          let offset2 = 1.5 * (1 + o.roughness * 0.22);
+          ops.push({ op: 'move', data: [path.x + this._getOffset(-offset1, offset1, o), path.y + this._getOffset(-offset1, offset1, o)] });
+          let f = [x + this._getOffset(-offset1, offset1, o), y + this._getOffset(-offset1, offset1, o)];
+          ops.push({
+            op: 'qcurveTo', data: [
+              x1 + this._getOffset(-offset1, offset1, o), y1 + this._getOffset(-offset1, offset1, o),
+              f[0], f[1]
+            ]
+          });
+          ops.push({ op: 'move', data: [path.x + this._getOffset(-offset2, offset2, o), path.y + this._getOffset(-offset2, offset2, o)] });
+          f = [x + this._getOffset(-offset2, offset2, o), y + this._getOffset(-offset2, offset2, o)];
+          ops.push({
+            op: 'qcurveTo', data: [
+              x1 + this._getOffset(-offset2, offset2, o), y1 + this._getOffset(-offset2, offset2, o),
+              f[0], f[1]
+            ]
+          });
+          path.setPosition(f[0], f[1]);
+          path.quadReflectionPoint = [x + (x - x1), y + (y - y1)];
+        }
+        break;
+      }
+      case 'A':
+      case 'a':
+        // TODO: this._arcTo(ctx, seg);
+        break;
+      default:
+        break;
+    }
+    return ops;
+  }
 
   _getOffset(min, max, ops) {
     return ops.roughness * ((Math.random() * (max - min)) + min);
@@ -313,7 +592,7 @@ export class RoughRenderer {
       if (closePoint && closePoint.length === 2) {
         let ro = o.maxRandomnessOffset;
         // TODO: more roughness here?
-        ops.push({ ops: 'lineTo', data: [closePoint[0] + this._getOffset(-ro, ro, o), closePoint[1] + + this._getOffset(-ro, ro, o)] })
+        ops.push({ ops: 'lineTo', data: [closePoint[0] + this._getOffset(-ro, ro, o), closePoint[1] + + this._getOffset(-ro, ro, o)] });
       }
     } else if (len === 3) {
       ops.push({ op: 'move', data: [points[1][0], points[1][1]] });

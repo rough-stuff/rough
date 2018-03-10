@@ -149,6 +149,13 @@ export default class RoughCanvas {
     this._draw(this.ctx, drawing, o);
   }
 
+  async path(path, options) {
+    let o = this._options(options);
+    let lib = await this.lib();
+    let drawing = await lib.svgPath(path, o);
+    this._draw(this.ctx, drawing, o);
+  }
+
   // private
 
   _options(options) {

@@ -1,0 +1,24 @@
+<html>
+
+<head>
+  <title>RoughJS sample</title>
+  <script src="../../dist/rough.js"></script>
+  <style>
+    canvas {
+      border: 1px solid #000;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="canvas" width="800" height="600"></canvas>
+
+  <script>
+    (async () => {
+      const rough = new RoughCanvas(document.getElementById('canvas'));
+      await rough.path('M37,17v15H14V17z M50,0H0v50h50z');
+    })();
+  </script>
+</body>
+
+</html>
