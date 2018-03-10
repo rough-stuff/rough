@@ -338,7 +338,6 @@ export class RoughRenderer {
           }
           let offset1 = 1 * (1 + o.roughness * 0.2);
           let offset2 = 1.5 * (1 + o.roughness * 0.22);
-          ops.push({ op: 'move', data: [path.x + this._getOffset(-offset1, offset1, o), path.y + this._getOffset(-offset1, offset1, o)] });
           let f = [x + this._getOffset(-offset1, offset1, o), y + this._getOffset(-offset1, offset1, o)];
           ops.push({
             op: 'bcurveTo', data: [
@@ -347,8 +346,8 @@ export class RoughRenderer {
               f[0], f[1]
             ]
           });
-          ops.push({ op: 'move', data: [path.x + this._getOffset(-offset2, offset2, o), path.y + this._getOffset(-offset2, offset2, o)] });
-          f = [x + this._getOffset(-offset2, offset2, o), y + this._getOffset(-offset2, offset2, o)];
+          ops.push({ op: 'move', data: [path.x, path.y] });
+          f = [x + this._getOffset(-offset1, offset1, o), y + this._getOffset(-offset1, offset1, o)];
           ops.push({
             op: 'bcurveTo', data: [
               x1 + this._getOffset(-offset2, offset2, o), y1 + this._getOffset(-offset2, offset2, o),

@@ -7,11 +7,19 @@
     canvas {
       border: 1px solid #000;
     }
+
+    path {
+      stroke: #000;
+      fill: none;
+    }
   </style>
 </head>
 
 <body>
   <canvas id="canvas" width="800" height="600"></canvas>
+  <svg style="display: block;stroke: #000;">
+    <path d="M0,0c 50,0 50,100 100,100 c 50,0 50,-100 100,-100"></path>
+  </svg>
 
   <script>
     (async () => {
@@ -19,6 +27,10 @@
       await rough.path('M37,17v15H14V17z M50,0H0v50h50z', {
         stroke: 'red',
         strokeWidth: '5'
+      });
+
+      await rough.path('M100,200 Q250,100 400,200 t100 200', {
+        roughness: 1.3
       });
     })();
   </script>

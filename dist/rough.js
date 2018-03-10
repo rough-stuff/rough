@@ -262,8 +262,7 @@ class ParsedPath {
           param_length = this.PARAMS[token.text].length;
           mode = token.text;
         } else {
-          console.error("Path data must begin with a MoveTo command");
-          return;
+          return this.parseData('M0,0' + d);
         }
       } else {
         if (token.isType(this.NUMBER)) {
@@ -703,7 +702,6 @@ class RoughRenderer {
           }
           let offset1 = 1 * (1 + o.roughness * 0.2);
           let offset2 = 1.5 * (1 + o.roughness * 0.22);
-          ops.push({ op: 'move', data: [path.x + this._getOffset(-offset1, offset1, o), path.y + this._getOffset(-offset1, offset1, o)] });
           let f = [x + this._getOffset(-offset1, offset1, o), y + this._getOffset(-offset1, offset1, o)];
           ops.push({
             op: 'bcurveTo', data: [
@@ -712,8 +710,8 @@ class RoughRenderer {
               f[0], f[1]
             ]
           });
-          ops.push({ op: 'move', data: [path.x + this._getOffset(-offset2, offset2, o), path.y + this._getOffset(-offset2, offset2, o)] });
-          f = [x + this._getOffset(-offset2, offset2, o), y + this._getOffset(-offset2, offset2, o)];
+          ops.push({ op: 'move', data: [path.x, path.y] });
+          f = [x + this._getOffset(-offset1, offset1, o), y + this._getOffset(-offset1, offset1, o)];
           ops.push({
             op: 'bcurveTo', data: [
               x1 + this._getOffset(-offset2, offset2, o), y1 + this._getOffset(-offset2, offset2, o),
@@ -1265,6 +1263,9 @@ class RoughCanvas {
             break;
           case 'bcurveTo':
             ctx.bezierCurveTo(data[0], data[1], data[2], data[3], data[4], data[5]);
+            break;
+          case 'qcurveTo':
+            ctx.quadraticCurveTo(data[0], data[1], data[2], data[3]);
             break;
           case 'lineTo':
             ctx.lineTo(data[0], data[1]);

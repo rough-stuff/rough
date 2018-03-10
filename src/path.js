@@ -55,8 +55,7 @@ class ParsedPath {
           param_length = this.PARAMS[token.text].length;
           mode = token.text;
         } else {
-          console.error("Path data must begin with a MoveTo command");
-          return;
+          return this.parseData('M0,0' + d);
         }
       } else {
         if (token.isType(this.NUMBER)) {

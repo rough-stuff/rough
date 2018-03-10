@@ -202,6 +202,9 @@ export default class RoughCanvas {
           case 'bcurveTo':
             ctx.bezierCurveTo(data[0], data[1], data[2], data[3], data[4], data[5]);
             break;
+          case 'qcurveTo':
+            ctx.quadraticCurveTo(data[0], data[1], data[2], data[3]);
+            break;
           case 'lineTo':
             ctx.lineTo(data[0], data[1]);
             break;
