@@ -1559,8 +1559,8 @@ class RoughCanvas {
         if (!(size[0] * size[1])) {
           size = [this.canvas.width || 100, this.canvas.height || 100];
         }
-        size[0] = size[0] * 2;
-        size[1] = size[1] * 2;
+        size[0] = Math.min(size[0] * 4, this.canvas.width);
+        size[1] = Math.min(size[1] * 4, this.canvas.height);
         let xc = [0, size[0], size[0], 0];
         let yc = [0, 0, size[1], size[1]];
         let fillShape = await lib.hachureFillShape(xc, yc, o);
