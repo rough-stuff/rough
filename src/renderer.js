@@ -1,6 +1,6 @@
 import { RoughHachureIterator } from './hachure.js';
 import { RoughSegmentRelation, RoughSegment } from './segment.js';
-import { RoughPath, RoughArcConverter } from './path.js';
+import { RoughPath, RoughArcConverter, PathFitter } from './path.js';
 
 export class RoughRenderer {
   line(x1, y1, x2, y2, o) {
@@ -224,8 +224,13 @@ export class RoughRenderer {
   svgPath(path, o) {
     path = (path || '').replace(/\n/g, " ").replace(/(-)/g, " -").replace(/(-\s)/g, "-").replace("/(\s\s)/g", " ");
     let p = new RoughPath(path);
-    let segments = p.segments || [];
+    if (o.simplification) {
+      let fitter = new PathFitter(p.linearPoints, p.closed);
+      let d = fitter.fit(o.simplification);
+      p = new RoughPath(d);
+    }
     let ops = [];
+    let segments = p.segments || [];
     for (let i = 0; i < segments.length; i++) {
       let s = segments[i];
       let prev = i > 0 ? segments[i - 1] : null;

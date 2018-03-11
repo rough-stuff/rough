@@ -2,8 +2,8 @@
 
 <head>
   <title>RoughJS sample</title>
-  <!-- <script src="https://cdn.jsdelivr.net/gh/pshihn/workly/dist/workly.js"></script> -->
-  <script src="../../dist/rough.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/pshihn/workly/dist/workly.js"></script>
+  <script src="../../dist/rough.min.js"></script>
   <script src="//d3js.org/d3.v3.min.js"></script>
   <script src="//d3js.org/topojson.v1.min.js"></script>
   <style>
@@ -23,7 +23,13 @@
 
   <script>
     (async () => {
-      const rough = new RoughCanvas(document.getElementById('canvas'));
+      const rough = new RoughCanvas(document.getElementById('canvas'),
+        {
+          options: {
+            simplification: 0.2, roughness: 0.5,
+            fill: 'rgba(0,0,255,0.8)', fsillStyle: 'solid'
+          }
+        });
 
       const width = 960, height = 500;
 
@@ -37,13 +43,9 @@
       d3.json("./us.json", async (error, us) => {
         if (error) throw error;
         let topo = topojson.feature(us, us.objects.states).features;
-        await rough.path(path(topo[2]), { simplify: true });
-        // await rough.path(path(topo[9]), { simplify: true });
-        // await rough.path(path(topo[12]));
-        // await rough.path(path(topo[13]));
-        // for (let feature of topo) {
-        //   await rough.path(path(feature));
-        // }
+        for (let feature of topo) {
+          await rough.path(path(feature));
+        }
       });
 
     })();

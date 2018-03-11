@@ -150,6 +150,9 @@ export default class RoughCanvas {
   }
 
   async path(d, options) {
+    if (!d) {
+      return;
+    }
     let o = this._options(options);
     let lib = await this.lib();
     if (o.fill) {

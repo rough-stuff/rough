@@ -248,6 +248,11 @@ class ParsedPath {
     this.processPoints();
   }
 
+  loadFromSegments(segments) {
+    this.segments = segments;
+    this.processPoints();
+  }
+
   processPoints() {
     let first = null, currentPoint = [0, 0];
     for (let i = 0; i < this.segments.length; i++) {
@@ -428,17 +433,32 @@ class RoughPath {
     return this.parsed.closed;
   }
 
-  get points() {
-    if (!this._points) {
-      const points = [];
+  get linearPoints() {
+    if (!this._linearPoints) {
+      const lp = [];
+      let points = [];
       for (let s of this.parsed.segments) {
+        let key = s.key.toLowerCase();
+        if (key === 'm' || key === 'z') {
+          if (points.length) {
+            lp.push(points);
+            points = [];
+          }
+          if (key === 'z') {
+            continue;
+          }
+        }
         if (s.point) {
           points.push(s.point);
         }
       }
-      this._points = points;
+      if (points.length) {
+        lp.push(points);
+        points = [];
+      }
+      this._linearPoints = lp;
     }
-    return this._points;
+    return this._linearPoints;
   }
 
   get first() {
@@ -556,6 +576,76 @@ class RoughArcConverter {
     if (tb >= ta)
       return tb - ta;
     return 2 * Math.PI - (ta - tb);
+  }
+}
+
+class PathFitter {
+  constructor(sets, closed) {
+    this.sets = sets;
+    this.closed = closed;
+  }
+
+  fit(simplification) {
+    let outSets = [];
+    for (const set of this.sets) {
+      let length = set.length;
+      let estLength = Math.floor(simplification * length);
+      if (estLength < 5) {
+        if (length <= 5) {
+          continue;
+        }
+        estLength = 5;
+      }
+      outSets.push(this.reduce(set, estLength));
+    }
+
+    let d = '';
+    for (const set of outSets) {
+      for (let i = 0; i < set.length; i++) {
+        let point = set[i];
+        if (i === 0) {
+          d += 'M' + point[0] + "," + point[1];
+        } else {
+          d += 'L' + point[0] + "," + point[1];
+        }
+      }
+      if (this.closed) {
+        d += 'z ';
+      }
+    }
+    return d;
+  }
+
+  distance(p1, p2) {
+    return Math.sqrt(Math.pow(p1[0] - p2[0], 2) + Math.pow(p1[1] - p2[1], 2));
+  }
+
+  reduce(set, count) {
+    if (set.length <= count) {
+      return set;
+    }
+    let points = set.slice(0);
+    while (points.length > count) {
+      let minArea = -1;
+      let minIndex = -1;
+      for (let i = 1; i < (points.length - 1); i++) {
+        let a = this.distance(points[i - 1], points[i]);
+        let b = this.distance(points[i], points[i + 1]);
+        let c = this.distance(points[i - 1], points[i + 1]);
+        let s = (a + b + c) / 2.0;
+        let area = Math.sqrt(s * (s - a) * (s - b) * (s - c));
+        if ((minArea < 0) || (area < minArea)) {
+          minArea = area;
+          minIndex = i;
+        }
+      }
+      if (minIndex > 0) {
+        points.splice(minIndex, 1);
+      } else {
+        break;
+      }
+    }
+    return points;
   }
 }
 
@@ -780,8 +870,13 @@ class RoughRenderer {
   svgPath(path, o) {
     path = (path || '').replace(/\n/g, " ").replace(/(-)/g, " -").replace(/(-\s)/g, "-").replace("/(\s\s)/g", " ");
     let p = new RoughPath(path);
-    let segments = p.segments || [];
+    if (o.simplification) {
+      let fitter = new PathFitter(p.linearPoints, p.closed);
+      let d = fitter.fit(o.simplification);
+      p = new RoughPath(d);
+    }
     let ops = [];
+    let segments = p.segments || [];
     for (let i = 0; i < segments.length; i++) {
       let s = segments[i];
       let prev = i > 0 ? segments[i - 1] : null;
@@ -1431,6 +1526,9 @@ class RoughCanvas {
   }
 
   async path(d, options) {
+    if (!d) {
+      return;
+    }
     let o = this._options(options);
     let lib = await this.lib();
     if (o.fill) {
