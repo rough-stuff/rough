@@ -1,0 +1,53 @@
+<html>
+
+<head>
+  <title>RoughJS sample</title>
+  <!-- <script src="https://cdn.jsdelivr.net/gh/pshihn/workly/dist/workly.js"></script> -->
+  <script src="../../dist/rough.js"></script>
+  <script src="//d3js.org/d3.v3.min.js"></script>
+  <script src="//d3js.org/topojson.v1.min.js"></script>
+  <style>
+    canvas {
+      border: 1px solid #000;
+    }
+
+    path {
+      stroke: #000;
+      fill: none;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="canvas" width="960" height="500"></canvas>
+
+  <script>
+    (async () => {
+      const rough = new RoughCanvas(document.getElementById('canvas'));
+
+      const width = 960, height = 500;
+
+      const projection = d3.geo.albersUsa()
+        .scale(1070)
+        .translate([width / 2, height / 2]);
+
+      const path = d3.geo.path()
+        .projection(projection);
+
+      d3.json("./us.json", async (error, us) => {
+        if (error) throw error;
+        let topo = topojson.feature(us, us.objects.states).features;
+        await rough.path(path(topo[2]), { simplify: true });
+        // await rough.path(path(topo[9]), { simplify: true });
+        // await rough.path(path(topo[12]));
+        // await rough.path(path(topo[13]));
+        // for (let feature of topo) {
+        //   await rough.path(path(feature));
+        // }
+      });
+
+    })();
+  </script>
+</body>
+
+</html>

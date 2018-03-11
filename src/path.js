@@ -38,6 +38,93 @@ class ParsedPath {
     this.segments = [];
     this.d = d || "";
     this.parseData(d);
+    this.processPoints();
+  }
+
+  processPoints() {
+    let first = null, prev = null, currentPoint = [0, 0];
+    for (let i = 0; i < this.segments.length; i++) {
+      let s = this.segments[i];
+      switch (s.key) {
+        case 'M':
+        case 'L':
+        case 'T':
+          s.point = [s.data[0], s.data[1]];
+          break;
+        case 'm':
+        case 'l':
+        case 't':
+          s.point = [s.data[0] + currentPoint[0], s.data[1] + currentPoint[1]];
+          break;
+        case 'H':
+          s.point = [s.data[0], currentPoint[1]];
+          break;
+        case 'h':
+          s.point = [s.data[0] + currentPoint[0], currentPoint[1]];
+          break;
+        case 'V':
+          s.point = [currentPoint[0], s.data[0]];
+          break;
+        case 'v':
+          s.point = [currentPoint[0], s.data[0] + currentPoint[1]];
+          break;
+        case 'z':
+        case 'Z':
+          if (first) {
+            s.point = [first[0], first[1]];
+          }
+          break;
+        case 'C':
+          s.point = [s.data[4], s.data[5]];
+          break;
+        case 'c':
+          s.point = [s.data[4] + currentPoint[0], s.data[5] + currentPoint[1]];
+          break;
+        case 'S':
+          s.point = [s.data[2], s.data[3]];
+          break;
+        case 's':
+          s.point = [s.data[2] + currentPoint[0], s.data[3] + currentPoint[1]];
+          break;
+        case 'Q':
+          s.point = [s.data[2], s.data[3]];
+          break;
+        case 'q':
+          s.point = [s.data[2] + currentPoint[0], s.data[3] + currentPoint[1]];
+          break;
+        case 'A':
+          s.point = [s.data[5], s.data[6]];
+          break;
+        case 'a':
+          s.point = [s.data[5] + currentPoint[0], s.data[6] + currentPoint[1]];
+          break;
+      }
+      if (s.key === 'm' || s.key === 'M') {
+        first = null;
+      }
+      if (s.point) {
+        currentPoint = s.point;
+        if (!first) {
+          first = s.point;
+        }
+      }
+      if (s.key === 'z' || s.key === 'Z') {
+        first = null;
+      }
+      prev = s;
+    }
+  }
+
+  get closed() {
+    if (typeof this._closed === 'undefined') {
+      this._closed = false;
+      for (let s of this.segments) {
+        if (s.key.toLowerCase() === 'z') {
+          this._closed = true;
+        }
+      }
+    }
+    return this._closed;
   }
 
   parseData(d) {
@@ -121,7 +208,6 @@ export class RoughPath {
   constructor(d) {
     this.d = d;
     this.parsed = new ParsedPath(d);
-
     this._position = [0, 0];
     this.bezierReflectionPoint = null;
     this.quadReflectionPoint = null;
@@ -130,6 +216,23 @@ export class RoughPath {
 
   get segments() {
     return this.parsed.segments;
+  }
+
+  get closed() {
+    return this.parsed.closed;
+  }
+
+  get points() {
+    if (!this._points) {
+      const points = [];
+      for (let s of this.parsed.segments) {
+        if (s.point) {
+          points.push(s.point);
+        }
+      }
+      this._points = points;
+    }
+    return this._points;
   }
 
   get first() {

@@ -2,7 +2,8 @@
 
 <head>
   <title>RoughJS sample</title>
-  <script src="../../dist/rough.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/pshihn/workly/dist/workly.js"></script>
+  <script src="../../dist/rough.min.js"></script>
   <style>
     canvas {
       border: 1px solid #000;
@@ -36,7 +37,7 @@
         fill: 'blue'
       });
       await rough.path('M80 80 A 45 45, 0, 0, 0, 125 125 L 125 80 Z', { fill: 'green' });
-      await rough.path('M230 80 A 45 45, 0, 1, 0, 275 125 L 275 80 Z', { fill: 'purple' });
+      await rough.path('M230 80 A 45 45, 0, 1, 0, 275 125 L 275 80 Z', { fill: 'purple', hachureAngle: 60, hachureGap: 5 });
       await rough.path('M80 230 A 45 45, 0, 0, 1, 125 275 L 125 230 Z', { fill: 'red' });
       await rough.path('M230 230 A 45 45, 0, 1, 1, 275 275 L 275 230 Z', { fill: 'blue' });
     })();
