@@ -1,0 +1,25 @@
+<html>
+
+<head>
+  <title>RoughJS sample</title>
+  <script src="https://cdn.jsdelivr.net/gh/pshihn/workly/dist/workly.js"></script>
+  <script src="../../dist/rough.min.js"></script>
+  <style>
+  </style>
+</head>
+
+<body>
+  <canvas id="canvas" width="800" height="600"></canvas>
+
+  <script>
+    (async () => {
+      const rc = rough.canvas(document.getElementById('canvas'));
+
+      rc.rectangle(15, 15, 80, 80, { roughness: 0.5, fill: 'red' });
+      rc.rectangle(120, 15, 80, 80, { roughness: 2.8, fill: 'blue' });
+      rc.rectangle(220, 15, 80, 80, { bowing: 6, stroke: 'green', strokeWidth: 3 });
+    })();
+  </script>
+</body>
+
+</html>
