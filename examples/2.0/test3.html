@@ -26,8 +26,7 @@
       const rc = rough.canvas(document.getElementById('canvas'),
         {
           options: {
-            simplification: 0.2, roughness: 0.5,
-            fill: 'rgba(0,0,255,0.8)', fsillStyle: 'solid'
+            simplification: 0.2, roughness: 0.5
           }
         });
 
@@ -40,11 +39,29 @@
       const path = d3.geo.path()
         .projection(projection);
 
+      const randomColor = () => {
+        let r = `rgb(${Math.round(Math.random() * 255)}, ${Math.round(Math.random() * 255)}, ${Math.round(Math.random() * 255)})`;
+        console.log(r);
+        return r;
+      }
+
+      const randomAngle = () => {
+        return (Math.random() > 0.5 ? -1 : 1) * (1 + Math.random() * 88);
+      }
+
+      const randomStyle = () => {
+        return (Math.random() > 0.5 ? 'solid' : '');
+      }
+
       d3.json("./us.json", async (error, us) => {
         if (error) throw error;
         let topo = topojson.feature(us, us.objects.states).features;
         for (let feature of topo) {
-          await rc.path(path(feature));
+          await rc.path(path(feature), {
+            fill: randomColor(),
+            fillStyle: randomStyle(),
+            hachureAngle: randomAngle()
+          });
         }
       });
 
