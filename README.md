@@ -17,14 +17,16 @@ npm install --save roughjs
 
 ## Usage
 
+![Rough.js rectangle](https://roughjs.com/images/main/m1.png)
+
 ```js
 const rc = rough.canvas(document.getElementById('canvas'));
 rough.rectangle(10, 10, 200, 200); // x, y, width, height
 ```
 
-![Rough.js rectangle](https://roughjs.com/images/main/m1.png)
-
 ### Lines and Ellipses
+
+![Rough.js rectangle](https://roughjs.com/images/main/m2.png)
 
 ```js
 rc.circle(80, 120, 50); // centerX, centerY, diameter
@@ -32,10 +34,9 @@ rc.ellipse(300, 100, 150, 80); // centerX, centerY, radiusX, radiusY
 rc.line(80, 120, 300, 100); // x1, y1, x2, y2
 ```
 
-![Rough.js rectangle](https://roughjs.com/images/main/m2.png)
-
-
 ### Filling
+
+![Rough.js rectangle](https://roughjs.com/images/main/m3.png)
 
 ```js
 rc.circle(50, 50, 80, { fill: 'red' }); // fill with red hachure
@@ -55,9 +56,9 @@ rc.rectangle(120, 105, 80, 80, {
 });
 ```
 
-![Rough.js rectangle](https://roughjs.com/images/main/m3.png)
-
 ### Sketching style
+
+![Rough.js rectangle](https://roughjs.com/images/main/m4.png)
 
 ```js
 rc.rectangle(15, 15, 80, 80, { roughness: 0.5, fill: 'red' });
@@ -65,9 +66,9 @@ rc.rectangle(120, 15, 80, 80, { roughness: 2.8, fill: 'blue' });
 rc.rectangle(220, 15, 80, 80, { bowing: 6, stroke: 'green', strokeWidth: 3 });
 ```
 
-![Rough.js rectangle](https://roughjs.com/images/main/m4.png)
-
 ### SVG Paths
+
+![Rough.js rectangle](https://roughjs.com/images/main/m5.png)
 
 ```js
 rc.path('M80 80 A 45 45, 0, 0, 0, 125 125 L 125 80 Z', { fill: 'green' });
@@ -75,8 +76,6 @@ rc.path('M230 80 A 45 45, 0, 1, 0, 275 125 L 275 80 Z', { fill: 'purple' });
 rc.path('M80 230 A 45 45, 0, 0, 1, 125 275 L 125 230 Z', { fill: 'red' });
 rc.path('M230 230 A 45 45, 0, 1, 1, 275 275 L 275 230 Z', { fill: 'blue' });
 ```
-
-![Rough.js rectangle](https://roughjs.com/images/main/m5.png)
 
 ## API & Documentation
 
