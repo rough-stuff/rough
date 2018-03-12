@@ -34,7 +34,7 @@
     <h2 class="project-tagline">{{ site.description | default: site.github.project_tagline }}</h2>
     <a href="https://github.com/pshihn/rough/wiki/Examples" class="btn">Examples</a> {% if site.github.is_project_page %}
     <a href="{{ site.github.repository_url }}" class="btn">View on GitHub</a> {% endif %} {% if site.show_downloads %}
-    <a href="./builds/rough.zip" class="btn">Download .zip</a> {% endif %}
+    <a href="https://github.com/pshihn/rough/tree/master/dist" class="btn">Download</a> {% endif %}
   </section>
 
   <section class="main-content">
@@ -42,8 +42,10 @@
 
     <footer class="site-footer">
       {% if site.github.is_project_page %}
-      <br/><br/>
-      <span class="site-footer-credits">Maintained by <a href="https://twitter.com/preetster">Preet Shihn</a>.</span>
+      <br/>
+      <br/>
+      <span class="site-footer-credits">Maintained by
+        <a href="https://twitter.com/preetster">Preet Shihn</a>.</span>
       <br/> {% endif %}
     </footer>
   </section>
@@ -58,8 +60,7 @@
       var pageTracker = _gat._getTracker("{{ site.google_analytics }}");
       pageTracker._trackPageview();
     } catch (err) { }
-  </script>
-  {% endif %}
+  </script> {% endif %}
 </body>
 
 </html>
