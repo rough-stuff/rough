@@ -81,9 +81,9 @@ SVG Path with simplification:
 
 ![Rough.js rectangle](https://roughjs.com/images/main/m9.png) ![Rough.js rectangle](https://roughjs.com/images/main/m10.png)
 
-### Using web workers with Workly
+### Using web workers
 
-If you have [Workly](https://github.com/pshihn/workly) imported on your web page (~1k only), RoughJS will automatically offload all processing to a web worker - freeing up your main UI thread. This is great when creating complex drawings using RoughJs.
+If you have [Workly](https://github.com/pshihn/workly) imported on your web page (~1k only), RoughJS will automatically offload all processing to a web worker - freeing up your main UI thread. This is great when creating complex drawings using RoughJs like maps. Read more about it [here](https://github.com/pshihn/rough/wiki/RoughJS-in-a-web-worker).
 
 ```html
 <script src="https://cdn.jsdelivr.net/gh/pshihn/workly/dist/workly.min.js"></script>
@@ -97,11 +97,6 @@ If you have [Workly](https://github.com/pshihn/workly) imported on your web page
 ## Examples
 
 [View examples here](https://github.com/pshihn/rough/wiki/Examples)
-
-## RoughJS in a web worker
-
-RoughJS processing can easily be delegated to a web worker. 
-Read about it [here](https://github.com/pshihn/rough/wiki/RoughJS-in-a-web-worker).
 
 ## API & Documentation
 
