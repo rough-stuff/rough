@@ -4,12 +4,8 @@ import { RoughPath, RoughArcConverter, PathFitter } from './path.js';
 
 export class RoughRenderer {
   line(x1, y1, x2, y2, o) {
-    let o1 = this._line(x1, y1, x2, y2, o, true, false);
-    let o2 = this._line(x1, y1, x2, y2, o, true, true);
-    return {
-      type: 'path',
-      ops: o1.concat(o2)
-    };
+    let ops = this._doubleLine(x1, y1, x2, y2, o);
+    return { type: 'path', ops };
   }
 
   linearPath(points, close, o) {
@@ -17,14 +13,10 @@ export class RoughRenderer {
     if (len > 2) {
       let ops = [];
       for (let i = 0; i < (len - 1); i++) {
-        let o1 = this._line(points[i][0], points[i][1], points[i + 1][0], points[i + 1][1], o, true, false);
-        let o2 = this._line(points[i][0], points[i][1], points[i + 1][0], points[i + 1][1], o, true, true);
-        ops = ops.concat(o1, o2);
+        ops = ops.concat(this._doubleLine(points[i][0], points[i][1], points[i + 1][0], points[i + 1][1], o));
       }
       if (close) {
-        let o1 = this._line(points[len - 1][0], points[len - 1][1], points[0][0], points[0][1], o, true, false);
-        let o2 = this._line(points[len - 1][0], points[len - 1][1], points[0][0], points[0][1], o, true, true);
-        ops = ops.concat(o1, o2);
+        ops = ops.concat(this._doubleLine(points[len - 1][0], points[len - 1][1], points[0][0], points[0][1], o));
       }
       return { type: 'path', ops };
     } else if (len === 2) {
@@ -84,10 +76,8 @@ export class RoughRenderer {
     let ops = o1.concat(o2);
     if (closed) {
       if (roughClosure) {
-        ops = ops.concat(this._line(cx, cy, cx + rx * Math.cos(strt), cy + ry * Math.sin(strt), o, true, false));
-        ops = ops.concat(this._line(cx, cy, cx + rx * Math.cos(strt), cy + ry * Math.sin(strt), o, true, true));
-        ops = ops.concat(this._line(cx, cy, cx + rx * Math.cos(stp), cy + ry * Math.sin(stp), o, true, false));
-        ops = ops.concat(this._line(cx, cy, cx + rx * Math.cos(stp), cy + ry * Math.sin(stp), o, true, true));
+        ops = ops.concat(this._doubleLine(cx, cy, cx + rx * Math.cos(strt), cy + ry * Math.sin(strt), o));
+        ops = ops.concat(this._doubleLine(cx, cy, cx + rx * Math.cos(stp), cy + ry * Math.sin(stp), o));
       } else {
         ops.push({ op: 'lineTo', data: [cx, cy] });
         ops.push({ op: 'lineTo', data: [cx + rx * Math.cos(strt), cy + ry * Math.sin(strt)] });
@@ -176,9 +166,7 @@ export class RoughRenderer {
           if (i < (lines.length - 1)) {
             let p1 = lines[i];
             let p2 = lines[i + 1];
-            const o1 = this._line(p1[0], p1[1], p2[0], p2[1], o, true, false);
-            const o2 = this._line(p1[0], p1[1], p2[0], p2[1], o, true, true);
-            ops = ops.concat(o1, o2);
+            ops = ops.concat(this._doubleLine(p1[0], p1[1], p2[0], p2[1], o));
           }
         }
       }
@@ -214,9 +202,7 @@ export class RoughRenderer {
       halfLen = Math.sqrt((rx * rx) - (cx - xPos) * (cx - xPos));
       let p1 = this._affine(xPos, cy - halfLen, cx, cy, sinAnglePrime, cosAnglePrime, aspectRatio);
       let p2 = this._affine(xPos, cy + halfLen, cx, cy, sinAnglePrime, cosAnglePrime, aspectRatio);
-      const o1 = this._line(p1[0], p1[1], p2[0], p2[1], o, true, false);
-      const o2 = this._line(p1[0], p1[1], p2[0], p2[1], o, true, true);
-      ops = ops.concat(o1, o2);
+      ops = ops.concat(this._doubleLine(p1[0], p1[1], p2[0], p2[1], o));
     }
     return { type: 'path', ops };
   }
@@ -298,10 +284,8 @@ export class RoughRenderer {
             x += path.x;
             y += path.y;
           }
-          const o1 = this._line(path.x, path.y, x, y, o, true, false);
-          const o2 = this._line(path.x, path.y, x, y, o, true, true);
+          ops = ops.concat(this._doubleLine(path.x, path.y, x, y, o));
           path.setPosition(x, y);
-          ops = ops.concat(o1, o2);
         }
         break;
       }
@@ -313,10 +297,8 @@ export class RoughRenderer {
           if (delta) {
             x += path.x;
           }
-          const o1 = this._line(path.x, path.y, x, path.y, o, true, false);
-          const o2 = this._line(path.x, path.y, x, path.y, o, true, true);
+          ops = ops.concat(this._doubleLine(path.x, path.y, x, path.y, o));
           path.setPosition(x, path.y);
-          ops = ops.concat(o1, o2);
         }
         break;
       }
@@ -328,20 +310,16 @@ export class RoughRenderer {
           if (delta) {
             y += path.y;
           }
-          const o1 = this._line(path.x, path.y, path.x, y, o, true, false);
-          const o2 = this._line(path.x, path.y, path.x, y, o, true, true);
+          ops = ops.concat(this._doubleLine(path.x, path.y, path.x, y, o));
           path.setPosition(path.x, y);
-          ops = ops.concat(o1, o2);
         }
         break;
       }
       case 'Z':
       case 'z': {
         if (path.first) {
-          const o1 = this._line(path.x, path.y, path.first[0], path.first[1], o, true, false);
-          const o2 = this._line(path.x, path.y, path.first[0], path.first[1], o, true, true);
+          ops = ops.concat(this._doubleLine(path.x, path.y, path.first[0], path.first[1], o));
           path.setPosition(path.first[0], path.first[1]);
-          ops = ops.concat(o1, o2);
           path.first = null;
         }
         break;
@@ -501,10 +479,8 @@ export class RoughRenderer {
             break;
           }
           if (rx == 0 || ry == 0) {
-            const o1 = this._line(path.x, path.y, x, y, true, false);
-            const o2 = this._line(path.x, path.y, x, y, true, false);
+            ops = ops.concat(this._doubleLine(path.x, path.y, x, y, o));
             path.setPosition(x, y);
-            ops = ops.concat(o1, o2);
           } else {
             let final = null;
             let ro = o.maxRandomnessOffset || 0;
@@ -549,6 +525,12 @@ export class RoughRenderer {
       A + C * x + D * y,
       B + E * x + F * y
     ];
+  }
+
+  _doubleLine(x1, y1, x2, y2, o) {
+    const o1 = this._line(x1, y1, x2, y2, o, true, false);
+    const o2 = this._line(x1, y1, x2, y2, o, true, true);
+    return o1.concat(o2);
   }
 
   _line(x1, y1, x2, y2, o, move, overlay) {
@@ -636,9 +618,7 @@ export class RoughRenderer {
           points[2][0], points[2][1]]
       });
     } else if (len === 2) {
-      let o1 = this._line(points[0][0], points[0][1], points[1][0], points[1][1], o, true, false);
-      let o2 = this._line(points[0][0], points[0][1], points[1][0], points[1][1], o, true, true);
-      ops = ops.concat(o1, o2);
+      ops = ops.concat(this._doubleLine(points[0][0], points[0][1], points[1][0], points[1][1], o));
     }
     return ops;
   }
