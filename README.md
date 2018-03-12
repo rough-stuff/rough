@@ -1,11 +1,9 @@
-![Rough.js sample](https://roughjs.com/images/cap_demo.png)
-
 # Rough.js
 
-<b>[roughjs.com](https://roughjs.com)</b>
-
-<b>Rough.js</b> is a light weight, stand-alone [Canvas](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API) based library that lets you draw in a _sketchy_, _hand-drawn-like_, style.
+<b>Rough.js</b> is a light weight (~8k), [Canvas](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API) based library that lets you draw in a _sketchy_, _hand-drawn-like_, style.
 The library defines primitives to draw lines, curves, arcs, polygons, circles, and ellipses. It also supports drawing [SVG paths](https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths).
+
+![Rough.js sample](https://roughjs.com/images/cap_demo.png)
 
 ## Install
 
@@ -19,30 +17,69 @@ npm install --save roughjs
 
 ## Usage
 
+![Rough.js rectangle](https://roughjs.com/images/main/m1.png)
+
 ```js
-const rough = new RoughCanvas(document.getElementById('canvas'), 800, 800);
-rough.rectangle(5, 5, 90, 90);
-rough.circle(80, 170, 50);
-rough.ellipse(300, 100, 150, 80);
-rough.line(80, 170, 300, 100);
+const rc = rough.canvas(document.getElementById('canvas'));
+rough.rectangle(10, 10, 200, 200); // x, y, width, height
 ```
 
-and check out more examples at [roughjs.com](https://roughjs.com).
+### Lines and Ellipses
+
+![Rough.js rectangle](https://roughjs.com/images/main/m2.png)
+
+```js
+rc.circle(80, 120, 50); // centerX, centerY, diameter
+rc.ellipse(300, 100, 150, 80); // centerX, centerY, radiusX, radiusY
+rc.line(80, 120, 300, 100); // x1, y1, x2, y2
+```
+
+### Filling
+
+![Rough.js rectangle](https://roughjs.com/images/main/m3.png)
+
+```js
+rc.circle(50, 50, 80, { fill: 'red' }); // fill with red hachure
+rc.rectangle(120, 15, 80, 80, { fill: 'red' });
+rc.circle(50, 150, 80, {
+  fill: "rgb(10,150,10)",
+  fillWeight: 3 // thicker lines for hacure
+});
+rc.rectangle(220, 15, 80, 80, {
+  fill: 'red',
+  hachureAngle: 60, // angle of hachure,
+  hachureGap: 8
+});
+rc.rectangle(120, 105, 80, 80, {
+  fill: 'rgba(255,0,200,0.2)',
+  fillStyle: 'solid' // solid fill
+});
+```
+
+### Sketching style
+
+![Rough.js rectangle](https://roughjs.com/images/main/m4.png)
+
+```js
+rc.rectangle(15, 15, 80, 80, { roughness: 0.5, fill: 'red' });
+rc.rectangle(120, 15, 80, 80, { roughness: 2.8, fill: 'blue' });
+rc.rectangle(220, 15, 80, 80, { bowing: 6, stroke: 'green', strokeWidth: 3 });
+```
+
+### SVG Paths
+
+![Rough.js rectangle](https://roughjs.com/images/main/m5.png)
+
+```js
+rc.path('M80 80 A 45 45, 0, 0, 0, 125 125 L 125 80 Z', { fill: 'green' });
+rc.path('M230 80 A 45 45, 0, 1, 0, 275 125 L 275 80 Z', { fill: 'purple' });
+rc.path('M80 230 A 45 45, 0, 0, 1, 125 275 L 125 230 Z', { fill: 'red' });
+rc.path('M230 230 A 45 45, 0, 1, 1, 275 275 L 275 230 Z', { fill: 'blue' });
+```
 
 ## API & Documentation
 
-Check out the website: [roughjs.com](https://roughjs.com)
-
-and
-
 [Full Rough.js API](https://github.com/pshihn/rough/wiki)
-
-
-## Credits
-
-This project was inspired by [Handy](http://www.gicentre.net/handy/), a java based library for [Processing](https://processing.org/).
-Rough.js borrows some core algorithms from Handy, but it is _not a JS port_ for processing.js.
-
 
 ## License
 [MIT License](https://github.com/pshihn/rough/blob/master/LICENSE) (c) [Preet Shihn](https://twitter.com/preetster)

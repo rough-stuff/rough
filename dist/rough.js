@@ -1,18 +1,21 @@
-var RoughCanvas = (function () {
+var rough = (function () {
 'use strict';
 
-const RoughSegmentRelation = {
-  LEFT: 0,
-  RIGHT: 1,
-  INTERSECTS: 2,
-  AHEAD: 3,
-  BEHIND: 4,
-  SEPARATE: 5,
-  UNDEFINED: 6
-};
+function RoughSegmentRelation() {
+  return {
+    LEFT: 0,
+    RIGHT: 1,
+    INTERSECTS: 2,
+    AHEAD: 3,
+    BEHIND: 4,
+    SEPARATE: 5,
+    UNDEFINED: 6
+  };
+}
 
 class RoughSegment {
   constructor(px1, py1, px2, py2) {
+    this.RoughSegmentRelationConst = RoughSegmentRelation();
     this.px1 = px1;
     this.py1 = py1;
     this.px2 = px2;
@@ -31,7 +34,7 @@ class RoughSegment {
 
   compare(otherSegment) {
     if (this.isUndefined() || otherSegment.isUndefined()) {
-      return RoughSegmentRelation.UNDEFINED;
+      return this.RoughSegmentRelationConst.UNDEFINED;
     }
     var grad1 = Number.MAX_VALUE;
     var grad2 = Number.MAX_VALUE;
@@ -50,73 +53,73 @@ class RoughSegment {
     if (grad1 == Number.MAX_VALUE) {
       if (grad2 == Number.MAX_VALUE) {
         if ((-c / a) != (-otherSegment.c / otherSegment.a)) {
-          return RoughSegmentRelation.SEPARATE;
+          return this.RoughSegmentRelationConst.SEPARATE;
         }
         if ((this.py1 >= Math.min(otherSegment.py1, otherSegment.py2)) && (this.py1 <= Math.max(otherSegment.py1, otherSegment.py2))) {
           this.xi = this.px1;
           this.yi = this.py1;
-          return RoughSegmentRelation.INTERSECTS;
+          return this.RoughSegmentRelationConst.INTERSECTS;
         }
         if ((this.py2 >= Math.min(otherSegment.py1, otherSegment.py2)) && (this.py2 <= Math.max(otherSegment.py1, otherSegment.py2))) {
           this.xi = this.px2;
           this.yi = this.py2;
-          return RoughSegmentRelation.INTERSECTS;
+          return this.RoughSegmentRelationConst.INTERSECTS;
         }
-        return RoughSegmentRelation.SEPARATE;
+        return this.RoughSegmentRelationConst.SEPARATE;
       }
       this.xi = this.px1;
       this.yi = (grad2 * this.xi + int2);
       if (((this.py1 - this.yi) * (this.yi - this.py2) < -0.00001) || ((otherSegment.py1 - this.yi) * (this.yi - otherSegment.py2) < -0.00001)) {
-        return RoughSegmentRelation.SEPARATE;
+        return this.RoughSegmentRelationConst.SEPARATE;
       }
       if (Math.abs(otherSegment.a) < 0.00001) {
         if ((otherSegment.px1 - this.xi) * (this.xi - otherSegment.px2) < -0.00001) {
-          return RoughSegmentRelation.SEPARATE;
+          return this.RoughSegmentRelationConst.SEPARATE;
         }
-        return RoughSegmentRelation.INTERSECTS;
+        return this.RoughSegmentRelationConst.INTERSECTS;
       }
-      return RoughSegmentRelation.INTERSECTS;
+      return this.RoughSegmentRelationConst.INTERSECTS;
     }
 
     if (grad2 == Number.MAX_VALUE) {
       this.xi = otherSegment.px1;
       this.yi = grad1 * this.xi + int1;
       if (((otherSegment.py1 - this.yi) * (this.yi - otherSegment.py2) < -0.00001) || ((this.py1 - this.yi) * (this.yi - this.py2) < -0.00001)) {
-        return RoughSegmentRelation.SEPARATE;
+        return this.RoughSegmentRelationConst.SEPARATE;
       }
       if (Math.abs(a) < 0.00001) {
         if ((this.px1 - this.xi) * (this.xi - this.px2) < -0.00001) {
-          return RoughSegmentRelation.SEPARATE;
+          return this.RoughSegmentRelationConst.SEPARATE;
         }
-        return RoughSegmentRelation.INTERSECTS;
+        return this.RoughSegmentRelationConst.INTERSECTS;
       }
-      return RoughSegmentRelation.INTERSECTS;
+      return this.RoughSegmentRelationConst.INTERSECTS;
     }
 
     if (grad1 == grad2) {
       if (int1 != int2) {
-        return RoughSegmentRelation.SEPARATE;
+        return this.RoughSegmentRelationConst.SEPARATE;
       }
       if ((this.px1 >= Math.min(otherSegment.px1, otherSegment.px2)) && (this.px1 <= Math.max(otherSegment.py1, otherSegment.py2))) {
         this.xi = this.px1;
         this.yi = this.py1;
-        return RoughSegmentRelation.INTERSECTS;
+        return this.RoughSegmentRelationConst.INTERSECTS;
       }
       if ((this.px2 >= Math.min(otherSegment.px1, otherSegment.px2)) && (this.px2 <= Math.max(otherSegment.px1, otherSegment.px2))) {
         this.xi = this.px2;
         this.yi = this.py2;
-        return RoughSegmentRelation.INTERSECTS;
+        return this.RoughSegmentRelationConst.INTERSECTS;
       }
-      return RoughSegmentRelation.SEPARATE;
+      return this.RoughSegmentRelationConst.SEPARATE;
     }
 
     this.xi = ((int2 - int1) / (grad1 - grad2));
     this.yi = (grad1 * this.xi + int1);
 
     if (((this.px1 - this.xi) * (this.xi - this.px2) < -0.00001) || ((otherSegment.px1 - this.xi) * (this.xi - otherSegment.px2) < -0.00001)) {
-      return RoughSegmentRelation.SEPARATE;
+      return this.RoughSegmentRelationConst.SEPARATE;
     }
-    return RoughSegmentRelation.INTERSECTS;
+    return this.RoughSegmentRelationConst.INTERSECTS;
   }
 
   getLength() {
@@ -181,11 +184,11 @@ class RoughHachureIterator {
           }
         }
         let s = new RoughSegment(xLower, yLower, xUpper, yUpper);
-        if (s.compare(this.sLeft) == RoughSegmentRelation.INTERSECTS) {
+        if (s.compare(this.sLeft) == RoughSegmentRelation().INTERSECTS) {
           xLower = s.xi;
           yLower = s.yi;
         }
-        if (s.compare(this.sRight) == RoughSegmentRelation.INTERSECTS) {
+        if (s.compare(this.sRight) == RoughSegmentRelation().INTERSECTS) {
           xUpper = s.xi;
           yUpper = s.yi;
         }
@@ -202,871 +205,17 @@ class RoughHachureIterator {
   }
 }
 
-class RoughDrawable {
-  constructor(propertyNames) {
-    this._fields = {};
-    this._dirty = false;
-    this._canvas = null;
-    this.z = 0;
-    this._roughness = null;
-    this._bowing = null;
-    this._stroke = null;
-    this._strokeWidth = null;
-
-    this._fill = null;
-    this._fillStyle = null;
-    this._fillWeight = null;
-    this._hachureAngle = null;
-    this._hachureGap = null;
-
-    this._maxRandomnessOffset = null;
-    this._curveTightness = 0;
-    if (propertyNames) {
-      for (var i = 0; i < propertyNames.length; i++) {
-        this._defineRenderProperty(propertyNames[i]);
-      }
-    }
+class PathToken {
+  constructor(type, text) {
+    this.type = type;
+    this.text = text;
   }
-
-  _defineRenderProperty(name) {
-    Object.defineProperty(this, name, {
-      get: function () {
-        return this._get(name);
-      },
-      set: function (value) {
-        this._set(name, value);
-      }
-    });
-  }
-
-  get dirty() {
-    return this._dirty;
-  }
-
-  set roughness(value) {
-    this._roughness = value;
-    if (this._canvas) {
-      this._canvas.requestDraw();
-    }
-  }
-
-  get roughness() {
-    if (typeof this._roughness === 'number') {
-      if (this._roughness >= 0) {
-        return this._roughness;
-      }
-    }
-    if (this._canvas) {
-      return this._canvas.roughness;
-    }
-    return this._roughness;
-  }
-
-  set bowing(value) {
-    this._bowing = value;
-    if (this._canvas) {
-      this._canvas.requestDraw();
-    }
-  }
-
-  get bowing() {
-    if (typeof this._bowing === 'number') {
-      if (this._bowing >= 0) {
-        return this._bowing;
-      }
-    }
-    if (this._canvas) {
-      return this._canvas.bowing;
-    }
-    return this._bowing;
-  }
-
-  set stroke(value) {
-    this._stroke = value;
-    if (this._canvas) {
-      this._canvas.requestDraw();
-    }
-  }
-
-  get stroke() {
-    if (typeof this._stroke === 'string') {
-      if (this._stroke) {
-        return this._stroke;
-      }
-    }
-    if (this._canvas) {
-      return this._canvas.stroke;
-    }
-    return this._stroke;
-  }
-
-  set strokeWidth(value) {
-    this._strokeWidth = value;
-    if (this._canvas) {
-      this._canvas.requestDraw();
-    }
-  }
-
-  get strokeWidth() {
-    if (typeof this._strokeWidth === 'number') {
-      if (this._strokeWidth >= 0) {
-        return this._strokeWidth;
-      }
-    }
-    if (this._canvas) {
-      return this._canvas.strokeWidth;
-    }
-    return this._strokeWidth;
-  }
-
-  set maxRandomnessOffset(value) {
-    this._maxRandomnessOffset = value;
-    if (this._canvas) {
-      this._canvas.requestDraw();
-    }
-  }
-
-  get maxRandomnessOffset() {
-    if (typeof this._maxRandomnessOffset === 'number') {
-      if (this._maxRandomnessOffset >= 0) {
-        return this._maxRandomnessOffset;
-      }
-    }
-    if (this._canvas) {
-      return this._canvas.maxRandomnessOffset;
-    }
-    return this._maxRandomnessOffset;
-  }
-
-  set curveTightness(value) {
-    this._curveTightness = Math.max(Math.min(value, 1), 0);
-    if (this._canvas) {
-      this._canvas.requestDraw();
-    }
-  }
-
-  get curveTightness() {
-    if (typeof this._curveTightness === 'number') {
-      if (this._curveTightness >= 0) {
-        return this._curveTightness;
-      }
-    }
-    if (this._canvas) {
-      return this._canvas.curveTightness || 0;
-    }
-    return this._curveTightness;
-  }
-
-  set fill(value) {
-    this._fill = value;
-    if (this._canvas) {
-      this._canvas.requestDraw();
-    }
-  }
-
-  get fill() {
-    if (typeof this._fill === 'string') {
-      if (this._fill) {
-        return this._fill;
-      }
-    }
-    if (this._canvas) {
-      return this._canvas.fill;
-    }
-    return this._fill;
-  }
-
-  set fillStyle(value) {
-    this._fillStyle = value;
-    if (this._canvas) {
-      this._canvas.requestDraw();
-    }
-  }
-
-  get fillStyle() {
-    if (typeof this._fillStyle === 'string') {
-      if (this._fillStyle) {
-        return this._fillStyle;
-      }
-    }
-    if (this._canvas) {
-      return this._canvas.fillStyle;
-    }
-    return this._fillStyle;
-  }
-
-  set fillWeight(value) {
-    this._fillWeight = value;
-    if (this._canvas) {
-      this._canvas.requestDraw();
-    }
-  }
-
-  get fillWeight() {
-    if (typeof this._fillWeight === 'number') {
-      if (this._fillWeight) {
-        return this._fillWeight;
-      }
-    }
-    if (this._canvas) {
-      return this._canvas.fillWeight;
-    }
-    return this._fillWeight;
-  }
-
-  set hachureAngle(value) {
-    this._hachureAngle = value;
-    if (this._canvas) {
-      this._canvas.requestDraw();
-    }
-  }
-
-  get hachureAngle() {
-    if (typeof this._hachureAngle === 'number') {
-      if (this._hachureAngle >= 0) {
-        return this._hachureAngle;
-      }
-    }
-    if (this._canvas) {
-      return this._canvas.hachureAngle;
-    }
-    return this._hachureAngle;
-  }
-
-  set hachureGap(value) {
-    this._hachureGap = value;
-    if (this._canvas) {
-      this._canvas.requestDraw();
-    }
-  }
-
-  get hachureGap() {
-    if (typeof this._hachureGap === 'number') {
-      if (this._hachureGap >= 0) {
-        return this._hachureGap;
-      }
-    }
-    if (this._canvas) {
-      return this._canvas.hachureGap;
-    }
-    return this._hachureGap;
-  }
-
-  attach(canvas, z) {
-    this.attached = true;
-    this._canvas = canvas;
-    this.z = z;
-  }
-
-  detach() {
-    this.attached = false;
-    this.z = 0;
-  }
-
-  remove() {
-    if (this.attached && this._canvas) {
-      this._canvas.remove(this);
-    }
-  }
-
-  _get(name) {
-    if (this._fields[name]) {
-      return this._fields[name];
-    }
-    return null;
-  }
-
-  _set(name, value, markDirty = true) {
-    this._fields[name] = value;
-    if (markDirty) {
-      this._dirty = true;
-      if (this._canvas) {
-        this._canvas.requestDraw();
-      }
-    }
-  }
-
-  draw(context) {
-    console.log("Draw not implemented.", context);
-  }
-
-  getOffset(min, max) {
-    return this.roughness * ((Math.random() * (max - min)) + min);
-  }
-
-  drawLine(ctx, x1, y1, x2, y2, existingPath) {
-    let lengthSq = Math.pow((x1 - x2), 2) + Math.pow((x1 - x2), 2);
-    let offset = this.maxRandomnessOffset || 0;
-    if (offset * offset * 100 > lengthSq) {
-      offset = Math.sqrt(lengthSq) / 10;
-    }
-    let halfOffset = offset / 2;
-    let divergePoint = 0.2 + Math.random() * 0.2;
-    // Midpoint displacement value to give slightly bowed lines.
-    let midDispX = this.bowing * this.maxRandomnessOffset * (y2 - y1) / 200;
-    let midDispY = this.bowing * this.maxRandomnessOffset * (x1 - x2) / 200;
-    midDispX = this.getOffset(-midDispX, midDispX);
-    midDispY = this.getOffset(-midDispY, midDispY);
-
-    if (!existingPath) {
-      ctx.beginPath();
-    }
-    ctx.moveTo(x1 + this.getOffset(-offset, offset), y1 + this.getOffset(-offset, offset));
-    ctx.bezierCurveTo(midDispX + x1 + (x2 - x1) * divergePoint + this.getOffset(-offset, offset),
-      midDispY + y1 + (y2 - y1) * divergePoint + this.getOffset(-offset, offset),
-      midDispX + x1 + 2 * (x2 - x1) * divergePoint + this.getOffset(-offset, offset),
-      midDispY + y1 + 2 * (y2 - y1) * divergePoint + this.getOffset(-offset, offset),
-      x2 + this.getOffset(-offset, offset),
-      y2 + this.getOffset(-offset, offset));
-    if (!existingPath) {
-      ctx.stroke();
-    }
-    if (!existingPath) {
-      ctx.beginPath();
-    }
-    ctx.moveTo(x1 + this.getOffset(-halfOffset, halfOffset), y1 + this.getOffset(-halfOffset, halfOffset));
-    ctx.bezierCurveTo(midDispX + x1 + (x2 - x1) * divergePoint + this.getOffset(-halfOffset, halfOffset),
-      midDispY + y1 + (y2 - y1) * divergePoint + this.getOffset(-halfOffset, halfOffset),
-      midDispX + x1 + 2 * (x2 - x1) * divergePoint + this.getOffset(-halfOffset, halfOffset),
-      midDispY + y1 + 2 * (y2 - y1) * divergePoint + this.getOffset(-halfOffset, halfOffset),
-      x2 + this.getOffset(-halfOffset, halfOffset),
-      y2 + this.getOffset(-halfOffset, halfOffset));
-    if (!existingPath) {
-      ctx.stroke();
-    }
-  }
-
-  drawLinearPath(ctx, points, close) {
-    const len = points.length;
-    if (len > 2) {
-      ctx.beginPath();
-      for (var i = 0; i < len - 1; i++) {
-        this.drawLine(ctx, points[i][0], points[i][1], points[i + 1][0], points[i + 1][1], true);
-      }
-      if (close) {
-        this.drawLine(ctx, points[len - 1][0], points[len - 1][1], points[0][0], points[0][1], true);
-      }
-      ctx.stroke();
-    } else if (len == 2) {
-      this.drawLine(ctx, points[0][0], points[0][1], points[1][0], points[1][1]);
-    }
-  }
-
-  drawCurve(ctx, vertArray, existingPath, closeToCenter, center) {
-    const vertArrayLength = vertArray.length;
-    var i;
-    if (vertArrayLength > 3) {
-      var b = [];
-      const s = 1 - this.curveTightness;
-      if (!existingPath) {
-        ctx.beginPath();
-      }
-      ctx.moveTo(vertArray[1][0], vertArray[1][1]);
-      for (i = 1; (i + 2) < vertArrayLength; i++) {
-        let cachedVertArray = vertArray[i];
-        b[0] = [cachedVertArray[0], cachedVertArray[1]];
-        b[1] = [
-          cachedVertArray[0] + (s * vertArray[i + 1][0] - s * vertArray[i - 1][0]) / 6,
-          cachedVertArray[1] + (s * vertArray[i + 1][1] - s * vertArray[i - 1][1]) / 6
-        ];
-        b[2] = [
-          vertArray[i + 1][0] + (s * vertArray[i][0] - s * vertArray[i + 2][0]) / 6,
-          vertArray[i + 1][1] + (s * vertArray[i][1] - s * vertArray[i + 2][1]) / 6
-        ];
-        b[3] = [vertArray[i + 1][0], vertArray[i + 1][1]];
-        ctx.bezierCurveTo(b[1][0], b[1][1], b[2][0], b[2][1], b[3][0], b[3][1]);
-      }
-      if (closeToCenter && center && center.length == 2) {
-        let ro = this.maxRandomnessOffset || 0;
-        ctx.lineTo(center[0] + this.getOffset(-ro, ro), center[1] + this.getOffset(-ro, ro));
-      }
-      if (!existingPath) {
-        ctx.stroke();
-      }
-    } else if (vertArrayLength == 3) {
-      this.drawBezier(
-        ctx,
-        vertArray[0][0], vertArray[0][1],
-        vertArray[1][0], vertArray[1][1],
-        vertArray[2][0], vertArray[2][1],
-        vertArray[2][0], vertArray[2][1],
-        existingPath
-      );
-    } else if (vertArrayLength == 2) {
-      this.drawLine(ctx, vertArray[0][0], vertArray[0][1], vertArray[1][0], vertArray[1][1], existingPath);
-    }
-  }
-
-  drawBezier(ctx, x1, y1, x2, y2, x3, y3, x4, y4, existingPath) {
-    if (!existingPath) {
-      ctx.beginPath();
-    }
-    ctx.moveTo(x1, y1);
-    let ro = this.maxRandomnessOffset || 0;
-    ctx.moveTo(x1 + this.getOffset(-ro, ro), y1 + this.getOffset(-ro, ro));
-    this._drawBezierTo(ctx, x2, y2, x3, y3, x4, y4);
-    if (!existingPath) {
-      ctx.stroke();
-    }
-  }
-
-  _drawBezierTo(ctx, x1, y1, x2, y2, x, y) {
-    let ro = this.maxRandomnessOffset || 0;
-    let final = [x + this.getOffset(-ro, ro), y + this.getOffset(-ro, ro)];
-    ctx.bezierCurveTo(
-      x1 + this.getOffset(-ro, ro), y1 + this.getOffset(-ro, ro),
-      x2 + this.getOffset(-ro, ro), y2 + this.getOffset(-ro, ro),
-      final[0], final[1]
-    );
-    return final;
-  }
-
-  _drawQuadTo(ctx, x1, y1, x, y) {
-    let ro = this.maxRandomnessOffset || 0;
-    let final = [x + this.getOffset(-ro, ro), y + this.getOffset(-ro, ro)];
-    ctx.quadraticCurveTo(
-      x1 + this.getOffset(-ro, ro), y1 + this.getOffset(-ro, ro),
-      final[0], final[1]
-    );
-    return final;
-  }
-
-  // fill
-  getIntersectingLines(lineCoords, xCoords, yCoords) {
-    let intersections = [];
-    var s1 = new RoughSegment(lineCoords[0], lineCoords[1], lineCoords[2], lineCoords[3]);
-    for (var i = 0; i < xCoords.length; i++) {
-      let s2 = new RoughSegment(xCoords[i], yCoords[i], xCoords[(i + 1) % xCoords.length], yCoords[(i + 1) % xCoords.length]);
-      if (s1.compare(s2) == RoughSegmentRelation.INTERSECTS) {
-        intersections.push([s1.xi, s1.yi]);
-      }
-    }
-    return intersections;
-  }
-
-  hachureFillShape(ctx, xCoords, yCoords) {
-    if (xCoords && yCoords && xCoords.length && yCoords.length) {
-      var left = xCoords[0];
-      var right = xCoords[0];
-      var top = yCoords[0];
-      var bottom = yCoords[0];
-      for (let i = 1; i < xCoords.length; i++) {
-        left = Math.min(left, xCoords[i]);
-        right = Math.max(right, xCoords[i]);
-        top = Math.min(top, yCoords[i]);
-        bottom = Math.max(bottom, yCoords[i]);
-      }
-
-      var angle = this.hachureAngle;
-      var gap = this.hachureGap;
-      if (gap < 0) {
-        gap = this.strokeWidth * 4;
-      }
-      gap = Math.max(gap, 0.1);
-      var fweight = this.fillWeight;
-      if (fweight < 0) {
-        fweight = this.strokeWidth / 2;
-      }
-
-      const radPerDeg = Math.PI / 180;
-      var hachureAngle = (angle % 180) * radPerDeg;
-      var cosAngle = Math.cos(hachureAngle);
-      var sinAngle = Math.sin(hachureAngle);
-      var tanAngle = Math.tan(hachureAngle);
-
-      ctx.save();
-      ctx.strokeStyle = this.fill;
-      ctx.lineWidth = fweight;
-
-      var it = new RoughHachureIterator(top - 1, bottom + 1, left - 1, right + 1, gap, sinAngle, cosAngle, tanAngle);
-      var rectCoords;
-      while ((rectCoords = it.getNextLine()) != null) {
-        var lines = this.getIntersectingLines(rectCoords, xCoords, yCoords);
-        for (let i = 0; i < lines.length; i++) {
-          if (i < (lines.length - 1)) {
-            let p1 = lines[i];
-            let p2 = lines[i + 1];
-            this.drawLine(ctx, p1[0], p1[1], p2[0], p2[1]);
-          }
-        }
-      }
-
-      ctx.restore();
-    }
+  isType(type) {
+    return this.type === type;
   }
 }
 
-class RoughArc extends RoughDrawable {
-  constructor(x, y, width, height, start, stop, closed) {
-    super(['x', 'y', 'width', 'height', 'start', 'stop', 'numSteps', 'closed']);
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height || width;
-    this.start = start;
-    this.stop = stop;
-    this.numSteps = 9;
-    this.closed = closed ? true : false;
-  }
-
-  draw(ctx) {
-    let cx = this.x;
-    let cy = this.y;
-    let rx = Math.abs(this.width / 2);
-    let ry = Math.abs(this.height / 2);
-    rx += this.getOffset(-rx * 0.01, rx * 0.01);
-    ry += this.getOffset(-ry * 0.01, ry * 0.01);
-    let strt = this.start;
-    let stp = this.stop;
-    while (strt < 0) {
-      strt += Math.PI * 2;
-      stp += Math.PI * 2;
-    }
-    if ((stp - strt) > (Math.PI * 2)) {
-      strt = 0;
-      stp = Math.PI * 2;
-    }
-    let ellipseInc = (Math.PI * 2) / this.numSteps;
-    let arcInc = Math.min(ellipseInc / 2, (stp - strt) / 2);
-
-    var points = [];
-    points.push([
-      cx + rx * Math.cos(strt),
-      cy + ry * Math.sin(strt)
-    ]);
-    for (var theta = strt; theta <= stp; theta += arcInc) {
-      points.push([
-        cx + rx * Math.cos(theta),
-        cy + ry * Math.sin(theta)
-      ]);
-    }
-    points.push([
-      cx + rx * Math.cos(stp),
-      cy + ry * Math.sin(stp)
-    ]);
-    points.push([
-      cx + rx * Math.cos(stp),
-      cy + ry * Math.sin(stp)
-    ]);
-
-    if (this.fill && this.closed) {
-      this._doFill(ctx, points, [cx, cy]);
-    }
-
-    ctx.save();
-    ctx.strokeStyle = this.stroke;
-    ctx.lineWidth = this.strokeWidth;
-    this.drawCurve(ctx, points);
-    if (this.closed) {
-      const lindex = points.length - 1;
-      this.drawLine(ctx, points[0][0], points[0][1], cx, cy);
-      this.drawLine(ctx, points[lindex][0], points[lindex][1], cx, cy);
-    }
-    ctx.restore();
-  }
-
-  _doFill(ctx, points, center) {
-    var fillStyle = this.fillStyle || "hachure";
-    switch (fillStyle) {
-      case "solid": {
-        ctx.save();
-        ctx.fillStyle = this.fill;
-        ctx.beginPath();
-        this.drawCurve(ctx, points, true, true, center);
-        ctx.fill();
-        ctx.restore();
-        break;
-      }
-      default: {
-        let cx = this.x;
-        let cy = this.y;
-        let strt = this.start;
-        let stp = this.stop;
-        let rx = Math.abs(this.width / 2);
-        let ry = Math.abs(this.height / 2);
-        while (strt < 0) {
-          strt += Math.PI * 2;
-          stp += Math.PI * 2;
-        }
-        if ((stp - strt) > (Math.PI * 2)) {
-          strt = 0;
-          stp = Math.PI * 2;
-        }
-        let arcInc = (stp - strt) / this.numSteps;
-        var vertices = [];
-        vertices.push([cx, cy]);
-        vertices.push([
-          cx + rx * Math.cos(strt),
-          cy + ry * Math.sin(strt)
-        ]);
-        for (var theta = strt; theta <= stp; theta += arcInc) {
-          vertices.push([
-            cx + rx * Math.cos(theta),
-            cy + ry * Math.sin(theta)
-          ]);
-        }
-        vertices.push([
-          cx + rx * Math.cos(stp),
-          cy + ry * Math.sin(stp)
-        ]);
-
-        let xc = [];
-        let yc = [];
-        vertices.forEach(function (p) {
-          xc.push(p[0]);
-          yc.push(p[1]);
-        });
-        this.hachureFillShape(ctx, xc, yc);
-        break;
-      }
-    }
-  }
-}
-
-class RoughEllipse extends RoughDrawable {
-  constructor(x, y, width, height) {
-    super(['x', 'y', 'width', 'height', 'numSteps']);
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height || width;
-    this.numSteps = 9;
-  }
-
-  draw(ctx) {
-    this.ellipseInc = (Math.PI * 2) / this.numSteps;
-    let rx = Math.abs(this.width / 2);
-    let ry = Math.abs(this.height / 2);
-    rx += this.getOffset(-rx * 0.05, rx * 0.05);
-    ry += this.getOffset(-ry * 0.05, ry * 0.05);
-
-    if (this.fill) {
-      this._doFill(ctx, rx, ry);
-    }
-
-    ctx.save();
-    ctx.strokeStyle = this.stroke;
-    ctx.lineWidth = this.strokeWidth;
-    this._ellipse(ctx, this.x, this.y, rx, ry, 1, this.ellipseInc * this.getOffset(0.1, this.getOffset(0.4, 1)));
-    this._ellipse(ctx, this.x, this.y, rx, ry, 1.5, 0);
-    ctx.restore();
-  }
-
-  _ellipse(ctx, cx, cy, rx, ry, offset, overlap, existingPath) {
-    var radOffset = this.getOffset(-0.5, 0.5) - Math.PI / 2;
-    var points = [];
-    points.push([
-      this.getOffset(-offset, offset) + cx + 0.9 * rx * Math.cos(radOffset - this.ellipseInc),
-      this.getOffset(-offset, offset) + cy + 0.9 * ry * Math.sin(radOffset - this.ellipseInc)
-    ]);
-    for (var angle = radOffset; angle < (Math.PI * 2 + radOffset - 0.01); angle = angle + this.ellipseInc) {
-      points.push([
-        this.getOffset(-offset, offset) + cx + rx * Math.cos(angle),
-        this.getOffset(-offset, offset) + cy + ry * Math.sin(angle)
-      ]);
-    }
-    points.push([
-      this.getOffset(-offset, offset) + cx + rx * Math.cos(radOffset + Math.PI * 2 + overlap * 0.5),
-      this.getOffset(-offset, offset) + cy + ry * Math.sin(radOffset + Math.PI * 2 + overlap * 0.5)
-    ]);
-    points.push([
-      this.getOffset(-offset, offset) + cx + 0.98 * rx * Math.cos(radOffset + overlap),
-      this.getOffset(-offset, offset) + cy + 0.98 * ry * Math.sin(radOffset + overlap)
-    ]);
-    points.push([
-      this.getOffset(-offset, offset) + cx + 0.9 * rx * Math.cos(radOffset + overlap * 0.5),
-      this.getOffset(-offset, offset) + cy + 0.9 * ry * Math.sin(radOffset + overlap * 0.5)
-    ]);
-    this.drawCurve(ctx, points, existingPath);
-  }
-
-  _doFill(ctx, rx, ry) {
-    var fillStyle = this.fillStyle || "hachure";
-    switch (fillStyle) {
-      case "solid": {
-        ctx.save();
-        ctx.fillStyle = this.fill;
-        ctx.strokeStyle = null;
-        ctx.beginPath();
-        this._ellipse(ctx, this.x, this.y, rx, ry, 1, this.ellipseInc * this.getOffset(0.1, this.getOffset(0.4, 1)), true);
-        ctx.fill();
-        ctx.restore();
-        break;
-      }
-      default: {
-        var angle = this.hachureAngle;
-        var gap = this.hachureGap;
-        if (gap <= 0) {
-          gap = this.strokeWidth * 4;
-        }
-        var fweight = this.fillWeight;
-        if (fweight < 0) {
-          fweight = this.strokeWidth / 2;
-        }
-        const radPerDeg = Math.PI / 180;
-        var hachureAngle = (angle % 180) * radPerDeg;
-        var tanAngle = Math.tan(hachureAngle);
-        var cx = this.x, cy = this.y;
-        var aspectRatio = ry / rx;
-        var hyp = Math.sqrt(aspectRatio * tanAngle * aspectRatio * tanAngle + 1);
-        var sinAnglePrime = aspectRatio * tanAngle / hyp;
-        var cosAnglePrime = 1 / hyp;
-        var gapPrime = gap / ((rx * ry / Math.sqrt((ry * cosAnglePrime) * (ry * cosAnglePrime) + (rx * sinAnglePrime) * (rx * sinAnglePrime))) / rx);
-        var halfLen = Math.sqrt((rx * rx) - (cx - rx + gapPrime) * (cx - rx + gapPrime));
-
-        ctx.save();
-        ctx.strokeStyle = this.fill;
-        ctx.lineWidth = fweight;
-        for (var xPos = cx - rx + gapPrime; xPos < cx + rx; xPos += gapPrime) {
-          halfLen = Math.sqrt((rx * rx) - (cx - xPos) * (cx - xPos));
-          let p1 = this.affine(xPos, cy - halfLen, cx, cy, sinAnglePrime, cosAnglePrime, aspectRatio);
-          let p2 = this.affine(xPos, cy + halfLen, cx, cy, sinAnglePrime, cosAnglePrime, aspectRatio);
-          this.drawLine(ctx, p1[0], p1[1], p2[0], p2[1]);
-        }
-        ctx.restore();
-        break;
-      }
-    }
-  }
-
-  affine(x, y, cx, cy, sinAnglePrime, cosAnglePrime, R) {
-    var A = -cx * cosAnglePrime - cy * sinAnglePrime + cx;
-    var B = R * (cx * sinAnglePrime - cy * cosAnglePrime) + cy;
-    var C = cosAnglePrime;
-    var D = sinAnglePrime;
-    var E = -R * sinAnglePrime;
-    var F = R * cosAnglePrime;
-    return [
-      A + C * x + D * y,
-      B + E * x + F * y
-    ];
-  }
-}
-
-class RoughCircle extends RoughEllipse {
-  constructor(x, y, radius) {
-    super(x, y, radius * 2);
-  }
-
-  get radius() {
-    return this.width / 2;
-  }
-
-  set radius(value) {
-    this.width = value * 2;
-    this.height = value * 2;
-  }
-}
-
-class RoughCurve extends RoughDrawable {
-  constructor(points) {
-    super();
-    this._points = points;
-  }
-
-  setPoint(index, x, y) {
-    this._points[index] = [x, y];
-    if (this._canvas) {
-      this._canvas.requestDraw();
-    }
-  }
-
-  getPoint(index) {
-    if (index > 0 && index < this._points.length) {
-      return this._points[index];
-    }
-    return null;
-  }
-
-  draw(ctx) {
-    ctx.save();
-    ctx.strokeStyle = this.stroke;
-    ctx.lineWidth = this.strokeWidth;
-    let o = this.maxRandomnessOffset || 0;
-    var p1 = [];
-    var p2 = [];
-    p1.push(this._points[0]);
-    p1.push(this._points[0]);
-    var px = [this._points[0][0] + this.getOffset(-o, o), this._points[0][1] + this.getOffset(-o, o)];
-    p2.push(px);
-    p2.push(px);
-
-    var lastIndex = this._points.length - 1;
-    for (var i = 1; i < lastIndex; i++) {
-      p1.push(this._points[i]);
-      if ((i % 3) == 0) {
-        p2.push([this._points[i][0] + this.getOffset(-o, o), this._points[i][1] + this.getOffset(-o, o)]);
-      } else {
-        p2.push(this._points[i]);
-      }
-    }
-
-    p1.push(this._points[lastIndex]);
-    p1.push(this._points[lastIndex]);
-    var px2 = [this._points[lastIndex][0] + this.getOffset(-o, o), this._points[lastIndex][1] + this.getOffset(-o, o)];
-    p2.push(px2);
-    p2.push(px2);
-
-    this.drawCurve(ctx, p1);
-    this.drawCurve(ctx, p2);
-    ctx.restore();
-  }
-}
-
-class RoughLine extends RoughDrawable {
-  constructor(x1, y1, x2, y2) {
-    super(['x1', 'y1', 'x2', 'y2']);
-    this.x1 = x1;
-    this.x2 = x2;
-    this.y1 = y1;
-    this.y2 = y2;
-  }
-
-  draw(ctx) {
-    ctx.save();
-    ctx.strokeStyle = this.stroke;
-    ctx.lineWidth = this.strokeWidth;
-    this.drawLine(ctx, this.x1, this.y1, this.x2, this.y2);
-    ctx.restore();
-  }
-}
-
-class RoughLinearPath extends RoughDrawable {
-  constructor(points) {
-    super();
-    this._points = points;
-  }
-
-  setPoint(index, x, y) {
-    this._points[index] = [x, y];
-    if (this._canvas) {
-      this._canvas.requestDraw();
-    }
-  }
-
-  getPoint(index) {
-    if (index > 0 && index < this._points.length) {
-      return this._points[index];
-    }
-    return null;
-  }
-
-  draw(ctx) {
-    ctx.save();
-    ctx.strokeStyle = this.stroke;
-    ctx.lineWidth = this.strokeWidth;
-    this.drawLinearPath(ctx, this._points, false);
-    ctx.restore();
-  }
-}
-
-// Path parsing adapted from http://www.kevlindev.com/geometry/index.htm
-
-function RoughGeomToken(type, text) { if (arguments.length > 0) { this.init(type, text); } }
-RoughGeomToken.prototype.init = function (type, text) { this.type = type; this.text = text; };
-RoughGeomToken.prototype.typeis = function (type) { return this.type == type; };
-
-class RoughGeomPath {
+class ParsedPath {
   constructor(d) {
     this.PARAMS = {
       A: ["rx", "ry", "x-axis-rotation", "large-arc-flag", "sweep-flag", "x", "y"],
@@ -1093,10 +242,100 @@ class RoughGeomPath {
     this.COMMAND = 0;
     this.NUMBER = 1;
     this.EOD = 2;
-
     this.segments = [];
     this.d = d || "";
     this.parseData(d);
+    this.processPoints();
+  }
+
+  loadFromSegments(segments) {
+    this.segments = segments;
+    this.processPoints();
+  }
+
+  processPoints() {
+    let first = null, currentPoint = [0, 0];
+    for (let i = 0; i < this.segments.length; i++) {
+      let s = this.segments[i];
+      switch (s.key) {
+        case 'M':
+        case 'L':
+        case 'T':
+          s.point = [s.data[0], s.data[1]];
+          break;
+        case 'm':
+        case 'l':
+        case 't':
+          s.point = [s.data[0] + currentPoint[0], s.data[1] + currentPoint[1]];
+          break;
+        case 'H':
+          s.point = [s.data[0], currentPoint[1]];
+          break;
+        case 'h':
+          s.point = [s.data[0] + currentPoint[0], currentPoint[1]];
+          break;
+        case 'V':
+          s.point = [currentPoint[0], s.data[0]];
+          break;
+        case 'v':
+          s.point = [currentPoint[0], s.data[0] + currentPoint[1]];
+          break;
+        case 'z':
+        case 'Z':
+          if (first) {
+            s.point = [first[0], first[1]];
+          }
+          break;
+        case 'C':
+          s.point = [s.data[4], s.data[5]];
+          break;
+        case 'c':
+          s.point = [s.data[4] + currentPoint[0], s.data[5] + currentPoint[1]];
+          break;
+        case 'S':
+          s.point = [s.data[2], s.data[3]];
+          break;
+        case 's':
+          s.point = [s.data[2] + currentPoint[0], s.data[3] + currentPoint[1]];
+          break;
+        case 'Q':
+          s.point = [s.data[2], s.data[3]];
+          break;
+        case 'q':
+          s.point = [s.data[2] + currentPoint[0], s.data[3] + currentPoint[1]];
+          break;
+        case 'A':
+          s.point = [s.data[5], s.data[6]];
+          break;
+        case 'a':
+          s.point = [s.data[5] + currentPoint[0], s.data[6] + currentPoint[1]];
+          break;
+      }
+      if (s.key === 'm' || s.key === 'M') {
+        first = null;
+      }
+      if (s.point) {
+        currentPoint = s.point;
+        if (!first) {
+          first = s.point;
+        }
+      }
+      if (s.key === 'z' || s.key === 'Z') {
+        first = null;
+      }
+    }
+  }
+
+  get closed() {
+    if (typeof this._closed === 'undefined') {
+      this._closed = false;
+      for (let s of this.segments) {
+        if (s.key.toLowerCase() === 'z') {
+          this._closed = true;
+        }
+      }
+    }
+    return this._closed;
   }
 
   parseData(d) {
@@ -1105,7 +344,7 @@ class RoughGeomPath {
     var token = tokens[index];
     var mode = "BOD";
     this.segments = new Array();
-    while (!token.typeis(this.EOD)) {
+    while (!token.isType(this.EOD)) {
       var param_length;
       var params = new Array();
       if (mode == "BOD") {
@@ -1114,11 +353,10 @@ class RoughGeomPath {
           param_length = this.PARAMS[token.text].length;
           mode = token.text;
         } else {
-          console.error("Path data must begin with a MoveTo command");
-          return;
+          return this.parseData('M0,0' + d);
         }
       } else {
-        if (token.typeis(this.NUMBER)) {
+        if (token.isType(this.NUMBER)) {
           param_length = this.PARAMS[mode].length;
         } else {
           index++;
@@ -1130,7 +368,7 @@ class RoughGeomPath {
       if ((index + param_length) < tokens.length) {
         for (var i = index; i < index + param_length; i++) {
           var number = tokens[i];
-          if (number.typeis(this.NUMBER)) {
+          if (number.isType(this.NUMBER)) {
             params[params.length] = number.text;
           }
           else {
@@ -1162,18 +400,92 @@ class RoughGeomPath {
       if (d.match(/^([ \t\r\n,]+)/)) {
         d = d.substr(RegExp.$1.length);
       } else if (d.match(/^([aAcChHlLmMqQsStTvVzZ])/)) {
-        tokens[tokens.length] = new RoughGeomToken(this.COMMAND, RegExp.$1);
+        tokens[tokens.length] = new PathToken(this.COMMAND, RegExp.$1);
         d = d.substr(RegExp.$1.length);
       } else if (d.match(/^(([-+]?[0-9]+(\.[0-9]*)?|[-+]?\.[0-9]+)([eE][-+]?[0-9]+)?)/)) {
-        tokens[tokens.length] = new RoughGeomToken(this.NUMBER, parseFloat(RegExp.$1));
+        tokens[tokens.length] = new PathToken(this.NUMBER, parseFloat(RegExp.$1));
         d = d.substr(RegExp.$1.length);
       } else {
         console.error("Unrecognized segment command: " + d);
         return null;
       }
     }
-    tokens[tokens.length] = new RoughGeomToken(this.EOD, null);
+    tokens[tokens.length] = new PathToken(this.EOD, null);
     return tokens;
+  }
+}
+
+class RoughPath {
+  constructor(d) {
+    this.d = d;
+    this.parsed = new ParsedPath(d);
+    this._position = [0, 0];
+    this.bezierReflectionPoint = null;
+    this.quadReflectionPoint = null;
+    this._first = null;
+  }
+
+  get segments() {
+    return this.parsed.segments;
+  }
+
+  get closed() {
+    return this.parsed.closed;
+  }
+
+  get linearPoints() {
+    if (!this._linearPoints) {
+      const lp = [];
+      let points = [];
+      for (let s of this.parsed.segments) {
+        let key = s.key.toLowerCase();
+        if (key === 'm' || key === 'z') {
+          if (points.length) {
+            lp.push(points);
+            points = [];
+          }
+          if (key === 'z') {
+            continue;
+          }
+        }
+        if (s.point) {
+          points.push(s.point);
+        }
+      }
+      if (points.length) {
+        lp.push(points);
+        points = [];
+      }
+      this._linearPoints = lp;
+    }
+    return this._linearPoints;
+  }
+
+  get first() {
+    return this._first;
+  }
+
+  set first(v) {
+    this._first = v;
+  }
+
+  setPosition(x, y) {
+    this._position = [x, y];
+    if (!this._first) {
+      this._first = [x, y];
+    }
+  }
+
+  get position() {
+    return this._position;
+  }
+
+  get x() {
+    return this._position[0];
+  }
+
+  get y() {
+    return this._position[1];
   }
 }
 
@@ -1181,7 +493,6 @@ class RoughArcConverter {
   // Algorithm as described in https://www.w3.org/TR/SVG/implnote.html
   // Code adapted from nsSVGPathDataParser.cpp in Mozilla 
   // https://hg.mozilla.org/mozilla-central/file/17156fbebbc8/content/svg/content/src/nsSVGPathDataParser.cpp#l887
-
   constructor(from, to, radii, angle, largeArcFlag, sweepFlag) {
     const radPerDeg = Math.PI / 180;
     this._segIndex = 0;
@@ -1268,639 +579,1058 @@ class RoughArcConverter {
   }
 }
 
-class RoughPath extends RoughDrawable {
-  constructor(path) {
-    super(['path', 'numSteps']);
-    this.numSteps = 9;
-    this.path = path;
-    this._keys = ['C', 'c', 'Q', 'q', 'M', 'm', 'L', 'l',
-      'A', 'a', 'H', 'h', 'V', 'v', 'S', 's', 'T', 't', 'Z', 'z'];
+class PathFitter {
+  constructor(sets, closed) {
+    this.sets = sets;
+    this.closed = closed;
   }
 
-  draw(ctx) {
-    if (this.path) {
-      var path = (this.path || "").replace(/\n/g, " ").replace(/(-)/g, " -").replace(/(-\s)/g, "-").replace("/(\s\s)/g", " ");
-
-      this.gp = new RoughGeomPath(path);
-      var segments = this.gp.segments || [];
-
-      this._position = [0, 0];
-      this._bezierReflectionPoint = null;
-      this._quadReflectionPoint = null;
-      this._first = null;
-
-      if (this.fill) {
-        this._doFill(ctx, path);
-      }
-
-      ctx.save();
-      ctx.strokeStyle = this.stroke;
-      ctx.lineWidth = this.strokeWidth;
-      ctx.beginPath();
-      for (var i = 0; i < segments.length; i++) {
-        var s = segments[i];
-        this._processSegment(ctx, s, i > 0 ? segments[i - 1] : null);
-      }
-      ctx.stroke();
-      ctx.restore();
-    }
-  }
-
-  _doFill(ctx, path) {
-    var fillStyle = this.fillStyle || "hachure";
-    switch (fillStyle) {
-      case "solid": {
-        ctx.save();
-        ctx.fillStyle = this.fill;
-        let p2d = new Path2D(path);
-        ctx.fill(p2d);
-        ctx.restore();
-        break;
-      }
-      default: {
-        var hc = this._canvas.getHiddenCanvas();
-        if (hc) {
-          const hctx = hc.getContext("2d");
-          let xc = [0, hc.width, hc.width, 0];
-          let yc = [0, 0, hc.height, hc.height];
-          this.hachureFillShape(hctx, xc, yc);
+  fit(simplification) {
+    let outSets = [];
+    for (const set of this.sets) {
+      let length = set.length;
+      let estLength = Math.floor(simplification * length);
+      if (estLength < 5) {
+        if (length <= 5) {
+          continue;
         }
-        ctx.save();
-        ctx.fillStyle = ctx.createPattern(hc, 'repeat');
-        let p2d = new Path2D(path);
-        ctx.fill(p2d);
-        ctx.restore();
+        estLength = 5;
+      }
+      outSets.push(this.reduce(set, estLength));
+    }
+
+    let d = '';
+    for (const set of outSets) {
+      for (let i = 0; i < set.length; i++) {
+        let point = set[i];
+        if (i === 0) {
+          d += 'M' + point[0] + "," + point[1];
+        } else {
+          d += 'L' + point[0] + "," + point[1];
+        }
+      }
+      if (this.closed) {
+        d += 'z ';
+      }
+    }
+    return d;
+  }
+
+  distance(p1, p2) {
+    return Math.sqrt(Math.pow(p1[0] - p2[0], 2) + Math.pow(p1[1] - p2[1], 2));
+  }
+
+  reduce(set, count) {
+    if (set.length <= count) {
+      return set;
+    }
+    let points = set.slice(0);
+    while (points.length > count) {
+      let minArea = -1;
+      let minIndex = -1;
+      for (let i = 1; i < (points.length - 1); i++) {
+        let a = this.distance(points[i - 1], points[i]);
+        let b = this.distance(points[i], points[i + 1]);
+        let c = this.distance(points[i - 1], points[i + 1]);
+        let s = (a + b + c) / 2.0;
+        let area = Math.sqrt(s * (s - a) * (s - b) * (s - c));
+        if ((minArea < 0) || (area < minArea)) {
+          minArea = area;
+          minIndex = i;
+        }
+      }
+      if (minIndex > 0) {
+        points.splice(minIndex, 1);
+      } else {
         break;
       }
     }
+    return points;
+  }
+}
+
+class RoughRenderer {
+  line(x1, y1, x2, y2, o) {
+    let ops = this._doubleLine(x1, y1, x2, y2, o);
+    return { type: 'path', ops };
   }
 
-  _processSegment(ctx, seg, prevSeg) {
+  linearPath(points, close, o) {
+    const len = (points || []).length;
+    if (len > 2) {
+      let ops = [];
+      for (let i = 0; i < (len - 1); i++) {
+        ops = ops.concat(this._doubleLine(points[i][0], points[i][1], points[i + 1][0], points[i + 1][1], o));
+      }
+      if (close) {
+        ops = ops.concat(this._doubleLine(points[len - 1][0], points[len - 1][1], points[0][0], points[0][1], o));
+      }
+      return { type: 'path', ops };
+    } else if (len === 2) {
+      return this.line(points[0][0], points[0][1], points[1][0], points[1][1], o);
+    }
+  }
+
+  polygon(points, o) {
+    return this.linearPath(points, true, o);
+  }
+
+  rectangle(x, y, width, height, o) {
+    let points = [
+      [x, y], [x + width, y], [x + width, y + height], [x, y + height]
+    ];
+    return this.polygon(points, o);
+  }
+
+  curve(points, o) {
+    let o1 = this._curveWithOffset(points, 1 * (1 + o.roughness * 0.2), o);
+    let o2 = this._curveWithOffset(points, 1.5 * (1 + o.roughness * 0.22), o);
+    return { type: 'path', ops: o1.concat(o2) };
+  }
+
+  ellipse(x, y, width, height, o) {
+    const increment = (Math.PI * 2) / o.curveStepCount;
+    let rx = Math.abs(width / 2);
+    let ry = Math.abs(height / 2);
+    rx += this._getOffset(-rx * 0.05, rx * 0.05, o);
+    ry += this._getOffset(-ry * 0.05, ry * 0.05, o);
+    let o1 = this._ellipse(increment, x, y, rx, ry, 1, increment * this._getOffset(0.1, this._getOffset(0.4, 1, o), o), o);
+    let o2 = this._ellipse(increment, x, y, rx, ry, 1.5, 0, o);
+    return { type: 'path', ops: o1.concat(o2) };
+  }
+
+  arc(x, y, width, height, start, stop, closed, roughClosure, o) {
+    let cx = x;
+    let cy = y;
+    let rx = Math.abs(width / 2);
+    let ry = Math.abs(height / 2);
+    rx += this._getOffset(-rx * 0.01, rx * 0.01, o);
+    ry += this._getOffset(-ry * 0.01, ry * 0.01, o);
+    let strt = start;
+    let stp = stop;
+    while (strt < 0) {
+      strt += Math.PI * 2;
+      stp += Math.PI * 2;
+    }
+    if ((stp - strt) > (Math.PI * 2)) {
+      strt = 0;
+      stp = Math.PI * 2;
+    }
+    let ellipseInc = (Math.PI * 2) / o.curveStepCount;
+    let arcInc = Math.min(ellipseInc / 2, (stp - strt) / 2);
+    let o1 = this._arc(arcInc, cx, cy, rx, ry, strt, stp, 1, o);
+    let o2 = this._arc(arcInc, cx, cy, rx, ry, strt, stp, 1.5, o);
+    let ops = o1.concat(o2);
+    if (closed) {
+      if (roughClosure) {
+        ops = ops.concat(this._doubleLine(cx, cy, cx + rx * Math.cos(strt), cy + ry * Math.sin(strt), o));
+        ops = ops.concat(this._doubleLine(cx, cy, cx + rx * Math.cos(stp), cy + ry * Math.sin(stp), o));
+      } else {
+        ops.push({ op: 'lineTo', data: [cx, cy] });
+        ops.push({ op: 'lineTo', data: [cx + rx * Math.cos(strt), cy + ry * Math.sin(strt)] });
+      }
+    }
+    return { type: 'path', ops };
+  }
+
+  hachureFillArc(x, y, width, height, start, stop, o) {
+    let cx = x;
+    let cy = y;
+    let rx = Math.abs(width / 2);
+    let ry = Math.abs(height / 2);
+    rx += this._getOffset(-rx * 0.01, rx * 0.01, o);
+    ry += this._getOffset(-ry * 0.01, ry * 0.01, o);
+    let strt = start;
+    let stp = stop;
+    while (strt < 0) {
+      strt += Math.PI * 2;
+      stp += Math.PI * 2;
+    }
+    if ((stp - strt) > (Math.PI * 2)) {
+      strt = 0;
+      stp = Math.PI * 2;
+    }
+    let increment = (stp - strt) / o.curveStepCount;
+    let xc = [], yc = [];
+    for (let angle = strt; angle <= stp; angle = angle + increment) {
+      xc.push(cx + rx * Math.cos(angle));
+      yc.push(cy + ry * Math.sin(angle));
+    }
+    xc.push(cx + rx * Math.cos(stp));
+    yc.push(cy + ry * Math.sin(stp));
+    xc.push(cx);
+    yc.push(cy);
+    return this.hachureFillShape(xc, yc, o);
+  }
+
+  solidFillShape(xCoords, yCoords, o) {
+    let ops = [];
+    if (xCoords && yCoords && xCoords.length && yCoords.length && xCoords.length === yCoords.length) {
+      let offset = o.maxRandomnessOffset || 0;
+      const len = xCoords.length;
+      if (len > 2) {
+        ops.push({ op: 'move', data: [xCoords[0] + this._getOffset(-offset, offset, o), yCoords[0] + this._getOffset(-offset, offset, o)] });
+        for (var i = 1; i < len; i++) {
+          ops.push({ op: 'lineTo', data: [xCoords[i] + this._getOffset(-offset, offset, o), yCoords[i] + this._getOffset(-offset, offset, o)] });
+        }
+      }
+    }
+    return { type: 'fillPath', ops };
+  }
+
+  hachureFillShape(xCoords, yCoords, o) {
+    let ops = [];
+    if (xCoords && yCoords && xCoords.length && yCoords.length) {
+      let left = xCoords[0];
+      let right = xCoords[0];
+      let top = yCoords[0];
+      let bottom = yCoords[0];
+      for (let i = 1; i < xCoords.length; i++) {
+        left = Math.min(left, xCoords[i]);
+        right = Math.max(right, xCoords[i]);
+        top = Math.min(top, yCoords[i]);
+        bottom = Math.max(bottom, yCoords[i]);
+      }
+      const angle = o.hachureAngle;
+      let gap = o.hachureGap;
+      if (gap < 0) {
+        gap = o.strokeWidth * 4;
+      }
+      gap = Math.max(gap, 0.1);
+
+      const radPerDeg = Math.PI / 180;
+      const hachureAngle = (angle % 180) * radPerDeg;
+      const cosAngle = Math.cos(hachureAngle);
+      const sinAngle = Math.sin(hachureAngle);
+      const tanAngle = Math.tan(hachureAngle);
+
+      const it = new RoughHachureIterator(top - 1, bottom + 1, left - 1, right + 1, gap, sinAngle, cosAngle, tanAngle);
+      let rectCoords;
+      while ((rectCoords = it.getNextLine()) != null) {
+        let lines = this._getIntersectingLines(rectCoords, xCoords, yCoords);
+        for (let i = 0; i < lines.length; i++) {
+          if (i < (lines.length - 1)) {
+            let p1 = lines[i];
+            let p2 = lines[i + 1];
+            ops = ops.concat(this._doubleLine(p1[0], p1[1], p2[0], p2[1], o));
+          }
+        }
+      }
+    }
+    return { type: 'path', ops };
+  }
+
+  hachureFillEllipse(cx, cy, width, height, o) {
+    let ops = [];
+    let rx = Math.abs(width / 2);
+    let ry = Math.abs(height / 2);
+    rx += this._getOffset(-rx * 0.05, rx * 0.05, o);
+    ry += this._getOffset(-ry * 0.05, ry * 0.05, o);
+    let angle = o.hachureAngle;
+    let gap = o.hachureGap;
+    if (gap <= 0) {
+      gap = o.strokeWidth * 4;
+    }
+    let fweight = o.fillWeight;
+    if (fweight < 0) {
+      fweight = o.strokeWidth / 2;
+    }
+    const radPerDeg = Math.PI / 180;
+    let hachureAngle = (angle % 180) * radPerDeg;
+    let tanAngle = Math.tan(hachureAngle);
+    let aspectRatio = ry / rx;
+    let hyp = Math.sqrt(aspectRatio * tanAngle * aspectRatio * tanAngle + 1);
+    let sinAnglePrime = aspectRatio * tanAngle / hyp;
+    let cosAnglePrime = 1 / hyp;
+    let gapPrime = gap / ((rx * ry / Math.sqrt((ry * cosAnglePrime) * (ry * cosAnglePrime) + (rx * sinAnglePrime) * (rx * sinAnglePrime))) / rx);
+    let halfLen = Math.sqrt((rx * rx) - (cx - rx + gapPrime) * (cx - rx + gapPrime));
+    for (var xPos = cx - rx + gapPrime; xPos < cx + rx; xPos += gapPrime) {
+      halfLen = Math.sqrt((rx * rx) - (cx - xPos) * (cx - xPos));
+      let p1 = this._affine(xPos, cy - halfLen, cx, cy, sinAnglePrime, cosAnglePrime, aspectRatio);
+      let p2 = this._affine(xPos, cy + halfLen, cx, cy, sinAnglePrime, cosAnglePrime, aspectRatio);
+      ops = ops.concat(this._doubleLine(p1[0], p1[1], p2[0], p2[1], o));
+    }
+    return { type: 'path', ops };
+  }
+
+  svgPath(path, o) {
+    path = (path || '').replace(/\n/g, " ").replace(/(-)/g, " -").replace(/(-\s)/g, "-").replace("/(\s\s)/g", " ");
+    let p = new RoughPath(path);
+    if (o.simplification) {
+      let fitter = new PathFitter(p.linearPoints, p.closed);
+      let d = fitter.fit(o.simplification);
+      p = new RoughPath(d);
+    }
+    let ops = [];
+    let segments = p.segments || [];
+    for (let i = 0; i < segments.length; i++) {
+      let s = segments[i];
+      let prev = i > 0 ? segments[i - 1] : null;
+      let opList = this._processSegment(p, s, prev, o);
+      if (opList && opList.length) {
+        ops = ops.concat(opList);
+      }
+    }
+    return { type: 'path', ops };
+  }
+
+  // privates
+
+  _bezierTo(x1, y1, x2, y2, x, y, path, o) {
+    let ops = [];
+    let ros = [o.maxRandomnessOffset || 1, (o.maxRandomnessOffset || 1) + 0.5];
+    let f = null;
+    for (let i = 0; i < 2; i++) {
+      if (i === 0) {
+        ops.push({ op: 'move', data: [path.x, path.y] });
+      } else {
+        ops.push({ op: 'move', data: [path.x + this._getOffset(-ros[0], ros[0], o), path.y + this._getOffset(-ros[0], ros[0], o)] });
+      }
+      f = [x + this._getOffset(-ros[i], ros[i], o), y + this._getOffset(-ros[i], ros[i], o)];
+      ops.push({
+        op: 'bcurveTo', data: [
+          x1 + this._getOffset(-ros[i], ros[i], o), y1 + this._getOffset(-ros[i], ros[i], o),
+          x2 + this._getOffset(-ros[i], ros[i], o), y2 + this._getOffset(-ros[i], ros[i], o),
+          f[0], f[1]
+        ]
+      });
+    }
+    path.setPosition(f[0], f[1]);
+    return ops;
+  }
+
+  _processSegment(path, seg, prevSeg, o) {
+    let ops = [];
     switch (seg.key) {
       case 'M':
-      case 'm':
-        this._moveTo(seg);
+      case 'm': {
+        let delta = seg.key === 'm';
+        if (seg.data.length >= 2) {
+          let x = +seg.data[0];
+          let y = +seg.data[1];
+          if (delta) {
+            x += path.x;
+            y += path.y;
+          }
+          let ro = 1 * (o.maxRandomnessOffset || 0);
+          x = x + this._getOffset(-ro, ro, o);
+          y = y + this._getOffset(-ro, ro, o);
+          path.setPosition(x, y);
+          ops.push({ op: 'move', data: [x, y] });
+        }
         break;
+      }
       case 'L':
-      case 'l':
-        this._lineTo(ctx, seg);
+      case 'l': {
+        let delta = seg.key === 'l';
+        if (seg.data.length >= 2) {
+          let x = +seg.data[0];
+          let y = +seg.data[1];
+          if (delta) {
+            x += path.x;
+            y += path.y;
+          }
+          ops = ops.concat(this._doubleLine(path.x, path.y, x, y, o));
+          path.setPosition(x, y);
+        }
         break;
+      }
       case 'H':
-      case 'h':
-        this._hLineTo(ctx, seg);
+      case 'h': {
+        const delta = seg.key === 'h';
+        if (seg.data.length) {
+          let x = +seg.data[0];
+          if (delta) {
+            x += path.x;
+          }
+          ops = ops.concat(this._doubleLine(path.x, path.y, x, path.y, o));
+          path.setPosition(x, path.y);
+        }
         break;
+      }
       case 'V':
-      case 'v':
-        this._vLineTo(ctx, seg);
+      case 'v': {
+        const delta = seg.key === 'v';
+        if (seg.data.length) {
+          let y = +seg.data[0];
+          if (delta) {
+            y += path.y;
+          }
+          ops = ops.concat(this._doubleLine(path.x, path.y, path.x, y, o));
+          path.setPosition(path.x, y);
+        }
         break;
+      }
       case 'Z':
-      case 'z':
-        this._closeShape(ctx);
+      case 'z': {
+        if (path.first) {
+          ops = ops.concat(this._doubleLine(path.x, path.y, path.first[0], path.first[1], o));
+          path.setPosition(path.first[0], path.first[1]);
+          path.first = null;
+        }
         break;
+      }
       case 'C':
-      case 'c':
-        this._curveTo(ctx, seg);
+      case 'c': {
+        const delta = seg.key === 'c';
+        if (seg.data.length >= 6) {
+          let x1 = +seg.data[0];
+          let y1 = +seg.data[1];
+          let x2 = +seg.data[2];
+          let y2 = +seg.data[3];
+          let x = +seg.data[4];
+          let y = +seg.data[5];
+          if (delta) {
+            x1 += path.x;
+            x2 += path.x;
+            x += path.x;
+            y1 += path.y;
+            y2 += path.y;
+            y += path.y;
+          }
+          let ob = this._bezierTo(x1, y1, x2, y2, x, y, path, o);
+          ops = ops.concat(ob);
+          path.bezierReflectionPoint = [x + (x - x2), y + (y - y2)];
+        }
         break;
+      }
       case 'S':
-      case 's':
-        this._shortCurveTo(ctx, seg, prevSeg);
+      case 's': {
+        const delta = seg.key === 's';
+        if (seg.data.length >= 4) {
+          let x2 = +seg.data[0];
+          let y2 = +seg.data[1];
+          let x = +seg.data[2];
+          let y = +seg.data[3];
+          if (delta) {
+            x2 += path.x;
+            x += path.x;
+            y2 += path.y;
+            y += path.y;
+          }
+          let x1 = x2;
+          let y1 = y2;
+          let prevKey = prevSeg ? prevSeg.key : "";
+          var ref = null;
+          if (prevKey == 'c' || prevKey == 'C' || prevKey == 's' || prevKey == 'S') {
+            ref = path.bezierReflectionPoint;
+          }
+          if (ref) {
+            x1 = ref[0];
+            y1 = ref[1];
+          }
+          let ob = this._bezierTo(x1, y1, x2, y2, x, y, path, o);
+          ops = ops.concat(ob);
+          path.bezierReflectionPoint = [x + (x - x2), y + (y - y2)];
+        }
         break;
+      }
       case 'Q':
-      case 'q':
-        this._quadCurveTo(ctx, seg);
+      case 'q': {
+        const delta = seg.key === 'q';
+        if (seg.data.length >= 4) {
+          let x1 = +seg.data[0];
+          let y1 = +seg.data[1];
+          let x = +seg.data[2];
+          let y = +seg.data[3];
+          if (delta) {
+            x1 += path.x;
+            x += path.x;
+            y1 += path.y;
+            y += path.y;
+          }
+          let offset1 = 1 * (1 + o.roughness * 0.2);
+          let offset2 = 1.5 * (1 + o.roughness * 0.22);
+          ops.push({ op: 'move', data: [path.x + this._getOffset(-offset1, offset1, o), path.y + this._getOffset(-offset1, offset1, o)] });
+          let f = [x + this._getOffset(-offset1, offset1, o), y + this._getOffset(-offset1, offset1, o)];
+          ops.push({
+            op: 'qcurveTo', data: [
+              x1 + this._getOffset(-offset1, offset1, o), y1 + this._getOffset(-offset1, offset1, o),
+              f[0], f[1]
+            ]
+          });
+          ops.push({ op: 'move', data: [path.x + this._getOffset(-offset2, offset2, o), path.y + this._getOffset(-offset2, offset2, o)] });
+          f = [x + this._getOffset(-offset2, offset2, o), y + this._getOffset(-offset2, offset2, o)];
+          ops.push({
+            op: 'qcurveTo', data: [
+              x1 + this._getOffset(-offset2, offset2, o), y1 + this._getOffset(-offset2, offset2, o),
+              f[0], f[1]
+            ]
+          });
+          path.setPosition(f[0], f[1]);
+          path.quadReflectionPoint = [x + (x - x1), y + (y - y1)];
+        }
         break;
+      }
       case 'T':
-      case 't':
-        this._shortQuadTo(ctx, seg, prevSeg);
+      case 't': {
+        const delta = seg.key === 't';
+        if (seg.data.length >= 2) {
+          let x = +seg.data[0];
+          let y = +seg.data[1];
+          if (delta) {
+            x += path.x;
+            y += path.y;
+          }
+          let x1 = x;
+          let y1 = y;
+          let prevKey = prevSeg ? prevSeg.key : "";
+          var ref = null;
+          if (prevKey == 'q' || prevKey == 'Q' || prevKey == 't' || prevKey == 'T') {
+            ref = path.quadReflectionPoint;
+          }
+          if (ref) {
+            x1 = ref[0];
+            y1 = ref[1];
+          }
+          let offset1 = 1 * (1 + o.roughness * 0.2);
+          let offset2 = 1.5 * (1 + o.roughness * 0.22);
+          ops.push({ op: 'move', data: [path.x + this._getOffset(-offset1, offset1, o), path.y + this._getOffset(-offset1, offset1, o)] });
+          let f = [x + this._getOffset(-offset1, offset1, o), y + this._getOffset(-offset1, offset1, o)];
+          ops.push({
+            op: 'qcurveTo', data: [
+              x1 + this._getOffset(-offset1, offset1, o), y1 + this._getOffset(-offset1, offset1, o),
+              f[0], f[1]
+            ]
+          });
+          ops.push({ op: 'move', data: [path.x + this._getOffset(-offset2, offset2, o), path.y + this._getOffset(-offset2, offset2, o)] });
+          f = [x + this._getOffset(-offset2, offset2, o), y + this._getOffset(-offset2, offset2, o)];
+          ops.push({
+            op: 'qcurveTo', data: [
+              x1 + this._getOffset(-offset2, offset2, o), y1 + this._getOffset(-offset2, offset2, o),
+              f[0], f[1]
+            ]
+          });
+          path.setPosition(f[0], f[1]);
+          path.quadReflectionPoint = [x + (x - x1), y + (y - y1)];
+        }
         break;
+      }
       case 'A':
-      case 'a':
-        this._arcTo(ctx, seg);
+      case 'a': {
+        const delta = seg.key === 'a';
+        if (seg.data.length >= 7) {
+          let rx = +seg.data[0];
+          let ry = +seg.data[1];
+          let angle = +seg.data[2];
+          let largeArcFlag = +seg.data[3];
+          let sweepFlag = +seg.data[4];
+          let x = +seg.data[5];
+          let y = +seg.data[6];
+          if (delta) {
+            x += path.x;
+            y += path.y;
+          }
+          if (x == path.x && y == path.y) {
+            break;
+          }
+          if (rx == 0 || ry == 0) {
+            ops = ops.concat(this._doubleLine(path.x, path.y, x, y, o));
+            path.setPosition(x, y);
+          } else {
+            let ro = o.maxRandomnessOffset || 0;
+            for (let i = 0; i < 1; i++) {
+              let arcConverter = new RoughArcConverter(
+                [path.x, path.y],
+                [x, y],
+                [rx, ry],
+                angle,
+                largeArcFlag ? true : false,
+                sweepFlag ? true : false
+              );
+              let segment = arcConverter.getNextSegment();
+              while (segment) {
+                let ob = this._bezierTo(segment.cp1[0], segment.cp1[1], segment.cp2[0], segment.cp2[1], segment.to[0], segment.to[1], path, o);
+                ops = ops.concat(ob);
+                segment = arcConverter.getNextSegment();
+              }
+            }
+          }
+        }
         break;
+      }
       default:
         break;
     }
+    return ops;
   }
 
-  _setPosition(x, y) {
-    this._position = [x, y];
-    if (!this._first) {
-      this._first = [x, y];
+  _getOffset(min, max, ops) {
+    return ops.roughness * ((Math.random() * (max - min)) + min);
+  }
+
+  _affine(x, y, cx, cy, sinAnglePrime, cosAnglePrime, R) {
+    var A = -cx * cosAnglePrime - cy * sinAnglePrime + cx;
+    var B = R * (cx * sinAnglePrime - cy * cosAnglePrime) + cy;
+    var C = cosAnglePrime;
+    var D = sinAnglePrime;
+    var E = -R * sinAnglePrime;
+    var F = R * cosAnglePrime;
+    return [
+      A + C * x + D * y,
+      B + E * x + F * y
+    ];
+  }
+
+  _doubleLine(x1, y1, x2, y2, o) {
+    const o1 = this._line(x1, y1, x2, y2, o, true, false);
+    const o2 = this._line(x1, y1, x2, y2, o, true, true);
+    return o1.concat(o2);
+  }
+
+  _line(x1, y1, x2, y2, o, move, overlay) {
+    const lengthSq = Math.pow((x1 - x2), 2) + Math.pow((y1 - y2), 2);
+    let offset = o.maxRandomnessOffset || 0;
+    if ((offset * offset * 100) > lengthSq) {
+      offset = Math.sqrt(lengthSq) / 10;
     }
-  }
-
-  _moveTo(seg) {
-    var delta = seg.key === 'm';
-    if (seg.data.length >= 2) {
-      let x = +seg.data[0];
-      let y = +seg.data[1];
-      if (delta) {
-        this._setPosition(this._position[0] + x, this._position[1] + y);
-      } else {
-        this._setPosition(x, y);
-      }
-    }
-  }
-
-  _closeShape(ctx) {
-    if (this._first) {
-      this.drawLine(ctx, this._position[0], this._position[1], this._first[0], this._first[1], true);
-    }
-  }
-
-  _lineTo(ctx, seg) {
-    var delta = seg.key === 'l';
-    if (seg.data.length >= 2) {
-      let x = +seg.data[0];
-      let y = +seg.data[1];
-      if (delta) {
-        x += this._position[0];
-        y += this._position[1];
-      }
-      this.drawLine(ctx, this._position[0], this._position[1], x, y, true);
-      this._setPosition(x, y);
-    }
-  }
-
-  _hLineTo(ctx, seg) {
-    var delta = seg.key === 'h';
-    if (seg.data.length) {
-      let x = +seg.data[0];
-      if (delta) {
-        x += this._position[0];
-      }
-      this.drawLine(ctx, this._position[0], this._position[1], x, this._position[1], true);
-      this._setPosition(x, this._position[1]);
-    }
-  }
-
-  _vLineTo(ctx, seg) {
-    var delta = seg.key === 'v';
-    if (seg.data.length) {
-      let y = +seg.data[0];
-      if (delta) {
-        y += this._position[1];
-      }
-      this.drawLine(ctx, this._position[0], this._position[1], this._position[0], y, true);
-      this._setPosition(this._position[0], y);
-    }
-  }
-
-  _quadCurveTo(ctx, seg) {
-    var delta = seg.key === 'q';
-    if (seg.data.length >= 4) {
-      let x1 = +seg.data[0];
-      let y1 = +seg.data[1];
-      let x = +seg.data[2];
-      let y = +seg.data[3];
-      if (delta) {
-        x1 += this._position[0];
-        x += this._position[0];
-        y1 += this._position[1];
-        y += this._position[1];
-      }
-      let ro = this.maxRandomnessOffset || 0;
-      ctx.moveTo(this._position[0], this._position[1]);
-      this._drawQuadTo(ctx, x1, y1, x, y);
-      ctx.moveTo(this._position[0] + this.getOffset(-ro, ro), this._position[1] + this.getOffset(-ro, ro));
-      let final = this._drawQuadTo(ctx, x1, y1, x, y);
-      x = final[0];
-      y = final[1];
-      this._setPosition(x, y);
-      this._quadReflectionPoint = [x + (x - x1), y + (y - y1)];
-    }
-  }
-
-  _curveTo(ctx, seg) {
-    var delta = seg.key === 'c';
-    if (seg.data.length >= 6) {
-      let x1 = +seg.data[0];
-      let y1 = +seg.data[1];
-      let x2 = +seg.data[2];
-      let y2 = +seg.data[3];
-      let x = +seg.data[4];
-      let y = +seg.data[5];
-      if (delta) {
-        x1 += this._position[0];
-        x2 += this._position[0];
-        x += this._position[0];
-        y1 += this._position[1];
-        y2 += this._position[1];
-        y += this._position[1];
-      }
-      let ro = this.maxRandomnessOffset || 0;
-      ctx.moveTo(this._position[0], this._position[1]);
-      this._drawBezierTo(ctx, x1, y1, x2, y2, x, y);
-      ctx.moveTo(this._position[0] + this.getOffset(-ro, ro), this._position[1] + this.getOffset(-ro, ro));
-      let final = this._drawBezierTo(ctx, x1, y1, x2, y2, x, y);
-      x = final[0];
-      y = final[1];
-      this._setPosition(x, y);
-      this._bezierReflectionPoint = [x + (x - x2), y + (y - y2)];
-    }
-  }
-
-  _shortCurveTo(ctx, seg, prevSeg) {
-    var delta = seg.key === 's';
-    if (seg.data.length >= 4) {
-      let x2 = +seg.data[0];
-      let y2 = +seg.data[1];
-      let x = +seg.data[2];
-      let y = +seg.data[3];
-      if (delta) {
-        x2 += this._position[0];
-        x += this._position[0];
-        y2 += this._position[1];
-        y += this._position[1];
-      }
-      let x1 = x2;
-      let y1 = y2;
-      let prevKey = prevSeg ? prevSeg.key : "";
-      var ref = null;
-      if (prevKey == 'c' || prevKey == 'C' || prevKey == 's' || prevKey == 'S') {
-        ref = this._bezierReflectionPoint;
-      }
-      if (ref) {
-        x1 = ref[0];
-        y1 = ref[1];
-      }
-      ctx.moveTo(this._position[0], this._position[1]);
-      this._drawBezierTo(ctx, x1, y1, x2, y2, x, y);
-      ctx.moveTo(this._position[0], this._position[1]);
-      var final = this._drawBezierTo(ctx, x1, y1, x2, y2, x, y);
-      x = final[0];
-      y = final[1];
-      this._setPosition(x, y);
-      this._bezierReflectionPoint = [x + (x - x2), y + (y - y2)];
-    }
-  }
-
-  _shortQuadTo(ctx, seg, prevSeg) {
-    var delta = seg.key === 't';
-    if (seg.data.length >= 2) {
-      let x = +seg.data[0];
-      let y = +seg.data[1];
-      if (delta) {
-        x += this._position[0];
-        y += this._position[1];
-      }
-      let x1 = x;
-      let y1 = y;
-      let prevKey = prevSeg ? prevSeg.key : "";
-      var ref = null;
-      if (prevKey == 'q' || prevKey == 'Q' || prevKey == 't' || prevKey == 'T') {
-        ref = this._quadReflectionPoint;
-      }
-      if (ref) {
-        x1 = ref[0];
-        y1 = ref[1];
-      }
-      ctx.moveTo(this._position[0], this._position[1]);
-      this._drawQuadTo(ctx, x1, y1, x, y);
-      ctx.moveTo(this._position[0], this._position[1]);
-      let final = this._drawQuadTo(ctx, x1, y1, x, y);
-      x = final[0];
-      y = final[1];
-      this._setPosition(x, y);
-      this._quadReflectionPoint = [x + (x - x1), y + (y - y1)];
-    }
-  }
-
-  _arcTo(ctx, seg) {
-    var delta = seg.key === 'a';
-    if (seg.data.length >= 7) {
-      let rx = +seg.data[0];
-      let ry = +seg.data[1];
-      let angle = +seg.data[2];
-      let largeArcFlag = +seg.data[3];
-      let sweepFlag = +seg.data[4];
-      let x = +seg.data[5];
-      let y = +seg.data[6];
-      if (delta) {
-        x += this._position[0];
-        y += this._position[1];
-      }
-
-      if (x == this._position[0] && y == this._position[1]) {
-        return;
-      }
-      if (rx == 0 || ry == 0) {
-        this.drawLine(ctx, this._position[0], this._position[1], x, y, true);
-        this._setPosition(x, y);
-      } else {
-        var final;
-        for (var i = 0; i < 2; i++) {
-          ctx.moveTo(this._position[0], this._position[1]);
-          var arcConverter = new RoughArcConverter(
-            [this._position[0], this._position[1]],
-            [x, y],
-            [rx, ry],
-            angle,
-            largeArcFlag ? true : false,
-            sweepFlag ? true : false
-          );
-          var segment = arcConverter.getNextSegment();
-          while (segment) {
-            final = this._drawBezierTo(ctx, segment.cp1[0], segment.cp1[1], segment.cp2[0], segment.cp2[1], segment.to[0], segment.to[1]);
-            segment = arcConverter.getNextSegment();
-          }
-        }
-        if (final) {
-          x = final[0];
-          y = final[1];
-        }
-        this._setPosition(x, y);
-      }
-    }
-  }
-}
-
-class RoughPolygon extends RoughDrawable {
-  constructor(points) {
-    super();
-    this._points = points;
-  }
-
-  setPoint(index, x, y) {
-    this._points[index] = [x, y];
-    if (this._canvas) {
-      this._canvas.requestDraw();
-    }
-  }
-
-  getPoint(index) {
-    if (index > 0 && index < this._points.length) {
-      return this._points[index];
-    }
-    return null;
-  }
-
-  draw(ctx) {
-    if (this.fill) {
-      this._doFill(ctx, this._points);
-    }
-    ctx.save();
-    ctx.strokeStyle = this.stroke;
-    ctx.lineWidth = this.strokeWidth;
-    this.drawLinearPath(ctx, this._points, true);
-    ctx.restore();
-  }
-
-  _doFill(ctx, points) {
-    var fillStyle = this.fillStyle || "hachure";
-    switch (fillStyle) {
-      case "solid": {
-        ctx.save();
-        ctx.fillStyle = this.fill;
-        let o = this.maxRandomnessOffset || 0;
-        const len = points.length;
-        if (len > 2) {
-          ctx.beginPath();
-          ctx.moveTo(points[0][0] + this.getOffset(-o, o), points[0][1] + this.getOffset(-o, o));
-          for (var i = 1; i < len; i++) {
-            ctx.lineTo(points[i][0] + this.getOffset(-o, o), points[i][1] + this.getOffset(-o, o));
-          }
-          ctx.fill();
-        }
-        ctx.restore();
-        break;
-      }
-      default: {
-        let xc = [];
-        let yc = [];
-        points.forEach(function (p) {
-          xc.push(p[0]);
-          yc.push(p[1]);
+    const halfOffset = offset / 2;
+    const divergePoint = 0.2 + Math.random() * 0.2;
+    let midDispX = o.bowing * o.maxRandomnessOffset * (y2 - y1) / 200;
+    let midDispY = o.bowing * o.maxRandomnessOffset * (x2) / 200;
+    midDispX = this._getOffset(-midDispX, midDispX, o);
+    midDispY = this._getOffset(-midDispY, midDispY, o);
+    let ops = [];
+    if (move) {
+      if (overlay) {
+        ops.push({
+          op: 'move', data: [
+            x1 + this._getOffset(-halfOffset, halfOffset, o),
+            y1 + this._getOffset(-halfOffset, halfOffset, o)
+          ]
         });
-        this.hachureFillShape(ctx, xc, yc);
-        break;
+      } else {
+        ops.push({
+          op: 'move', data: [
+            x1 + this._getOffset(-offset, offset, o),
+            y1 + this._getOffset(-offset, offset, o)
+          ]
+        });
       }
     }
+    if (overlay) {
+      ops.push({
+        op: 'bcurveTo', data: [
+          midDispX + x1 + (x2 - x1) * divergePoint + this._getOffset(-halfOffset, halfOffset, o),
+          midDispY + y1 + (y2 - y1) * divergePoint + this._getOffset(-halfOffset, halfOffset, o),
+          midDispX + x1 + 2 * (x2 - x1) * divergePoint + this._getOffset(-halfOffset, halfOffset, o),
+          midDispY + y1 + 2 * (y2 - y1) * divergePoint + this._getOffset(-halfOffset, halfOffset, o),
+          x2 + this._getOffset(-halfOffset, halfOffset, o),
+          y2 + this._getOffset(-halfOffset, halfOffset, o)
+        ]
+      });
+    } else {
+      ops.push({
+        op: 'bcurveTo', data: [
+          midDispX + x1 + (x2 - x1) * divergePoint + this._getOffset(-offset, offset, o),
+          midDispY + y1 + (y2 - y1) * divergePoint + this._getOffset(-offset, offset, o),
+          midDispX + x1 + 2 * (x2 - x1) * divergePoint + this._getOffset(-offset, offset, o),
+          midDispY + y1 + 2 * (y2 - y1) * divergePoint + this._getOffset(-offset, offset, o),
+          x2 + this._getOffset(-offset, offset, o),
+          y2 + this._getOffset(-offset, offset, o)
+        ]
+      });
+    }
+    return ops;
+  }
+
+  _curve(points, closePoint, o) {
+    const len = points.length;
+    let ops = [];
+    if (len > 3) {
+      const b = [];
+      const s = 1 - o.curveTightness;
+      ops.push({ op: 'move', data: [points[1][0], points[1][1]] });
+      for (let i = 1; (i + 2) < len; i++) {
+        const cachedVertArray = points[i];
+        b[0] = [cachedVertArray[0], cachedVertArray[1]];
+        b[1] = [cachedVertArray[0] + (s * points[i + 1][0] - s * points[i - 1][0]) / 6, cachedVertArray[1] + (s * points[i + 1][1] - s * points[i - 1][1]) / 6];
+        b[2] = [points[i + 1][0] + (s * points[i][0] - s * points[i + 2][0]) / 6, points[i + 1][1] + (s * points[i][1] - s * points[i + 2][1]) / 6];
+        b[3] = [points[i + 1][0], points[i + 1][1]];
+        ops.push({ op: 'bcurveTo', data: [b[1][0], b[1][1], b[2][0], b[2][1], b[3][0], b[3][1]] });
+      }
+      if (closePoint && closePoint.length === 2) {
+        let ro = o.maxRandomnessOffset;
+        // TODO: more roughness here?
+        ops.push({ ops: 'lineTo', data: [closePoint[0] + this._getOffset(-ro, ro, o), closePoint[1] + + this._getOffset(-ro, ro, o)] });
+      }
+    } else if (len === 3) {
+      ops.push({ op: 'move', data: [points[1][0], points[1][1]] });
+      ops.push({
+        op: 'bcurveTo', data: [
+          points[1][0], points[1][1],
+          points[2][0], points[2][1],
+          points[2][0], points[2][1]]
+      });
+    } else if (len === 2) {
+      ops = ops.concat(this._doubleLine(points[0][0], points[0][1], points[1][0], points[1][1], o));
+    }
+    return ops;
+  }
+
+  _ellipse(increment, cx, cy, rx, ry, offset, overlap, o) {
+    const radOffset = this._getOffset(-0.5, 0.5, o) - (Math.PI / 2);
+    const points = [];
+    points.push([
+      this._getOffset(-offset, offset, o) + cx + 0.9 * rx * Math.cos(radOffset - increment),
+      this._getOffset(-offset, offset, o) + cy + 0.9 * ry * Math.sin(radOffset - increment)
+    ]);
+    for (let angle = radOffset; angle < (Math.PI * 2 + radOffset - 0.01); angle = angle + increment) {
+      points.push([
+        this._getOffset(-offset, offset, o) + cx + rx * Math.cos(angle),
+        this._getOffset(-offset, offset, o) + cy + ry * Math.sin(angle)
+      ]);
+    }
+    points.push([
+      this._getOffset(-offset, offset, o) + cx + rx * Math.cos(radOffset + Math.PI * 2 + overlap * 0.5),
+      this._getOffset(-offset, offset, o) + cy + ry * Math.sin(radOffset + Math.PI * 2 + overlap * 0.5)
+    ]);
+    points.push([
+      this._getOffset(-offset, offset, o) + cx + 0.98 * rx * Math.cos(radOffset + overlap),
+      this._getOffset(-offset, offset, o) + cy + 0.98 * ry * Math.sin(radOffset + overlap)
+    ]);
+    points.push([
+      this._getOffset(-offset, offset, o) + cx + 0.9 * rx * Math.cos(radOffset + overlap * 0.5),
+      this._getOffset(-offset, offset, o) + cy + 0.9 * ry * Math.sin(radOffset + overlap * 0.5)
+    ]);
+    return this._curve(points, null, o);
+  }
+
+  _curveWithOffset(points, offset, o) {
+    const ps = [];
+    ps.push([
+      points[0][0] + this._getOffset(-offset, offset, o),
+      points[0][1] + this._getOffset(-offset, offset, o),
+    ]);
+    ps.push([
+      points[0][0] + this._getOffset(-offset, offset, o),
+      points[0][1] + this._getOffset(-offset, offset, o),
+    ]);
+    for (let i = 1; i < points.length; i++) {
+      ps.push([
+        points[i][0] + this._getOffset(-offset, offset, o),
+        points[i][1] + this._getOffset(-offset, offset, o),
+      ]);
+      if (i === (points.length - 1)) {
+        ps.push([
+          points[i][0] + this._getOffset(-offset, offset, o),
+          points[i][1] + this._getOffset(-offset, offset, o),
+        ]);
+      }
+    }
+    return this._curve(ps, null, o);
+  }
+
+  _arc(increment, cx, cy, rx, ry, strt, stp, offset, o) {
+    const radOffset = strt + this._getOffset(-0.1, 0.1, o);
+    const points = [];
+    points.push([
+      this._getOffset(-offset, offset, o) + cx + 0.9 * rx * Math.cos(radOffset - increment),
+      this._getOffset(-offset, offset, o) + cy + 0.9 * ry * Math.sin(radOffset - increment)
+    ]);
+    for (let angle = radOffset; angle <= stp; angle = angle + increment) {
+      points.push([
+        this._getOffset(-offset, offset, o) + cx + rx * Math.cos(angle),
+        this._getOffset(-offset, offset, o) + cy + ry * Math.sin(angle)
+      ]);
+    }
+    points.push([
+      cx + rx * Math.cos(stp),
+      cy + ry * Math.sin(stp)
+    ]);
+    points.push([
+      cx + rx * Math.cos(stp),
+      cy + ry * Math.sin(stp)
+    ]);
+    return this._curve(points, null, o);
+  }
+
+  _getIntersectingLines(lineCoords, xCoords, yCoords) {
+    let intersections = [];
+    var s1 = new RoughSegment(lineCoords[0], lineCoords[1], lineCoords[2], lineCoords[3]);
+    for (var i = 0; i < xCoords.length; i++) {
+      let s2 = new RoughSegment(xCoords[i], yCoords[i], xCoords[(i + 1) % xCoords.length], yCoords[(i + 1) % xCoords.length]);
+      if (s1.compare(s2) == RoughSegmentRelation().INTERSECTS) {
+        intersections.push([s1.xi, s1.yi]);
+      }
+    }
+    return intersections;
   }
 }
 
-class RoughRectangle extends RoughDrawable {
-  constructor(x, y, width, height) {
-    super(['x', 'y', 'width', 'height']);
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
-  }
-
-  draw(ctx) {
-    let left = this.x;
-    let right = this.x + this.width;
-    let top = this.y;
-    let bottom = this.y + this.height;
-
-    if (this.fill) {
-      this._doFill(ctx, left, right, top, bottom);
-    }
-
-    ctx.save();
-    ctx.strokeStyle = this.stroke;
-    ctx.lineWidth = this.strokeWidth;
-    this.drawLine(ctx, left, top, right, top);
-    this.drawLine(ctx, right, top, right, bottom);
-    this.drawLine(ctx, right, bottom, left, bottom);
-    this.drawLine(ctx, left, bottom, left, top);
-    ctx.restore();
-  }
-
-  _doFill(ctx, left, right, top, bottom) {
-    var fillStyle = this.fillStyle || "hachure";
-    switch (fillStyle) {
-      case "solid": {
-        ctx.save();
-        ctx.fillStyle = this.fill;
-        let o = this.maxRandomnessOffset || 0;
-        var points = [
-          [left + this.getOffset(-o, o), top + this.getOffset(-o, o)],
-          [right + this.getOffset(-o, o), top + this.getOffset(-o, o)],
-          [right + this.getOffset(-o, o), bottom + this.getOffset(-o, o)],
-          [left + this.getOffset(-o, o), bottom + this.getOffset(-o, o)]
-        ];
-        ctx.beginPath();
-        ctx.moveTo(points[0][0], points[0][1]);
-        ctx.lineTo(points[1][0], points[1][1]);
-        ctx.lineTo(points[2][0], points[2][1]);
-        ctx.lineTo(points[3][0], points[3][1]);
-        ctx.fill();
-        ctx.restore();
-        break;
-      }
-      default: {
-        let xc = [left, right, right, left];
-        let yc = [top, top, bottom, bottom];
-        this.hachureFillShape(ctx, xc, yc);
-        break;
-      }
-    }
-  }
-}
+self._roughScript = self.document && self.document.currentScript && self.document.currentScript.src;
 
 class RoughCanvas {
-  constructor(canvas, width, height) {
-    this._canvas = canvas;
-    this.width = width || canvas.width;
-    this.height = height || canvas.height;
-    canvas.width = this.width;
-    canvas.height = this.height;
-    this._objects = [];
-    this._drawRequested = false;
-
-    this.roughness = 1;
-    this.bowing = 1;
-
-    this.stroke = "#000";
-    this.strokeWidth = 1;
-
-    this.fill = null;
-    this.fillStyle = "hachure";
-    this.fillWeight = -1;
-    this.hachureAngle = -41;
-    this.hachureGap = -1;
-
-    this.maxRandomnessOffset = 2;
-  }
-
-  add(drawable) {
-    if (drawable instanceof RoughDrawable) {
-      if (drawable.attached) {
-        return;
-      }
-      this._objects.push(drawable);
-      drawable.attach(this, this._objects.length - 1);
-      this.requestDraw();
-    } else {
-      console.warn("Ignoring canvas add - the object is not drawable", drawable);
+  constructor(canvas, config) {
+    this.config = config || {};
+    this.canvas = canvas;
+    this.ctx = this.canvas.getContext("2d");
+    this.defaultOptions = {
+      maxRandomnessOffset: 2,
+      roughness: 1,
+      bowing: 1,
+      stroke: '#000',
+      strokeWidth: 1,
+      curveTightness: 0,
+      curveStepCount: 9,
+      fill: null,
+      fillStyle: 'hachure',
+      fillWeight: -1,
+      hachureAngle: -41,
+      hachureGap: -1
+    };
+    if (this.config.options) {
+      this.defaultOptions = this._options(this.config.options);
     }
   }
 
-  remove(drawable) {
-    if (drawable instanceof RoughDrawable) {
-      if (drawable.attached) {
-        this._objects.splice(drawable.z, 1);
-        drawable.detach();
-        this.requestDraw();
-      }
-    } else {
-      console.warn("Ignoring canvas remove - the object is not drawable", drawable);
-    }
+  static createRenderer() {
+    return new RoughRenderer();
   }
 
-  clear() {
-    if (this._objects && this._objects.length) {
-      this._objects.forEach(function (d) {
-        d.detach();
-      });
-    }
-    this._objects = [];
-    this.requestDraw();
-  }
-
-  requestDraw() {
-    if (!this._drawRequested) {
-      this._drawRequested = true;
-      window.requestAnimationFrame(() => {
-        this._drawRequested = false;
-        this._draw();
-      });
-    }
-  }
-
-  _draw() {
-    const ctx = this._canvas.getContext("2d");
-    ctx.clearRect(0, 0, this.width, this.height);
-    for (var i = 0; i < this._objects.length; i++) {
-      try {
-        this._objects[i].draw(ctx);
-      } catch (ex) {
-        console.error(ex);
+  async lib() {
+    if (!this._renderer) {
+      if (window.workly && (!this.config.noWorker)) {
+        const tos = Function.prototype.toString;
+        const worklySource = this.config.worklyURL || 'https://cdn.jsdelivr.net/gh/pshihn/workly/dist/workly.min.js';
+        const rendererSource = this.config.roughURL || self._roughScript;
+        if (rendererSource && worklySource) {
+          let code = `importScripts('${worklySource}', '${rendererSource}');\nworkly.expose(self.rough.createRenderer());`;
+          let ourl = URL.createObjectURL(new Blob([code]));
+          this._renderer = workly.proxy(ourl);
+        } else {
+          this._renderer = new RoughRenderer();
+        }
+      } else {
+        this._renderer = new RoughRenderer();
       }
     }
+    return this._renderer;
   }
 
-  getHiddenCanvas() {
-    if (!this._hiddenCanvas) {
-      var div = document.createElement("div");
-      div.setAttribute("id", "roughHiddenCanvas");
-      div.style.overflow = "hidden";
-      div.style.position = "absolute";
-      div.style.left = "-1px";
-      div.style.top = "-1px";
-      div.style.width = "0px";
-      div.style.height = "0px";
-      div.style.opacity = 0;
-      div.style.pointerEvents = "none";
-      document.body.appendChild(div);
-      this._hiddenCanvas = document.createElement("canvas");
-      div.appendChild(this._hiddenCanvas);
+  async line(x1, y1, x2, y2, options) {
+    let o = this._options(options);
+    let lib = await this.lib();
+    let drawing = await lib.line(x1, y1, x2, y2, o);
+    this._draw(this.ctx, drawing, o);
+  }
+
+  async rectangle(x, y, width, height, options) {
+    let o = this._options(options);
+    let lib = await this.lib();
+    if (o.fill) {
+      let ctx = this.ctx;
+      const xc = [x, x + width, x + width, x];
+      const yc = [y, y, y + height, y + height];
+      if (o.fillStyle === 'solid') {
+        let fillShape = await lib.solidFillShape(xc, yc, o);
+        this._fill(ctx, fillShape, o);
+      } else {
+        let fillShape = await lib.hachureFillShape(xc, yc, o);
+        this._fillSketch(ctx, fillShape, o);
+      }
     }
-    var hc = this._hiddenCanvas;
-    hc.width = this.width;
-    hc.height = this.height;
-    const ctx = hc.getContext("2d");
-    ctx.clearRect(0, 0, this.width, this.height);
-    return hc;
+    let drawing = await lib.rectangle(x, y, width, height, o);
+    this._draw(this.ctx, drawing, o);
   }
 
-  arc(x, y, width, height, start, stop, closed) {
-    var d = new RoughArc(x, y, width, height, start, stop, closed);
-    this.add(d);
-    return d;
+  async ellipse(x, y, width, height, options) {
+    let o = this._options(options);
+    let lib = await this.lib();
+    if (o.fill) {
+      if (o.fillStyle === 'solid') {
+        let fillShape = await lib.ellipse(x, y, width, height, o);
+        this._fill(this.ctx, fillShape, o);
+      } else {
+        let fillShape = await lib.hachureFillEllipse(x, y, width, height, o);
+        this._fillSketch(this.ctx, fillShape, o);
+      }
+    }
+    let drawing = await lib.ellipse(x, y, width, height, o);
+    this._draw(this.ctx, drawing, o);
   }
 
-  circle(x, y, radius) {
-    var d = new RoughCircle(x, y, radius);
-    this.add(d);
-    return d;
+  async circle(x, y, radius, options) {
+    return await this.ellipse(x, y, radius, radius, options);
   }
 
-  ellipse(x, y, width, height) {
-    var d = new RoughEllipse(x, y, width, height);
-    this.add(d);
-    return d;
+  async linearPath(points, options) {
+    let o = this._options(options);
+    let lib = await this.lib();
+    let drawing = await lib.linearPath(points, false, o);
+    this._draw(this.ctx, drawing, o);
   }
 
-  curve(points) {
-    var d = new RoughCurve(points);
-    this.add(d);
-    return d;
+  async polygon(points, options) {
+    let o = this._options(options);
+    let lib = await this.lib();
+    if (o.fill) {
+      let xc = [], yc = [];
+      for (let p of points) {
+        xc.push(p[0]);
+        yc.push(p[1]);
+      }
+      if (o.fillStyle === 'solid') {
+        let fillShape = await lib.solidFillShape(xc, yc, o);
+        this._fill(this.ctx, fillShape, o);
+      } else {
+        let fillShape = await lib.hachureFillShape(xc, yc, o);
+        this._fillSketch(this.ctx, fillShape, o);
+      }
+    }
+    let drawing = await lib.linearPath(points, true, o);
+    this._draw(this.ctx, drawing, o);
   }
 
-  line(x1, y1, x2, y2) {
-    var d = new RoughLine(x1, y1, x2, y2);
-    this.add(d);
-    return d;
+  async arc(x, y, width, height, start, stop, closed, options) {
+    let o = this._options(options);
+    let lib = await this.lib();
+    if (closed && o.fill) {
+      if (o.fillStyle === 'solid') {
+        let fillShape = await lib.arc(x, y, width, height, start, stop, true, false, o);
+        this._fill(this.ctx, fillShape, o);
+      } else {
+        let fillShape = await lib.hachureFillArc(x, y, width, height, start, stop, o);
+        this._fillSketch(this.ctx, fillShape, o);
+      }
+    }
+    let drawing = await lib.arc(x, y, width, height, start, stop, closed, true, o);
+    this._draw(this.ctx, drawing, o);
   }
 
-  rectangle(x, y, width, height) {
-    var d = new RoughRectangle(x, y, width, height);
-    this.add(d);
-    return d;
+  async curve(points, options) {
+    let o = this._options(options);
+    let lib = await this.lib();
+    let drawing = await lib.curve(points, o);
+    this._draw(this.ctx, drawing, o);
   }
 
-  linearPath(points) {
-    var d = new RoughLinearPath(points);
-    this.add(d);
-    return d;
+  async path(d, options) {
+    if (!d) {
+      return;
+    }
+    let o = this._options(options);
+    let lib = await this.lib();
+    if (o.fill) {
+      if (o.fillStyle === 'solid') {
+        this.ctx.save();
+        this.ctx.fillStyle = o.fill;
+        let p2d = new Path2D(d);
+        this.ctx.fill(p2d);
+        this.ctx.restore();
+      } else {
+        let size = [0, 0];
+        try {
+          const ns = "http://www.w3.org/2000/svg";
+          let svg = document.createElementNS(ns, "svg");
+          svg.setAttribute("width", "0");
+          svg.setAttribute("height", "0");
+          let pathNode = document.createElementNS(ns, "path");
+          pathNode.setAttribute('d', d);
+          svg.appendChild(pathNode);
+          document.body.appendChild(svg);
+          let bb = pathNode.getBBox();
+          if (bb) {
+            size[0] = bb.width || 0;
+            size[1] = bb.height || 0;
+          }
+          document.body.removeChild(svg);
+        } catch (err) { }
+        if (!(size[0] * size[1])) {
+          size = [this.canvas.width || 100, this.canvas.height || 100];
+        }
+        size[0] = Math.min(size[0] * 4, this.canvas.width);
+        size[1] = Math.min(size[1] * 4, this.canvas.height);
+        let xc = [0, size[0], size[0], 0];
+        let yc = [0, 0, size[1], size[1]];
+        let fillShape = await lib.hachureFillShape(xc, yc, o);
+        let hcanvas = document.createElement('canvas');
+        hcanvas.width = size[0];
+        hcanvas.height = size[1];
+        this._fillSketch(hcanvas.getContext("2d"), fillShape, o);
+        this.ctx.save();
+        this.ctx.fillStyle = this.ctx.createPattern(hcanvas, 'repeat');
+        let p2d = new Path2D(d);
+        this.ctx.fill(p2d);
+        this.ctx.restore();
+      }
+    }
+    let drawing = await lib.svgPath(d, o);
+    this._draw(this.ctx, drawing, o);
   }
 
-  polygon(points) {
-    var d = new RoughPolygon(points);
-    this.add(d);
-    return d;
+  // private
+
+  _options(options) {
+    return options ? Object.assign({}, this.defaultOptions, options) : this.defaultOptions;
   }
 
-  path(d) {
-    var p = new RoughPath(d);
-    this.add(p);
-    return p;
+  _draw(ctx, drawing, o) {
+    ctx.save();
+    ctx.strokeStyle = o.stroke;
+    ctx.lineWidth = o.strokeWidth;
+    this._drawToContext(ctx, drawing);
+    ctx.restore();
+  }
+
+  _fillSketch(ctx, drawing, o) {
+    let fweight = o.fillWeight;
+    if (fweight < 0) {
+      fweight = o.strokeWidth / 2;
+    }
+    ctx.save();
+    ctx.strokeStyle = o.fill;
+    ctx.lineWidth = fweight;
+    this._drawToContext(ctx, drawing);
+    ctx.restore();
+  }
+
+  _fill(ctx, drawing, o) {
+    ctx.save();
+    ctx.fillStyle = o.fill;
+    drawing.type = 'fillPath';
+    this._drawToContext(ctx, drawing, o);
+    ctx.restore();
+  }
+
+  _drawToContext(ctx, drawing) {
+    if (drawing.type === 'path' || drawing.type === 'fillPath') {
+      ctx.beginPath();
+      for (let item of drawing.ops) {
+        const data = item.data;
+        switch (item.op) {
+          case 'move':
+            ctx.moveTo(data[0], data[1]);
+            break;
+          case 'bcurveTo':
+            ctx.bezierCurveTo(data[0], data[1], data[2], data[3], data[4], data[5]);
+            break;
+          case 'qcurveTo':
+            ctx.quadraticCurveTo(data[0], data[1], data[2], data[3]);
+            break;
+          case 'lineTo':
+            ctx.lineTo(data[0], data[1]);
+            break;
+        }
+      }
+      if (drawing.type === 'fillPath') {
+        ctx.fill();
+      } else {
+        ctx.stroke();
+      }
+    }
   }
 }
 
-return RoughCanvas;
+var index = {
+  canvas(canvas, config) {
+    return new RoughCanvas(canvas, config);
+  },
+  createRenderer() {
+    return RoughCanvas.createRenderer();
+  }
+};
+
+return index;
 
 }());
