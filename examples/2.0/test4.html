@@ -15,9 +15,15 @@
     (async () => {
       const rc = rough.canvas(document.getElementById('canvas'));
 
-      rc.rectangle(15, 15, 80, 80, { roughness: 0.5, fill: 'red' });
-      rc.rectangle(120, 15, 80, 80, { roughness: 2.8, fill: 'blue' });
-      rc.rectangle(220, 15, 80, 80, { bowing: 6, stroke: 'green', strokeWidth: 3 });
+      await rc.arc(350, 300, 200, 180, Math.PI, Math.PI * 1.6, true);
+      await rc.arc(350, 300, 200, 180, 0, Math.PI / 2, true, {
+        stroke: 'red', strokeWidth: 4,
+        fill: 'rgba(255,255,0,0.4)', fillStyle: 'solid'
+      });
+      await rc.arc(350, 300, 200, 180, Math.PI / 2, Math.PI, true, {
+        stroke: 'blue', strokeWidth: 2,
+        fill: 'rgba(255,0,255,0.4)'
+      });
     })();
   </script>
 </body>
