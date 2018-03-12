@@ -1,4 +1,4 @@
-var RoughCanvas = (function () {
+var rough = (function () {
 'use strict';
 
 function RoughSegmentRelation() {
@@ -1395,7 +1395,7 @@ class RoughCanvas {
         const worklySource = this.config.worklyURL || 'https://cdn.jsdelivr.net/gh/pshihn/workly/dist/workly.min.js';
         const rendererSource = this.config.roughURL || self._roughScript;
         if (rendererSource && worklySource) {
-          let code = `importScripts('${worklySource}', '${rendererSource}');\nworkly.expose(self.RoughCanvas.createRenderer());`;
+          let code = `importScripts('${worklySource}', '${rendererSource}');\nworkly.expose(self.rough.createRenderer());`;
           let ourl = URL.createObjectURL(new Blob([code]));
           this._renderer = workly.proxy(ourl);
         } else {
@@ -1622,6 +1622,15 @@ class RoughCanvas {
   }
 }
 
-return RoughCanvas;
+var index = {
+  canvas(canvas, config) {
+    return new RoughCanvas(canvas, config);
+  },
+  createRenderer() {
+    return RoughCanvas.createRenderer();
+  }
+};
+
+return index;
 
 }());

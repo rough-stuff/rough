@@ -23,7 +23,7 @@
 
   <script>
     (async () => {
-      const rough = new RoughCanvas(document.getElementById('canvas'),
+      const rc = rough.canvas(document.getElementById('canvas'),
         {
           options: {
             simplification: 0.2, roughness: 0.5,
@@ -44,7 +44,7 @@
         if (error) throw error;
         let topo = topojson.feature(us, us.objects.states).features;
         for (let feature of topo) {
-          await rough.path(path(feature));
+          await rc.path(path(feature));
         }
       });
 

@@ -21,25 +21,25 @@
 
   <script>
     (async () => {
-      const rough = new RoughCanvas(document.getElementById('canvas'));
-      await rough.path('M400 100 h 90 v 90 h -90z', {
+      const rc = rough.canvas(document.getElementById('canvas'));
+      await rc.path('M400 100 h 90 v 90 h -90z', {
         stroke: 'red',
         strokeWidth: '3',
         fill: 'rgba(0,0,255,0.2)',
         fillStyle: 'solid'
       });
-      await rough.path('M400 250 h 90 v 90 h -90z', {
+      await rc.path('M400 250 h 90 v 90 h -90z', {
         fill: 'rgba(0,0,255,0.6)'
       });
-      await rough.path('M37,17v15H14V17z M50,0H0v50h50z', {
+      await rc.path('M37,17v15H14V17z M50,0H0v50h50z', {
         stroke: 'red',
         strokeWidth: '1',
         fill: 'blue'
       });
-      await rough.path('M80 80 A 45 45, 0, 0, 0, 125 125 L 125 80 Z', { fill: 'green' });
-      await rough.path('M230 80 A 45 45, 0, 1, 0, 275 125 L 275 80 Z', { fill: 'purple', hachureAngle: 60, hachureGap: 5 });
-      await rough.path('M80 230 A 45 45, 0, 0, 1, 125 275 L 125 230 Z', { fill: 'red' });
-      await rough.path('M230 230 A 45 45, 0, 1, 1, 275 275 L 275 230 Z', { fill: 'blue' });
+      await rc.path('M80 80 A 45 45, 0, 0, 0, 125 125 L 125 80 Z', { fill: 'green' });
+      await rc.path('M230 80 A 45 45, 0, 1, 0, 275 125 L 275 80 Z', { fill: 'purple', hachureAngle: 60, hachureGap: 5 });
+      await rc.path('M80 230 A 45 45, 0, 0, 1, 125 275 L 125 230 Z', { fill: 'red' });
+      await rc.path('M230 230 A 45 45, 0, 1, 1, 275 275 L 275 230 Z', { fill: 'blue' });
     })();
   </script>
 </body>
