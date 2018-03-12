@@ -21,7 +21,7 @@ npm install --save roughjs
 
 ```js
 const rc = rough.canvas(document.getElementById('canvas'));
-rough.rectangle(10, 10, 200, 200); // x, y, width, height
+rc.rectangle(10, 10, 200, 200); // x, y, width, height
 ```
 
 ### Lines and Ellipses
