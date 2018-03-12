@@ -98,6 +98,11 @@ If you have [Workly](https://github.com/pshihn/workly) imported on your web page
 
 [View examples here](https://github.com/pshihn/rough/wiki/Examples)
 
+## RoughJS in a web worker
+
+RoughJS processing can easily be delegated to a web worker. 
+Read about it [here](https://github.com/pshihn/rough/wiki/RoughJS-in-a-web-worker).
+
 ## API & Documentation
 
 [Full Rough.js API](https://github.com/pshihn/rough/wiki)
