@@ -4,26 +4,57 @@
   <title>RoughJS sample</title>
   <script src="https://cdn.jsdelivr.net/gh/pshihn/workly/dist/workly.js"></script>
   <script src="../../dist/rough.min.js"></script>
+  <script src="//d3js.org/d3.v3.min.js"></script>
+  <script src="//d3js.org/topojson.v1.min.js"></script>
   <style>
   </style>
 </head>
 
 <body>
-  <canvas id="canvas" width="800" height="600"></canvas>
+  <canvas id="canvas" width="960" height="500"></canvas>
 
   <script>
     (async () => {
-      const rc = rough.canvas(document.getElementById('canvas'));
+      const rc = rough.canvas(document.getElementById('canvas'),
+        {
+          options: {
+            simplification: 0.1, roughness: 0.5
+          }
+        });
 
-      await rc.arc(350, 300, 200, 180, Math.PI, Math.PI * 1.6, true);
-      await rc.arc(350, 300, 200, 180, 0, Math.PI / 2, true, {
-        stroke: 'red', strokeWidth: 4,
-        fill: 'rgba(255,255,0,0.4)', fillStyle: 'solid'
+      const width = 960, height = 500;
+
+      const projection = d3.geo.albersUsa()
+        .scale(1070)
+        .translate([width / 2, height / 2]);
+
+      const path = d3.geo.path()
+        .projection(projection);
+
+      const randomColor = () => {
+        let r = `rgb(${Math.round(Math.random() * 255)}, ${Math.round(Math.random() * 255)}, ${Math.round(Math.random() * 255)})`;
+        console.log(r);
+        return r;
+      }
+
+      const randomAngle = () => {
+        return (Math.random() > 0.5 ? -1 : 1) * (1 + Math.random() * 88);
+      }
+
+      const randomStyle = () => {
+        return (Math.random() > 0.5 ? 'solid' : '');
+      }
+
+      d3.json("./us.json", async (error, us) => {
+        if (error) throw error;
+        let topo = topojson.feature(us, us.objects.states).features;
+        feature = topo[43];
+        await rc.path(path(feature), {
+          fill: 'red',
+          strokeWidth: 1
+        });
       });
-      await rc.arc(350, 300, 200, 180, Math.PI / 2, Math.PI, true, {
-        stroke: 'blue', strokeWidth: 2,
-        fill: 'rgba(255,0,255,0.4)'
-      });
+
     })();
   </script>
 </body>
