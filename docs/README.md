@@ -30,7 +30,7 @@ rough.rectangle(10, 10, 200, 200); // x, y, width, height
 
 ```js
 rc.circle(80, 120, 50); // centerX, centerY, diameter
-rc.ellipse(300, 100, 150, 80); // centerX, centerY, radiusX, radiusY
+rc.ellipse(300, 100, 150, 80); // centerX, centerY, width, height
 rc.line(80, 120, 300, 100); // x1, y1, x2, y2
 ```
 
@@ -82,7 +82,7 @@ rc.path('M230 230 A 45 45, 0, 1, 1, 275 275 L 275 230 Z', { fill: 'blue' });
 If you have [Workly](https://github.com/pshihn/workly) imported on your web page (~1k only), RoughJS will automatically offload all processing to a web worker - freeing up your main UI thread. This is great when creating complex drawings using RoughJs.
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/pshihn/workly/dist/workly.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/pshihn/workly/dist/workly.min.js"></script>
 <script src="../../dist/rough.min.js"></script>
 ```
 
@@ -92,7 +92,7 @@ If you have [Workly](https://github.com/pshihn/workly) imported on your web page
 
 ## Examples
 
-[View examples on Wiki](https://github.com/pshihn/rough/wiki/Examples)
+[View examples here](https://github.com/pshihn/rough/wiki/Examples)
 
 ## API & Documentation
 
