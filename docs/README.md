@@ -106,5 +106,7 @@ If you have [Workly](https://github.com/pshihn/workly) imported on your web page
 
 Some of the core algorithms were adapted from [handy](https://www.gicentre.net/software/#/handy/) processing lib.
 
+Algorithm to convert SVG arcs to Canvas [described here](https://www.w3.org/TR/SVG/implnote.html) was adapted from [Mozilla codebase](https://hg.mozilla.org/mozilla-central/file/17156fbebbc8/content/svg/content/src/nsSVGPathDataParser.cpp#l887)
+
 ## License
 [MIT License](https://github.com/pshihn/rough/blob/master/LICENSE) (c) [Preet Shihn](https://twitter.com/preetster)
