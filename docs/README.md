@@ -102,5 +102,9 @@ If you have [Workly](https://github.com/pshihn/workly) imported on your web page
 
 [Full Rough.js API](https://github.com/pshihn/rough/wiki)
 
+## Credits
+
+Some of the core algorithms were adapted from [handy](https://www.gicentre.net/software/#/handy/) processing lib.
+
 ## License
 [MIT License](https://github.com/pshihn/rough/blob/master/LICENSE) (c) [Preet Shihn](https://twitter.com/preetster)
