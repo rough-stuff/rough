@@ -2,3 +2,5 @@
 .DS_Store
 z
 node_modules
+.idea
+coverage
