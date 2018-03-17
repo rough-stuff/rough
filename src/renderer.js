@@ -171,7 +171,7 @@ export class RoughRenderer {
         }
       }
     }
-    return { type: 'path', ops };
+    return { type: 'fillSketch', ops };
   }
 
   hachureFillEllipse(cx, cy, width, height, o) {
@@ -204,7 +204,7 @@ export class RoughRenderer {
       let p2 = this._affine(xPos, cy + halfLen, cx, cy, sinAnglePrime, cosAnglePrime, aspectRatio);
       ops = ops.concat(this._doubleLine(p1[0], p1[1], p2[0], p2[1], o));
     }
-    return { type: 'path', ops };
+    return { type: 'fillSketch', ops };
   }
 
   svgPath(path, o) {
