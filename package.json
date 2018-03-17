@@ -7,7 +7,7 @@
     "build": "npm run clean && rollup src/index.js --o dist/rough.js --f iife  --name \"rough\" && npm run minify",
     "clean": "rm -rf dist/",
     "minify": "babel-minify --mangle dist/rough.js >> dist/rough.min.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -25,7 +25,23 @@
   },
   "homepage": "https://roughjs.com",
   "devDependencies": {
+    "babel-jest": "^22.4.1",
     "babel-minify": "^0.3.0",
+    "babel-preset-env": "^1.6.1",
+    "jest": "^22.4.2",
+    "jest-canvas-mock": "^1.0.2",
     "rollup": "^0.56.3"
+  },
+  "jest": {
+    "testRegex": "/__tests__/.*\\.spec\\.js$",
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "src/**/*.{js}",
+      "!**/node_modules/**",
+      "!**/vendor/**"
+    ],
+    "setupFiles": [
+      "jest-canvas-mock"
+    ]
   }
 }
