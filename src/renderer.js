@@ -542,7 +542,7 @@ export class RoughRenderer {
     const halfOffset = offset / 2;
     const divergePoint = 0.2 + Math.random() * 0.2;
     let midDispX = o.bowing * o.maxRandomnessOffset * (y2 - y1) / 200;
-    let midDispY = o.bowing * o.maxRandomnessOffset * (x1, x2) / 200;
+    let midDispY = o.bowing * o.maxRandomnessOffset * (x1 - x2) / 200;
     midDispX = this._getOffset(-midDispX, midDispX, o);
     midDispY = this._getOffset(-midDispY, midDispY, o);
     let ops = [];
