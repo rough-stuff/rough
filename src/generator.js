@@ -82,7 +82,7 @@ export class RoughGenerator {
         shape.type = 'fillPath';
         paths.push(shape);
       } else {
-        paths.push(this.lib.ellipse(x, y, width, height, o));
+        paths.push(this.lib.hachureFillEllipse(x, y, width, height, o));
       }
     }
     paths.push(this.lib.ellipse(x, y, width, height, o));
@@ -158,7 +158,7 @@ export class RoughGenerator {
         shape.type = 'path2Dpattern';
         shape.size = size;
         shape.path = d;
-        this.path.push(shape);
+        paths.push(shape);
       }
     }
     paths.push(this.lib.svgPath(d, o));

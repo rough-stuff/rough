@@ -1441,7 +1441,7 @@ class RoughGenerator {
         shape.type = 'fillPath';
         paths.push(shape);
       } else {
-        paths.push(this.lib.ellipse(x, y, width, height, o));
+        paths.push(this.lib.hachureFillEllipse(x, y, width, height, o));
       }
     }
     paths.push(this.lib.ellipse(x, y, width, height, o));
@@ -1517,7 +1517,7 @@ class RoughGenerator {
         shape.type = 'path2Dpattern';
         shape.size = size;
         shape.path = d;
-        this.path.push(shape);
+        paths.push(shape);
       }
     }
     paths.push(this.lib.svgPath(d, o));
@@ -1678,30 +1678,28 @@ class RoughCanvas {
   }
 
   _drawToContext(ctx, drawing) {
-    if (drawing.type === 'path' || drawing.type === 'fillPath') {
-      ctx.beginPath();
-      for (let item of drawing.ops) {
-        const data = item.data;
-        switch (item.op) {
-          case 'move':
-            ctx.moveTo(data[0], data[1]);
-            break;
-          case 'bcurveTo':
-            ctx.bezierCurveTo(data[0], data[1], data[2], data[3], data[4], data[5]);
-            break;
-          case 'qcurveTo':
-            ctx.quadraticCurveTo(data[0], data[1], data[2], data[3]);
-            break;
-          case 'lineTo':
-            ctx.lineTo(data[0], data[1]);
-            break;
-        }
+    ctx.beginPath();
+    for (let item of drawing.ops) {
+      const data = item.data;
+      switch (item.op) {
+        case 'move':
+          ctx.moveTo(data[0], data[1]);
+          break;
+        case 'bcurveTo':
+          ctx.bezierCurveTo(data[0], data[1], data[2], data[3], data[4], data[5]);
+          break;
+        case 'qcurveTo':
+          ctx.quadraticCurveTo(data[0], data[1], data[2], data[3]);
+          break;
+        case 'lineTo':
+          ctx.lineTo(data[0], data[1]);
+          break;
       }
-      if (drawing.type === 'fillPath') {
-        ctx.fill();
-      } else {
-        ctx.stroke();
-      }
+    }
+    if (drawing.type === 'fillPath') {
+      ctx.fill();
+    } else {
+      ctx.stroke();
     }
   }
 }
