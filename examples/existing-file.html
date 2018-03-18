@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+  <title>RoughJS Existing File example with D3.js</title>
+  <script src="https://cdn.jsdelivr.net/gh/pshihn/workly/dist/workly.js"></script>
+  <script src="https://cdn.rawgit.com/pshihn/rough/9be60b1e/dist/rough.min.js"></script>
+  <script src="https://d3js.org/d3.v3.min.js"></script>
+  <script src="https://d3js.org/topojson.v1.min.js"></script>
+
+    <style type="text/css">
+        #canvas{
+            margin-left:100px;
+            margin-top: 100px;
+        }
+    </style>
+</head>
+
+<body>
+  <h2>RoughJS Existing File example with D3.js</h2>
+
+  <select>
+      <option selected>Select an image...</option>
+      <option onclick="load_svg('https://upload.wikimedia.org/wikipedia/commons/5/57/Fond_de_carte_des_13_nouvelles_r%C3%A9gions_de_France_m%C3%A9tropolitaine.svg');">French map</option>
+      <option onclick="load_svg('https://upload.wikimedia.org/wikipedia/commons/4/46/Bitcoin.svg');">Bitcoin</option>
+      <option onclick="load_svg('https://upload.wikimedia.org/wikipedia/commons/4/4a/Anonymous_SVG.svg');">Anonymous</option>
+  </select>
+
+  <br />
+
+  <canvas id="canvas" width="800" height="800"></canvas>
+
+  <script type="text/javascript">
+  function load_svg(file_name)
+  {
+        var c = document.getElementById("canvas");
+        var ctx = c.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const rc = rough.canvas(document.getElementById('canvas'),
+        {
+            options: {
+                simplification: 0.0,
+                roughness: 0.5,
+                stroke: 'black',
+                strokeWidth: 4,
+            }
+        });
+
+        var colors = ['orange', 'red', 'green', 'blue'];
+        var angles = [0.0, 20.0, 40.0, 60.0];
+
+        d3.xml(file_name).mimeType("image/svg+xml").get(function(error, xml) {
+            if (error) throw error;
+            xml.documentElement.setAttribute("id", "svg_external");
+            document.body.appendChild(xml.documentElement)
+            var svg = d3.select('#svg_external');
+            svg.selectAll('path').each(function (d, i) {
+                rc.path(d3.select(this).attr('d'), {
+                    hachureAngle: angles[i % 4],
+                    fill: colors[i % 4],
+                });
+
+                var tf = d3.select(this).attr('transform');
+                if(tf == null){
+                    console.log("Transform not supported yet");
+                }
+            });
+
+            svg.remove();
+        });
+  }
+  </script>
+</body>
+</html>
