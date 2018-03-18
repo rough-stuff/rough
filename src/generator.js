@@ -141,11 +141,11 @@ export class RoughGenerator {
   }
 
   path(d, options) {
+    const o = this._options(options);
     const paths = [];
     if (!d) {
-      return paths;
+      return this._drawable('path', paths, o);
     }
-    const o = this._options(options);
     if (o.fill) {
       if (o.fillStyle === 'solid') {
         let shape = { type: 'path2Dfill', path: d };
@@ -191,5 +191,120 @@ export class RoughGenerator {
     size[0] = Math.min(size[0] * 4, this.canvas.width);
     size[1] = Math.min(size[1] * 4, this.canvas.height);
     return size;
+  }
+}
+
+export class RoughGeneratorAsync extends RoughGenerator {
+  async line(x1, y1, x2, y2, options) {
+    const o = this._options(options);
+    return this._drawable('line', [await this.lib.line(x1, y1, x2, y2, o)], o);
+  }
+
+  async rectangle(x, y, width, height, options) {
+    const o = this._options(options);
+    const paths = [];
+    if (o.fill) {
+      const xc = [x, x + width, x + width, x];
+      const yc = [y, y, y + height, y + height];
+      if (o.fillStyle === 'solid') {
+        paths.push(await this.lib.solidFillShape(xc, yc, o))
+      } else {
+        paths.push(await this.lib.hachureFillShape(xc, yc, o));
+      }
+    }
+    paths.push(await this.lib.rectangle(x, y, width, height, o));
+    return this._drawable('rectangle', paths, o);
+  }
+
+  async ellipse(x, y, width, height, options) {
+    const o = this._options(options);
+    const paths = [];
+    if (o.fill) {
+      if (o.fillStyle === 'solid') {
+        const shape = await this.lib.ellipse(x, y, width, height, o);
+        shape.type = 'fillPath';
+        paths.push(shape);
+      } else {
+        paths.push(await this.lib.hachureFillEllipse(x, y, width, height, o));
+      }
+    }
+    paths.push(await this.lib.ellipse(x, y, width, height, o));
+    return this._drawable('ellipse', paths, o);
+  }
+
+  async circle(x, y, diameter, options) {
+    let ret = await this.ellipse(x, y, diameter, diameter, options);
+    ret.shape = 'circle';
+    return ret;
+  }
+
+  async linearPath(points, options) {
+    const o = this._options(options);
+    return this._drawable('linearPath', [await this.lib.linearPath(points, false, o)], o);
+  }
+
+  async polygon(points, options) {
+    const o = this._options(options);
+    const paths = [];
+    if (o.fill) {
+      let xc = [], yc = [];
+      for (let p of points) {
+        xc.push(p[0]);
+        yc.push(p[1]);
+      }
+      if (o.fillStyle === 'solid') {
+        paths.push(await this.lib.solidFillShape(xc, yc, o));
+      } else {
+        paths.push(await this.lib.hachureFillShape(xc, yc, o));
+      }
+    }
+    paths.push(await this.lib.linearPath(points, true, o));
+    return this._drawable('polygon', paths, o);
+  }
+
+  async arc(x, y, width, height, start, stop, closed, options) {
+    const o = this._options(options);
+    const paths = [];
+    if (closed && o.fill) {
+      if (o.fillStyle === 'solid') {
+        let shape = await this.lib.arc(x, y, width, height, start, stop, true, false, o);
+        shape.type = 'fillPath';
+        paths.push(shape);
+      } else {
+        paths.push(await this.lib.hachureFillArc(x, y, width, height, start, stop, o));
+      }
+    }
+    paths.push(await this.lib.arc(x, y, width, height, start, stop, closed, true, o));
+    return this._drawable('arc', paths, o);
+  }
+
+  async curve(points, options) {
+    const o = this._options(options);
+    return this._drawable('curve', [await this.lib.curve(points, o)], o);
+  }
+
+  async path(d, options) {
+    const o = this._options(options);
+    const paths = [];
+    if (!d) {
+      return this._drawable('path', paths, o);
+    }
+    if (o.fill) {
+      if (o.fillStyle === 'solid') {
+        let shape = { type: 'path2Dfill', path: d };
+        paths.push(shape);
+      } else {
+        const size = this._computePathSize(d);
+        let xc = [0, size[0], size[0], 0];
+        let yc = [0, 0, size[1], size[1]];
+        let shape = await this.lib.hachureFillShape(xc, yc, o);
+        shape.type = 'path2Dpattern';
+        shape.size = size;
+        shape.path = d;
+        paths.push(shape);
+      }
+    }
+    paths.push(await this.lib.svgPath(d, o));
+    return this._drawable('path', paths, o);
   }
 }

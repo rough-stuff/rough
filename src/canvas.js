@@ -1,11 +1,15 @@
-import { RoughGenerator } from './generator.js'
+import { RoughGenerator, RoughGeneratorAsync } from './generator.js'
 import { RoughRenderer } from './renderer.js';
 
 export class RoughCanvas {
   constructor(canvas, config) {
-    this.gen = new RoughGenerator(config, canvas);
     this.canvas = canvas;
     this.ctx = this.canvas.getContext("2d");
+    this._init(config);
+  }
+
+  _init(config) {
+    this.gen = new RoughGenerator(config, this.canvas);
   }
 
   static createRenderer() {
@@ -149,5 +153,65 @@ export class RoughCanvas {
     } else {
       ctx.stroke();
     }
+  }
+}
+
+export class RoughCanvasAsync extends RoughCanvas {
+  _init(config) {
+    this.gen = new RoughGeneratorAsync(config, this.canvas);
+  }
+
+  async line(x1, y1, x2, y2, options) {
+    let d = await this.gen.line(x1, y1, x2, y2, options);
+    this.draw(d);
+    return d;
+  }
+
+  async rectangle(x, y, width, height, options) {
+    let d = await this.gen.rectangle(x, y, width, height, options);
+    this.draw(d);
+    return d;
+  }
+
+  async ellipse(x, y, width, height, options) {
+    let d = await this.gen.ellipse(x, y, width, height, options);
+    this.draw(d);
+    return d;
+  }
+
+  async circle(x, y, diameter, options) {
+    let d = await this.gen.circle(x, y, diameter, options);
+    this.draw(d);
+    return d;
+  }
+
+  async linearPath(points, options) {
+    let d = await this.gen.linearPath(points, options);
+    this.draw(d);
+    return d;
+  }
+
+  async polygon(points, options) {
+    let d = await this.gen.polygon(points, options);
+    this.draw(d);
+    return d;
+  }
+
+  async arc(x, y, width, height, start, stop, closed, options) {
+    let d = await this.gen.arc(x, y, width, height, start, stop, closed, options);
+    this.draw(d);
+    return d;
+  }
+
+  async curve(points, options) {
+    let d = await this.gen.curve(points, options);
+    this.draw(d);
+    return d;
+  }
+
+  async path(d, options) {
+    let drawing = await this.gen.path(d, options);
+    this.draw(drawing);
+    return drawing;
   }
 }
