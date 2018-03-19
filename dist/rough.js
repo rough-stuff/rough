@@ -1679,6 +1679,10 @@ class RoughCanvas {
     this.gen = new RoughGenerator(config, this.canvas);
   }
 
+  get generator() {
+    return this.gen;
+  }
+
   static createRenderer() {
     return new RoughRenderer();
   }
@@ -1892,6 +1896,12 @@ var index = {
   },
   createRenderer() {
     return RoughCanvas.createRenderer();
+  },
+  generator(config, size) {
+    if (config && config.async) {
+      return new RoughGeneratorAsync(config, size);
+    }
+    return new RoughGenerator(config, size);
   }
 };
 

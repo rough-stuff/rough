@@ -12,6 +12,10 @@ export class RoughCanvas {
     this.gen = new RoughGenerator(config, this.canvas);
   }
 
+  get generator() {
+    return this.gen;
+  }
+
   static createRenderer() {
     return new RoughRenderer();
   }
