@@ -1,0 +1,46 @@
+<html>
+
+<head>
+  <title>RoughJS sample</title>
+  <script src="https://rawgit.com/pshihn/rough/master/dist/rough.min.js"></script>
+</head>
+
+<body>
+  <h2>RoughJS Generator example</h2>
+  <canvas id="canvas" width="800" height="600"></canvas>
+  <div>
+    <button onclick="redraw()">Redraw</button>
+  </div>
+
+  <script>
+    const rc = rough.canvas(document.getElementById('canvas'));
+    const generator = rc.generator;
+    const ctx = document.getElementById('canvas').getContext('2d');
+
+    const rectangles = [
+      generator.rectangle(10, 10, 100, 100),
+      generator.rectangle(140, 10, 100, 100, { fill: 'rgba(255,0,0,0.2)', fillStyle: 'solid', roughness: 2 }),
+      generator.rectangle(10, 130, 100, 100, {
+        fill: 'red',
+        stroke: 'blue',
+        hachureAngle: 60,
+        hachureGap: 10,
+        fillWeight: 5,
+        strokeWidth: 5
+      })
+    ];
+
+    function redraw() {
+      ctx.clearRect(0, 0, 800, 600);
+      setTimeout(() => {
+        for (const r of rectangles) {
+          rc.draw(r);
+        }
+      }, 100);
+    }
+
+    redraw();
+  </script>
+</body>
+
+</html>
