@@ -1,8 +1,8 @@
 <html>
 
 <head>
-  <title>RoughJS Basic Showcase</title>
-  <script src="https://cdn.rawgit.com/pshihn/rough/9be60b1e/dist/rough.min.js"></script>
+  <title>RoughJS sample</title>
+  <script src="https://rawgit.com/pshihn/rough/master/dist/rough.min.js"></script>
 </head>
 
 <body>
@@ -12,8 +12,7 @@
   <script>
     const rc = rough.canvas(document.getElementById('canvas'));
 
-    // line and rectangles
-    rc.line(60, 60, 190, 60);
+    //line and rectangle
     rc.rectangle(10, 10, 100, 100);
     rc.rectangle(140, 10, 100, 100, {
       fill: 'rgba(255,0,0,0.2)',
@@ -29,7 +28,7 @@
       strokeWidth: 5
     });
 
-    // ellipses and circles
+    // ellipse and circle
     rc.ellipse(350, 50, 150, 80);
     rc.ellipse(610, 50, 150, 80, {
       fill: 'blue'
@@ -39,7 +38,17 @@
       fill: 'rgba(0,255,0,0.3)', fillStyle: 'solid'
     });
 
-    // Polygons
+    //overlapping circles
+    rc.circle(480, 150, 80, {
+      stroke: 'red', strokeWidth: 4,
+      fill: 'rgba(0,255,0,1)', fillWeight: 4, hachureGap: 6
+    });
+    rc.circle(530, 150, 80, {
+      stroke: 'blue', strokeWidth: 4,
+      fill: 'rgba(255,255,0,1)', fillWeight: 4, hachureGap: 6
+    });
+
+    // linearPath and polygon
     rc.linearPath([[690, 10], [790, 20], [750, 120], [690, 100]], {
       roughness: 0.7,
       stroke: 'red', strokeWidth: 4
@@ -55,7 +64,7 @@
       fill: 'rgba(0,0,255,0.6)'
     });
 
-    // Arcs
+    // arcs
     rc.arc(350, 200, 200, 180, Math.PI, Math.PI * 1.6);
     rc.arc(350, 300, 200, 180, Math.PI, Math.PI * 1.6, true);
     rc.arc(350, 300, 200, 180, 0, Math.PI / 2, true, {
@@ -70,6 +79,7 @@
     // draw sine curve
     let points = [];
     for (let i = 0; i < 20; i++) {
+      // 4pi - 400px
       let x = (400 / 20) * i + 10;
       let xdeg = (Math.PI / 100) * x;
       let y = Math.round(Math.sin(xdeg) * 90) + 500;

@@ -2,12 +2,12 @@
 
 <head>
   <title>RoughJS Map example with D3.js</title>
-  <script src="https://cdn.rawgit.com/pshihn/rough/9be60b1e/dist/rough.min.js"></script>
-  <script src="//d3js.org/d3.v4.0.0-alpha.4.min.js"></script>
+  <script src="https://rawgit.com/pshihn/rough/master/dist/rough.min.js"></script>
+  <script src="https://d3js.org/d3.v4.min.js"></script>
 </head>
 
 <body>
-  <h2>RoughJS Chart example with D3.js</h2>
+  <h2>RoughJS Bar Chart example Using D3.js</h2>
   <canvas id="canvas" width="960" height="500"></canvas>
 
   <script>
@@ -31,7 +31,7 @@
       .rangeRound([height, 0]);
     context.translate(margin.left, margin.top);
 
-    d3.requestTsv("data.tsv", function (d) {
+    d3.tsv("data.tsv", function (d) {
       d.frequency = +d.frequency;
       return d;
     }, function (error, data) {
