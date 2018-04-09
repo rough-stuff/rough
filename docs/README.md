@@ -5,6 +5,8 @@ The library defines primitives to draw lines, curves, arcs, polygons, circles, a
 
 ![Rough.js sample](https://roughjs.com/images/cap_demo.png)
 
+[@RoughLib](https://twitter.com/RoughLib) on Twitter.
+
 ## Install
 
 The latest Rough.js can be downloaded from the [dist folder](https://github.com/pshihn/rough/tree/master/dist).
