@@ -7,11 +7,25 @@ export class RoughSVG {
   }
 
   _init(config) {
-    this.gen = new RoughGenerator(config, this.canvas);
+    this.gen = new RoughGenerator(config, this.svg);
   }
 
   get generator() {
     return this.gen;
+  }
+
+  get defs() {
+    if (!this._defs) {
+      let doc = this.svg.ownerDocument || document;
+      let dnode = doc.createElementNS('http://www.w3.org/2000/svg', 'defs');
+      if (this.svg.firstChild) {
+        this.svg.insertBefore(dnode, this.svg.firstChild);
+      } else {
+        this.svg.appendChild(dnode);
+      }
+      this._defs = dnode;
+    }
+    return this._defs;
   }
 
   line(x1, y1, x2, y2, options) {
@@ -84,15 +98,7 @@ export class RoughSVG {
           break;
         }
         case 'fillSketch': {
-          let fweight = o.fillWeight;
-          if (fweight < 0) {
-            fweight = o.strokeWidth / 2;
-          }
-          path = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
-          path.setAttribute('d', this._opsToPath(drawing));
-          path.style.stroke = o.fill;
-          path.style.strokeWidth = fweight;
-          path.style.fill = 'none';
+          path = this._fillSketch(doc, drawing, o);
           break;
         }
         case 'path2Dfill': {
@@ -104,6 +110,26 @@ export class RoughSVG {
           break;
         }
         case 'path2Dpattern': {
+          const size = drawing.size;
+          const pattern = doc.createElementNS('http://www.w3.org/2000/svg', 'pattern');
+          const id = `rough-${Math.floor(Math.random() * (Number.MAX_SAFE_INTEGER || 999999))}`;
+          pattern.setAttribute('id', id);
+          pattern.setAttribute('x', 0);
+          pattern.setAttribute('y', 0);
+          pattern.setAttribute('width', 1);
+          pattern.setAttribute('height', 1);
+          pattern.setAttribute('height', 1);
+          pattern.setAttribute('viewBox', `0 0 ${Math.round(size[0])} ${Math.round(size[1])}`);
+          pattern.setAttribute('patternUnits', 'objectBoundingBox');
+          const patternPath = this._fillSketch(doc, drawing, o);
+          pattern.appendChild(patternPath);
+          this.defs.appendChild(pattern);
+
+          path = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
+          path.setAttribute('d', drawing.path);
+          path.style.stroke = 'none';
+          path.style.strokeWidth = 0;
+          path.style.fill = `url(#${id})`;
           break;
         }
       }
@@ -112,6 +138,19 @@ export class RoughSVG {
       }
     }
     return g;
+  }
+
+  _fillSketch(doc, drawing, o) {
+    let fweight = o.fillWeight;
+    if (fweight < 0) {
+      fweight = o.strokeWidth / 2;
+    }
+    let path = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', this._opsToPath(drawing));
+    path.style.stroke = o.fill;
+    path.style.strokeWidth = fweight;
+    path.style.fill = 'none';
+    return path;
   }
 
   _opsToPath(drawing) {

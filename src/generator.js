@@ -185,12 +185,27 @@ export class RoughGenerator {
         self.document.body.removeChild(svg);
       } catch (err) { }
     }
+    const canvasSize = this._canvasSize();
     if (!(size[0] * size[1])) {
-      size = [this.canvas.width || 100, this.canvas.height || 100];
+      size = canvasSize;
     }
-    size[0] = Math.min(size[0] * 4, this.canvas.width);
-    size[1] = Math.min(size[1] * 4, this.canvas.height);
+    size[0] = Math.min(size[0], canvasSize[0]);
+    size[1] = Math.min(size[1], canvasSize[1]);
     return size;
+  }
+
+  _canvasSize() {
+    const val = w => {
+      if (w) {
+        if (typeof w === 'object') {
+          if (w.baseVal && w.baseVal.value) {
+            return w.baseVal.value;
+          }
+        }
+      }
+      return w || 100;
+    };
+    return this.canvas ? [val(this.canvas.width), val(this.canvas.height)] : [100, 100];
   }
 }
 
