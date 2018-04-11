@@ -1791,10 +1791,18 @@ class RoughCanvas {
         }
         case 'path2Dpattern': {
           let size = drawing.size;
-          let hcanvas = document.createElement('canvas');
-          hcanvas.width = size[0];
-          hcanvas.height = size[1];
-          this._fillSketch(hcanvas.getContext("2d"), drawing, o);
+          const hcanvas = document.createElement('canvas');
+          const hcontext = hcanvas.getContext("2d");
+          let bbox = this._computeBBox(drawing.path);
+          if (bbox && (bbox.width || bbox.height)) {
+            hcanvas.width = this.canvas.width;
+            hcanvas.height = this.canvas.height;
+            hcontext.translate(bbox.x || 0, bbox.y || 0);
+          } else {
+            hcanvas.width = size[0];
+            hcanvas.height = size[1];
+          }
+          this._fillSketch(hcontext, drawing, o);
           this.ctx.save();
           this.ctx.fillStyle = this.ctx.createPattern(hcanvas, 'repeat');
           let p2d = new Path2D(drawing.path);
@@ -1804,6 +1812,25 @@ class RoughCanvas {
         }
       }
     }
+  }
+
+  _computeBBox(d) {
+    if (self.document) {
+      try {
+        const ns = "http://www.w3.org/2000/svg";
+        let svg = self.document.createElementNS(ns, "svg");
+        svg.setAttribute("width", "0");
+        svg.setAttribute("height", "0");
+        let pathNode = self.document.createElementNS(ns, "path");
+        pathNode.setAttribute('d', d);
+        svg.appendChild(pathNode);
+        self.document.body.appendChild(svg);
+        let bbox = pathNode.getBBox();
+        self.document.body.removeChild(svg);
+        return bbox;
+      } catch (err) { }
+    }
+    return null;
   }
 
   _fillSketch(ctx, drawing, o) {
