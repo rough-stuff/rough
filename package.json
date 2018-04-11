@@ -1,7 +1,7 @@
 {
   "name": "roughjs",
-  "version": "2.0.1",
-  "description": "Create graphics on HTML Canvas with a hand-drawn, sketchy, appearance.",
+  "version": "2.1.0",
+  "description": "Create graphics using HTML Canvas or SVG with a hand-drawn, sketchy, appearance.",
   "main": "dist/rough.umd.js",
   "jsnext:main": "src/index.js",
   "scripts": {
@@ -18,9 +18,11 @@
   },
   "keywords": [
     "canvas",
+    "svg",
     "graphics",
     "sketchy",
-    "hand drawn"
+    "hand drawn",
+    "hand-drawn"
   ],
   "author": "Preet Shihn <preetshihn@gmail.com>",
   "license": "MIT",
