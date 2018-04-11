@@ -1,5 +1,5 @@
 import { RoughCanvas, RoughCanvasAsync } from './canvas.js';
-import { RoughSVG } from './svg.js';
+import { RoughSVG, RoughSVGAsync } from './svg.js';
 import { RoughGenerator, RoughGeneratorAsync } from './generator.js'
 
 export default {
@@ -10,6 +10,9 @@ export default {
     return new RoughCanvas(canvas, config);
   },
   svg(svg, config) {
+    if (config && config.async) {
+      return new RoughSVGAsync(svg, config);
+    }
     return new RoughSVG(svg, config);
   },
   createRenderer() {

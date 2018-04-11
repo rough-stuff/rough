@@ -175,3 +175,54 @@ export class RoughSVG {
     return path.trim();
   }
 }
+
+export class RoughSVGAsync extends RoughSVG {
+  _init(config) {
+    this.gen = new RoughGeneratorAsync(config, this.svg);
+  }
+
+  async line(x1, y1, x2, y2, options) {
+    let d = await this.gen.line(x1, y1, x2, y2, options);
+    return this.draw(d);
+  }
+
+  async rectangle(x, y, width, height, options) {
+    let d = await this.gen.rectangle(x, y, width, height, options);
+    return this.draw(d);
+  }
+
+  async ellipse(x, y, width, height, options) {
+    let d = await this.gen.ellipse(x, y, width, height, options);
+    return this.draw(d);
+  }
+
+  async circle(x, y, diameter, options) {
+    let d = await this.gen.circle(x, y, diameter, options);
+    return this.draw(d);
+  }
+
+  async linearPath(points, options) {
+    let d = await this.gen.linearPath(points, options);
+    return this.draw(d);
+  }
+
+  async polygon(points, options) {
+    let d = await this.gen.polygon(points, options);
+    return this.draw(d);
+  }
+
+  async arc(x, y, width, height, start, stop, closed, options) {
+    let d = await this.gen.arc(x, y, width, height, start, stop, closed, options);
+    return this.draw(d);
+  }
+
+  async curve(points, options) {
+    let d = await this.gen.curve(points, options);
+    return this.draw(d);
+  }
+
+  async path(d, options) {
+    let drawing = await this.gen.path(d, options);
+    return this.draw(drawing);
+  }
+}
