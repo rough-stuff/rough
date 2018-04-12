@@ -165,6 +165,99 @@ export class RoughGenerator {
     return this._drawable('path', paths, o);
   }
 
+  toPaths(drawable) {
+    const sets = drawable.sets || [];
+    const o = drawable.options || this.defaultOptions;
+    const paths = [];
+    for (const drawing of sets) {
+      let path = null;
+      switch (drawing.type) {
+        case 'path':
+          path = {
+            d: this.opsToPath(drawing),
+            stroke: o.stroke,
+            strokeWidth: o.strokeWidth,
+            fill: 'none'
+          };
+          break;
+        case 'fillPath':
+          path = {
+            d: this.opsToPath(drawing),
+            stroke: 'none',
+            strokeWidth: 0,
+            fill: o.fill
+          };
+          break;
+        case 'fillSketch':
+          path = this._fillSketch(drawing, o);
+          break;
+        case 'path2Dfill':
+          path = {
+            d: drawing.path,
+            stroke: 'none',
+            strokeWidth: 0,
+            fill: o.fill
+          };
+          break;
+        case 'path2Dpattern': {
+          const size = drawing.size;
+          const pattern = {
+            x: 0, y: 0, width: 1, height: 1,
+            viewBox: `0 0 ${Math.round(size[0])} ${Math.round(size[1])}`,
+            patternUnits: 'objectBoundingBox',
+            path: this._fillSketch(drawing, o)
+          };
+          path = {
+            d: drawing.path,
+            stroke: 'none',
+            strokeWidth: 0,
+            pattern: pattern
+          };
+          break;
+        }
+      }
+      if (path) {
+        paths.push(path);
+      }
+    }
+    return paths;
+  }
+
+  _fillSketch(drawing, o) {
+    let fweight = o.fillWeight;
+    if (fweight < 0) {
+      fweight = o.strokeWidth / 2;
+    }
+    return {
+      d: this.opsToPath(drawing),
+      stroke: o.fill,
+      strokeWidth: fweight,
+      fill: 'none'
+    };
+  }
+
+  opsToPath(drawing) {
+    let path = '';
+    for (let item of drawing.ops) {
+      const data = item.data;
+      switch (item.op) {
+        case 'move':
+          path += `M${data[0]} ${data[1]} `;
+          break;
+        case 'bcurveTo':
+          path += `C${data[0]} ${data[1]}, ${data[2]} ${data[3]}, ${data[4]} ${data[5]} `;
+          break;
+        case 'qcurveTo':
+          path += `Q${data[0]} ${data[1]}, ${data[2]} ${data[3]} `;
+          break;
+        case 'lineTo':
+          path += `L${data[0]} ${data[1]} `;
+          break;
+      }
+    }
+    return path.trim();
+  }
+
   _computePathSize(d) {
     let size = [0, 0];
     if (self.document) {

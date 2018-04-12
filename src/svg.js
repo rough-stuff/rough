@@ -154,25 +154,7 @@ export class RoughSVG {
   }
 
   _opsToPath(drawing) {
-    let path = '';
-    for (let item of drawing.ops) {
-      const data = item.data;
-      switch (item.op) {
-        case 'move':
-          path += `M${data[0]} ${data[1]} `;
-          break;
-        case 'bcurveTo':
-          path += `C${data[0]} ${data[1]}, ${data[2]} ${data[3]}, ${data[4]} ${data[5]} `;
-          break;
-        case 'qcurveTo':
-          path += `Q${data[0]} ${data[1]}, ${data[2]} ${data[3]} `;
-          break;
-        case 'lineTo':
-          path += `L${data[0]} ${data[1]} `;
-          break;
-      }
-    }
-    return path.trim();
+    return this.gen.opsToPath(drawing);
   }
 }
 
