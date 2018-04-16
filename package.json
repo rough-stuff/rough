@@ -1,6 +1,6 @@
 {
   "name": "roughjs",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "Create graphics using HTML Canvas or SVG with a hand-drawn, sketchy, appearance.",
   "main": "dist/rough.umd.js",
   "jsnext:main": "src/index.js",

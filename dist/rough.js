@@ -854,7 +854,7 @@ class RoughRenderer {
   }
 
   svgPath(path, o) {
-    path = (path || '').replace(/\n/g, " ").replace(/(-)/g, " -").replace(/(-\s)/g, "-").replace("/(\s\s)/g", " ");
+    path = (path || '').replace(/\n/g, " ").replace(/(-\s)/g, "-").replace("/(\s\s)/g", " ");
     let p = new RoughPath(path);
     if (o.simplification) {
       let fitter = new PathFitter(p.linearPoints, p.closed);
