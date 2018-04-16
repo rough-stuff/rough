@@ -32,6 +32,6 @@
   "homepage": "https://roughjs.com",
   "devDependencies": {
     "babel-minify": "^0.3.0",
-    "rollup": "^0.56.3"
+    "rollup": "^0.56.5"
   }
 }
