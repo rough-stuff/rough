@@ -171,7 +171,7 @@ export class RoughRenderer {
         }
       }
     }
-    return { type: 'path', ops };
+    return { type: 'fillSketch', ops };
   }
 
   hachureFillEllipse(cx, cy, width, height, o) {
@@ -204,11 +204,11 @@ export class RoughRenderer {
       let p2 = this._affine(xPos, cy + halfLen, cx, cy, sinAnglePrime, cosAnglePrime, aspectRatio);
       ops = ops.concat(this._doubleLine(p1[0], p1[1], p2[0], p2[1], o));
     }
-    return { type: 'path', ops };
+    return { type: 'fillSketch', ops };
   }
 
   svgPath(path, o) {
-    path = (path || '').replace(/\n/g, " ").replace(/(-)/g, " -").replace(/(-\s)/g, "-").replace("/(\s\s)/g", " ");
+    path = (path || '').replace(/\n/g, " ").replace(/(-\s)/g, "-").replace("/(\s\s)/g", " ");
     let p = new RoughPath(path);
     if (o.simplification) {
       let fitter = new PathFitter(p.linearPoints, p.closed);
@@ -542,7 +542,7 @@ export class RoughRenderer {
     const halfOffset = offset / 2;
     const divergePoint = 0.2 + Math.random() * 0.2;
     let midDispX = o.bowing * o.maxRandomnessOffset * (y2 - y1) / 200;
-    let midDispY = o.bowing * o.maxRandomnessOffset * (x1, x2) / 200;
+    let midDispY = o.bowing * o.maxRandomnessOffset * (x1 - x2) / 200;
     midDispX = this._getOffset(-midDispX, midDispX, o);
     midDispY = this._getOffset(-midDispY, midDispY, o);
     let ops = [];

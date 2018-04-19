@@ -1,9 +1,13 @@
 # Rough.js
 
-<b>Rough.js</b> is a light weight (~8k), [Canvas](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API) based library that lets you draw in a _sketchy_, _hand-drawn-like_, style.
+<b>Rough.js</b> is a light weight (9kB) graphics library that lets you draw in a _sketchy_, _hand-drawn-like_, style.
 The library defines primitives to draw lines, curves, arcs, polygons, circles, and ellipses. It also supports drawing [SVG paths](https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths).
 
+Rough.js works with both [Canvas](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API) and [SVG](https://developer.mozilla.org/en-US/docs/Web/SVG).
+
 ![Rough.js sample](https://roughjs.com/images/cap_demo.png)
+
+[@RoughLib](https://twitter.com/RoughLib) on Twitter.
 
 ## Install
 
@@ -22,6 +26,14 @@ npm install --save roughjs
 ```js
 const rc = rough.canvas(document.getElementById('canvas'));
 rc.rectangle(10, 10, 200, 200); // x, y, width, height
+```
+
+or SVG
+
+```js
+const rc = rough.svg(svg);
+let node = rc.rectangle(10, 10, 200, 200); // x, y, width, height
+svg.appendChild(node);
 ```
 
 ### Lines and Ellipses

@@ -1,12 +1,15 @@
 {
   "name": "roughjs",
-  "version": "2.0.0",
-  "description": "Create graphics on HTML Canvas with a hand-drawn, sketchy, appearance.",
-  "main": "src/index.js",
+  "version": "2.1.2",
+  "description": "Create graphics using HTML Canvas or SVG with a hand-drawn, sketchy, appearance.",
+  "main": "dist/rough.umd.js",
+  "jsnext:main": "src/index.js",
   "scripts": {
-    "build": "npm run clean && rollup src/index.js --o dist/rough.js --f iife  --name \"rough\" && npm run minify",
-    "clean": "rm -rf dist/",
-    "minify": "babel-minify --mangle dist/rough.js >> dist/rough.min.js",
+    "build": "npm run build-d && npm run build-umd",
+    "build-d": "rollup src/index.js --o dist/rough.js --f iife --name \"rough\" && npm run minify-d",
+    "minify-d": "babel-minify dist/rough.js -o dist/rough.min.js --mangle",
+    "build-umd": "rollup src/index.js --o dist/rough.umd.js --f umd --name \"rough\" && npm run minify-umd",
+    "minify-umd": "babel-minify dist/rough.umd.js -o dist/rough.umd.min.js --mangle",
     "test": "jest"
   },
   "repository": {
@@ -15,8 +18,11 @@
   },
   "keywords": [
     "canvas",
+    "svg",
+    "graphics",
     "sketchy",
-    "hand drawn"
+    "hand drawn",
+    "hand-drawn"
   ],
   "author": "Preet Shihn <preetshihn@gmail.com>",
   "license": "MIT",
@@ -30,7 +36,7 @@
     "babel-preset-env": "^1.6.1",
     "jest": "^22.4.2",
     "jest-canvas-mock": "^1.0.2",
-    "rollup": "^0.56.3"
+    "rollup": "^0.56.5"
   },
   "jest": {
     "testRegex": "/__tests__/.*\\.spec\\.js$",

@@ -1,0 +1,122 @@
+<html>
+
+<head>
+  <title>RoughJS Balloon Animation</title>
+  <script src="https://rawgit.com/pshihn/rough/master/dist/rough.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    h1 {
+      position: fixed;
+      left: 50%;
+      transform: translate(-50%, 0);
+      bottom: 50%;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+      border: 5px solid black;
+      padding: .5rem 2rem;
+      background: white;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Balloons</h1>
+  <script>
+    const extend = (base, ...extensions) => Object.assign({}, base, ...extensions)
+
+    const parseColor = ({ h, s, l, a }) => `hsla(${h},${s}%,${l}%,${a})`
+
+    const Color = extend.bind(null, { h: 0, s: 100, l: 100, a: 1 })
+
+    const Vector = extend.bind(null, { x: 0, y: 0 })
+
+    const Particle = extend.bind(null, {
+      pos: Vector(),
+      vel: Vector(),
+      angle: 0,
+      speed: 0,
+      radius: 0,
+      rotation: 0,
+      color: Color()
+    })
+
+    const colors = [
+      Color({ h: 20, s: 100, l: 50 }),
+      Color({ h: 200, l: 50 }),
+      Color({ h: 300, l: 50 }),
+      Color({ h: 100, l: 40 }),
+    ]
+
+    const animationLoop = scope => {
+      if (scope.animation) {
+        scope.animation(animationLoop.bind(null, scope))
+      }
+
+      const { ctx } = scope
+      const { canvas } = ctx
+      const rc = rough.canvas(canvas)
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+      scope.particles.map((p, i) => {
+        p.pos.y -= p.speed
+        if (i % 2) {
+          p.pos.x = p.pos.x + Math.sin(p.angle) * .2
+        } else {
+          p.pos.x = p.pos.x - Math.cos(p.angle) * .2
+        }
+        p.angle += .01
+        rc.circle(p.pos.x, p.pos.y, p.radius, {
+          fill: parseColor(p.color),
+          roughness: Math.random() * 1.5,
+          hachureGap: p.hachureGap,
+          hachureAngle: p.hachureAngle
+        })
+        rc.line(p.pos.x, p.pos.y + p.radius * 1.2, p.pos.x, p.pos.y + p.radius / 2, {
+          bowing: Math.random() * 3
+        })
+        if (p.pos.y + p.radius * 3 < 0) {
+          p.pos.y = canvas.height + p.radius * 3
+          p.pos.x = Math.random() * (canvas.width - p.radius)
+        }
+      })
+    }
+
+    const scope = {
+      animation: requestAnimationFrame.bind(null),
+      ctx: document.createElement('canvas').getContext('2d'),
+      rotation: 0,
+      particles: []
+    }
+
+    ~(scope => {
+      const { ctx: { canvas } } = scope
+
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+      document.body.appendChild(canvas)
+
+      let particleCount = 60
+      while (particleCount--) {
+        scope.particles.push(Particle({
+          pos: {
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height
+          },
+          speed: Math.random() + .2,
+          radius: Math.random() * 60 + 20,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          hachureAngle: Math.random() * 90,
+          hachureGap: Math.random() * 8
+        }))
+      }
+
+      animationLoop(scope)
+    })(scope)
+  </script>
+</body>
+
+</html>

@@ -1,19 +1,27 @@
 <html>
 
 <head>
-  <title>RoughJS Map example with D3.js - Canvas</title>
+  <title>RoughJS Map example with D3.js - SVG</title>
   <script src="https://rawgit.com/pshihn/workly/master/dist/workly.min.js"></script>
   <script src="https://rawgit.com/pshihn/rough/master/dist/rough.min.js"></script>
   <script src="//d3js.org/d3.v3.min.js"></script>
   <script src="//d3js.org/topojson.v1.min.js"></script>
+  <style>
+    svg {
+      display: block;
+      width: 960px;
+      height: 500px;
+    }
+  </style>
 </head>
 
 <body>
-  <h2>RoughJS Map with D3.js using WebWorker (Canvas)</h2>
-  <canvas id="canvas" width="960" height="500"></canvas>
+  <h2>RoughJS Map with D3.js using WebWorker (SVG)</h2>
+  <svg id="svg"></svg>
 
   <script>
-    const rc = rough.canvas(document.getElementById('canvas'), {
+    const svg = document.getElementById('svg');
+    const rc = rough.svg(svg, {
       async: true,
       options: {
         simplification: 0.2, roughness: 0.65
@@ -36,11 +44,11 @@
       if (error) throw error;
       let topo = topojson.feature(us, us.objects.states).features;
       for (let feature of topo) {
-        rc.path(path(feature), {
+        svg.appendChild(await rc.path(path(feature), {
           fill: randomColor(),
           fillStyle: randomStyle(),
           hachureAngle: randomAngle()
-        });
+        }));
       }
     });
   </script>
