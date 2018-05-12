@@ -510,8 +510,8 @@ class RoughArcConverter {
     var numerator = this._rx * this._rx * this._ry * this._ry - this._rx * this._rx * y1dash * y1dash - this._ry * this._ry * x1dash * x1dash;
     if (numerator < 0) {
       let s = Math.sqrt(1 - (numerator / (this._rx * this._rx * this._ry * this._ry)));
-      this._rx = s;
-      this._ry = s;
+      this._rx = this._rx * s;
+      this._ry = this._ry * s;
       root = 0;
     } else {
       root = (largeArcFlag == sweepFlag ? -1.0 : 1.0) *
