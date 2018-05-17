@@ -1,5 +1,4 @@
 import { RoughRenderer } from './renderer.js';
-self._roughScript = self.document && self.document.currentScript && self.document.currentScript.src;
 
 export class RoughGenerator {
   constructor(config, canvas) {
@@ -34,7 +33,10 @@ export class RoughGenerator {
 
   get lib() {
     if (!this._renderer) {
-      if (self && self.workly && this.config.async && (!this.config.noWorker)) {
+      const hasSelf = typeof self !== 'undefined';
+      
+      if (hasSelf && self.workly && this.config.async && (!this.config.noWorker)) {
+        self._roughScript = self.document && self.document.currentScript && self.document.currentScript.src;
         const tos = Function.prototype.toString;
         const worklySource = this.config.worklyURL || 'https://cdn.jsdelivr.net/gh/pshihn/workly/dist/workly.min.js';
         const rendererSource = this.config.roughURL || self._roughScript;
