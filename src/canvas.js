@@ -130,7 +130,7 @@ export class RoughCanvas {
   }
 
   _computeBBox(d) {
-    if (self.document) {
+    if (typeof self !== 'undefined' && self.document) {
       try {
         const ns = "http://www.w3.org/2000/svg";
         let svg = self.document.createElementNS(ns, "svg");
