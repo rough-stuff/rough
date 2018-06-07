@@ -31,7 +31,9 @@
   },
   "homepage": "https://roughjs.com",
   "devDependencies": {
-    "babel-minify": "^0.3.0",
-    "rollup": "^0.56.5"
+    "rollup": "^0.60.1",
+    "rollup-plugin-babel-minify": "^5.0.0",
+    "tslint": "^5.10.0",
+    "typescript": "^2.9.1"
   }
 }
