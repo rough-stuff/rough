@@ -1,3 +1,17 @@
+import { Point } from './geometry';
+
+export interface Config {
+  async?: boolean;
+  options?: Options;
+  noWorker?: boolean;
+  worklyURL?: string;
+}
+
+export interface DrawingSurface {
+  width: number;
+  height: number;
+}
+
 export interface Options {
   maxRandomnessOffset: number;
   roughness: number;
@@ -25,6 +39,8 @@ export interface Op {
 export interface OpSet {
   type: OpSetType;
   ops: Op[];
+  size?: Point;
+  path?: string;
 }
 
 export interface Drawable {

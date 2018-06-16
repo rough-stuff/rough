@@ -4,7 +4,7 @@ import { Point } from './geometry';
 
 export class RoughRenderer {
   line(x1: number, y1: number, x2: number, y2: number, o: Options): OpSet {
-    const ops = this._doubleLine(x1, y1, x2, y2, o);
+    const ops = this.doubleLine(x1, y1, x2, y2, o);
     return { type: 'path', ops };
   }
 
@@ -13,10 +13,10 @@ export class RoughRenderer {
     if (len > 2) {
       let ops: Op[] = [];
       for (let i = 0; i < (len - 1); i++) {
-        ops = ops.concat(this._doubleLine(points[i][0], points[i][1], points[i + 1][0], points[i + 1][1], o));
+        ops = ops.concat(this.doubleLine(points[i][0], points[i][1], points[i + 1][0], points[i + 1][1], o));
       }
       if (close) {
-        ops = ops.concat(this._doubleLine(points[len - 1][0], points[len - 1][1], points[0][0], points[0][1], o));
+        ops = ops.concat(this.doubleLine(points[len - 1][0], points[len - 1][1], points[0][0], points[0][1], o));
       }
       return { type: 'path', ops };
     } else if (len === 2) {
@@ -46,9 +46,9 @@ export class RoughRenderer {
     const increment = (Math.PI * 2) / o.curveStepCount;
     let rx = Math.abs(width / 2);
     let ry = Math.abs(height / 2);
-    rx += this._getOffset(-rx * 0.05, rx * 0.05, o);
-    ry += this._getOffset(-ry * 0.05, ry * 0.05, o);
-    const o1 = this._ellipse(increment, x, y, rx, ry, 1, increment * this._getOffset(0.1, this._getOffset(0.4, 1, o), o), o);
+    rx += this.getOffset(-rx * 0.05, rx * 0.05, o);
+    ry += this.getOffset(-ry * 0.05, ry * 0.05, o);
+    const o1 = this._ellipse(increment, x, y, rx, ry, 1, increment * this.getOffset(0.1, this.getOffset(0.4, 1, o), o), o);
     const o2 = this._ellipse(increment, x, y, rx, ry, 1.5, 0, o);
     return { type: 'path', ops: o1.concat(o2) };
   }
@@ -58,8 +58,8 @@ export class RoughRenderer {
     const cy = y;
     let rx = Math.abs(width / 2);
     let ry = Math.abs(height / 2);
-    rx += this._getOffset(-rx * 0.01, rx * 0.01, o);
-    ry += this._getOffset(-ry * 0.01, ry * 0.01, o);
+    rx += this.getOffset(-rx * 0.01, rx * 0.01, o);
+    ry += this.getOffset(-ry * 0.01, ry * 0.01, o);
     let strt = start;
     let stp = stop;
     while (strt < 0) {
@@ -77,8 +77,8 @@ export class RoughRenderer {
     let ops = o1.concat(o2);
     if (closed) {
       if (roughClosure) {
-        ops = ops.concat(this._doubleLine(cx, cy, cx + rx * Math.cos(strt), cy + ry * Math.sin(strt), o));
-        ops = ops.concat(this._doubleLine(cx, cy, cx + rx * Math.cos(stp), cy + ry * Math.sin(stp), o));
+        ops = ops.concat(this.doubleLine(cx, cy, cx + rx * Math.cos(strt), cy + ry * Math.sin(strt), o));
+        ops = ops.concat(this.doubleLine(cx, cy, cx + rx * Math.cos(stp), cy + ry * Math.sin(stp), o));
       } else {
         ops.push({ op: 'lineTo', data: [cx, cy] });
         ops.push({ op: 'lineTo', data: [cx + rx * Math.cos(strt), cy + ry * Math.sin(strt)] });
@@ -108,13 +108,33 @@ export class RoughRenderer {
     return { type: 'path', ops };
   }
 
+  solidFillPolygon(points: Point[], o: Options): OpSet {
+    const ops: Op[] = [];
+    if (PointerEvent.length) {
+      const offset = o.maxRandomnessOffset || 0;
+      const len = points.length;
+      if (len > 2) {
+        ops.push({ op: 'move', data: [points[0][0] + this.getOffset(-offset, offset, o), points[0][1] + this.getOffset(-offset, offset, o)] });
+        for (let i = 1; i < len; i++) {
+          ops.push({ op: 'lineTo', data: [points[i][0] + this.getOffset(-offset, offset, o), points[i][1] + this.getOffset(-offset, offset, o)] });
+        }
+      }
+    }
+    return { type: 'fillPath', ops };
+  }
+
+  // fillPatern(box: Rectangle, o: Options): OpSet {
+  //   const filler = getFiller(this, o);
+  //   return filler.fill(box, o);
+  // }
+
   /// 
 
-  private _getOffset(min: number, max: number, ops: Options): number {
+  getOffset(min: number, max: number, ops: Options): number {
     return ops.roughness * ((Math.random() * (max - min)) + min);
   }
 
-  private _doubleLine(x1: number, y1: number, x2: number, y2: number, o: Options) {
+  doubleLine(x1: number, y1: number, x2: number, y2: number, o: Options): Op[] {
     const o1 = this._line(x1, y1, x2, y2, o, true, false);
     const o2 = this._line(x1, y1, x2, y2, o, true, true);
     return o1.concat(o2);
@@ -130,22 +150,22 @@ export class RoughRenderer {
     const divergePoint = 0.2 + Math.random() * 0.2;
     let midDispX = o.bowing * o.maxRandomnessOffset * (y2 - y1) / 200;
     let midDispY = o.bowing * o.maxRandomnessOffset * (x1 - x2) / 200;
-    midDispX = this._getOffset(-midDispX, midDispX, o);
-    midDispY = this._getOffset(-midDispY, midDispY, o);
+    midDispX = this.getOffset(-midDispX, midDispX, o);
+    midDispY = this.getOffset(-midDispY, midDispY, o);
     const ops: Op[] = [];
     if (move) {
       if (overlay) {
         ops.push({
           op: 'move', data: [
-            x1 + this._getOffset(-halfOffset, halfOffset, o),
-            y1 + this._getOffset(-halfOffset, halfOffset, o)
+            x1 + this.getOffset(-halfOffset, halfOffset, o),
+            y1 + this.getOffset(-halfOffset, halfOffset, o)
           ]
         });
       } else {
         ops.push({
           op: 'move', data: [
-            x1 + this._getOffset(-offset, offset, o),
-            y1 + this._getOffset(-offset, offset, o)
+            x1 + this.getOffset(-offset, offset, o),
+            y1 + this.getOffset(-offset, offset, o)
           ]
         });
       }
@@ -153,23 +173,23 @@ export class RoughRenderer {
     if (overlay) {
       ops.push({
         op: 'bcurveTo', data: [
-          midDispX + x1 + (x2 - x1) * divergePoint + this._getOffset(-halfOffset, halfOffset, o),
-          midDispY + y1 + (y2 - y1) * divergePoint + this._getOffset(-halfOffset, halfOffset, o),
-          midDispX + x1 + 2 * (x2 - x1) * divergePoint + this._getOffset(-halfOffset, halfOffset, o),
-          midDispY + y1 + 2 * (y2 - y1) * divergePoint + this._getOffset(-halfOffset, halfOffset, o),
-          x2 + this._getOffset(-halfOffset, halfOffset, o),
-          y2 + this._getOffset(-halfOffset, halfOffset, o)
+          midDispX + x1 + (x2 - x1) * divergePoint + this.getOffset(-halfOffset, halfOffset, o),
+          midDispY + y1 + (y2 - y1) * divergePoint + this.getOffset(-halfOffset, halfOffset, o),
+          midDispX + x1 + 2 * (x2 - x1) * divergePoint + this.getOffset(-halfOffset, halfOffset, o),
+          midDispY + y1 + 2 * (y2 - y1) * divergePoint + this.getOffset(-halfOffset, halfOffset, o),
+          x2 + this.getOffset(-halfOffset, halfOffset, o),
+          y2 + this.getOffset(-halfOffset, halfOffset, o)
         ]
       });
     } else {
       ops.push({
         op: 'bcurveTo', data: [
-          midDispX + x1 + (x2 - x1) * divergePoint + this._getOffset(-offset, offset, o),
-          midDispY + y1 + (y2 - y1) * divergePoint + this._getOffset(-offset, offset, o),
-          midDispX + x1 + 2 * (x2 - x1) * divergePoint + this._getOffset(-offset, offset, o),
-          midDispY + y1 + 2 * (y2 - y1) * divergePoint + this._getOffset(-offset, offset, o),
-          x2 + this._getOffset(-offset, offset, o),
-          y2 + this._getOffset(-offset, offset, o)
+          midDispX + x1 + (x2 - x1) * divergePoint + this.getOffset(-offset, offset, o),
+          midDispY + y1 + (y2 - y1) * divergePoint + this.getOffset(-offset, offset, o),
+          midDispX + x1 + 2 * (x2 - x1) * divergePoint + this.getOffset(-offset, offset, o),
+          midDispY + y1 + 2 * (y2 - y1) * divergePoint + this.getOffset(-offset, offset, o),
+          x2 + this.getOffset(-offset, offset, o),
+          y2 + this.getOffset(-offset, offset, o)
         ]
       });
     }
@@ -193,7 +213,7 @@ export class RoughRenderer {
       }
       if (closePoint && closePoint.length === 2) {
         const ro = o.maxRandomnessOffset;
-        ops.push({ op: 'lineTo', data: [closePoint[0] + this._getOffset(-ro, ro, o), closePoint[1] + + this._getOffset(-ro, ro, o)] });
+        ops.push({ op: 'lineTo', data: [closePoint[0] + this.getOffset(-ro, ro, o), closePoint[1] + + this.getOffset(-ro, ro, o)] });
       }
     } else if (len === 3) {
       ops.push({ op: 'move', data: [points[1][0], points[1][1]] });
@@ -204,35 +224,35 @@ export class RoughRenderer {
           points[2][0], points[2][1]]
       });
     } else if (len === 2) {
-      ops = ops.concat(this._doubleLine(points[0][0], points[0][1], points[1][0], points[1][1], o));
+      ops = ops.concat(this.doubleLine(points[0][0], points[0][1], points[1][0], points[1][1], o));
     }
     return ops;
   }
 
   private _ellipse(increment: number, cx: number, cy: number, rx: number, ry: number, offset: number, overlap: number, o: Options): Op[] {
-    const radOffset = this._getOffset(-0.5, 0.5, o) - (Math.PI / 2);
+    const radOffset = this.getOffset(-0.5, 0.5, o) - (Math.PI / 2);
     const points: Point[] = [];
     points.push([
-      this._getOffset(-offset, offset, o) + cx + 0.9 * rx * Math.cos(radOffset - increment),
-      this._getOffset(-offset, offset, o) + cy + 0.9 * ry * Math.sin(radOffset - increment)
+      this.getOffset(-offset, offset, o) + cx + 0.9 * rx * Math.cos(radOffset - increment),
+      this.getOffset(-offset, offset, o) + cy + 0.9 * ry * Math.sin(radOffset - increment)
     ]);
     for (let angle = radOffset; angle < (Math.PI * 2 + radOffset - 0.01); angle = angle + increment) {
       points.push([
-        this._getOffset(-offset, offset, o) + cx + rx * Math.cos(angle),
-        this._getOffset(-offset, offset, o) + cy + ry * Math.sin(angle)
+        this.getOffset(-offset, offset, o) + cx + rx * Math.cos(angle),
+        this.getOffset(-offset, offset, o) + cy + ry * Math.sin(angle)
       ]);
     }
     points.push([
-      this._getOffset(-offset, offset, o) + cx + rx * Math.cos(radOffset + Math.PI * 2 + overlap * 0.5),
-      this._getOffset(-offset, offset, o) + cy + ry * Math.sin(radOffset + Math.PI * 2 + overlap * 0.5)
+      this.getOffset(-offset, offset, o) + cx + rx * Math.cos(radOffset + Math.PI * 2 + overlap * 0.5),
+      this.getOffset(-offset, offset, o) + cy + ry * Math.sin(radOffset + Math.PI * 2 + overlap * 0.5)
     ]);
     points.push([
-      this._getOffset(-offset, offset, o) + cx + 0.98 * rx * Math.cos(radOffset + overlap),
-      this._getOffset(-offset, offset, o) + cy + 0.98 * ry * Math.sin(radOffset + overlap)
+      this.getOffset(-offset, offset, o) + cx + 0.98 * rx * Math.cos(radOffset + overlap),
+      this.getOffset(-offset, offset, o) + cy + 0.98 * ry * Math.sin(radOffset + overlap)
     ]);
     points.push([
-      this._getOffset(-offset, offset, o) + cx + 0.9 * rx * Math.cos(radOffset + overlap * 0.5),
-      this._getOffset(-offset, offset, o) + cy + 0.9 * ry * Math.sin(radOffset + overlap * 0.5)
+      this.getOffset(-offset, offset, o) + cx + 0.9 * rx * Math.cos(radOffset + overlap * 0.5),
+      this.getOffset(-offset, offset, o) + cy + 0.9 * ry * Math.sin(radOffset + overlap * 0.5)
     ]);
     return this._curve(points, null, o);
   }
@@ -240,22 +260,22 @@ export class RoughRenderer {
   private _curveWithOffset(points: Point[], offset: number, o: Options): Op[] {
     const ps: Point[] = [];
     ps.push([
-      points[0][0] + this._getOffset(-offset, offset, o),
-      points[0][1] + this._getOffset(-offset, offset, o),
+      points[0][0] + this.getOffset(-offset, offset, o),
+      points[0][1] + this.getOffset(-offset, offset, o),
     ]);
     ps.push([
-      points[0][0] + this._getOffset(-offset, offset, o),
-      points[0][1] + this._getOffset(-offset, offset, o),
+      points[0][0] + this.getOffset(-offset, offset, o),
+      points[0][1] + this.getOffset(-offset, offset, o),
     ]);
     for (let i = 1; i < points.length; i++) {
       ps.push([
-        points[i][0] + this._getOffset(-offset, offset, o),
-        points[i][1] + this._getOffset(-offset, offset, o),
+        points[i][0] + this.getOffset(-offset, offset, o),
+        points[i][1] + this.getOffset(-offset, offset, o),
       ]);
       if (i === (points.length - 1)) {
         ps.push([
-          points[i][0] + this._getOffset(-offset, offset, o),
-          points[i][1] + this._getOffset(-offset, offset, o),
+          points[i][0] + this.getOffset(-offset, offset, o),
+          points[i][1] + this.getOffset(-offset, offset, o),
         ]);
       }
     }
@@ -263,16 +283,16 @@ export class RoughRenderer {
   }
 
   private _arc(increment: number, cx: number, cy: number, rx: number, ry: number, strt: number, stp: number, offset: number, o: Options) {
-    const radOffset = strt + this._getOffset(-0.1, 0.1, o);
+    const radOffset = strt + this.getOffset(-0.1, 0.1, o);
     const points: Point[] = [];
     points.push([
-      this._getOffset(-offset, offset, o) + cx + 0.9 * rx * Math.cos(radOffset - increment),
-      this._getOffset(-offset, offset, o) + cy + 0.9 * ry * Math.sin(radOffset - increment)
+      this.getOffset(-offset, offset, o) + cx + 0.9 * rx * Math.cos(radOffset - increment),
+      this.getOffset(-offset, offset, o) + cy + 0.9 * ry * Math.sin(radOffset - increment)
     ]);
     for (let angle = radOffset; angle <= stp; angle = angle + increment) {
       points.push([
-        this._getOffset(-offset, offset, o) + cx + rx * Math.cos(angle),
-        this._getOffset(-offset, offset, o) + cy + ry * Math.sin(angle)
+        this.getOffset(-offset, offset, o) + cx + rx * Math.cos(angle),
+        this.getOffset(-offset, offset, o) + cy + ry * Math.sin(angle)
       ]);
     }
     points.push([
@@ -294,13 +314,13 @@ export class RoughRenderer {
       if (i === 0) {
         ops.push({ op: 'move', data: [path.x, path.y] });
       } else {
-        ops.push({ op: 'move', data: [path.x + this._getOffset(-ros[0], ros[0], o), path.y + this._getOffset(-ros[0], ros[0], o)] });
+        ops.push({ op: 'move', data: [path.x + this.getOffset(-ros[0], ros[0], o), path.y + this.getOffset(-ros[0], ros[0], o)] });
       }
-      f = [x + this._getOffset(-ros[i], ros[i], o), y + this._getOffset(-ros[i], ros[i], o)];
+      f = [x + this.getOffset(-ros[i], ros[i], o), y + this.getOffset(-ros[i], ros[i], o)];
       ops.push({
         op: 'bcurveTo', data: [
-          x1 + this._getOffset(-ros[i], ros[i], o), y1 + this._getOffset(-ros[i], ros[i], o),
-          x2 + this._getOffset(-ros[i], ros[i], o), y2 + this._getOffset(-ros[i], ros[i], o),
+          x1 + this.getOffset(-ros[i], ros[i], o), y1 + this.getOffset(-ros[i], ros[i], o),
+          x2 + this.getOffset(-ros[i], ros[i], o), y2 + this.getOffset(-ros[i], ros[i], o),
           f[0], f[1]
         ]
       });
@@ -323,8 +343,8 @@ export class RoughRenderer {
             y += path.y;
           }
           const ro = 1 * (o.maxRandomnessOffset || 0);
-          x = x + this._getOffset(-ro, ro, o);
-          y = y + this._getOffset(-ro, ro, o);
+          x = x + this.getOffset(-ro, ro, o);
+          y = y + this.getOffset(-ro, ro, o);
           path.setPosition(x, y);
           ops.push({ op: 'move', data: [x, y] });
         }
@@ -340,7 +360,7 @@ export class RoughRenderer {
             x += path.x;
             y += path.y;
           }
-          ops = ops.concat(this._doubleLine(path.x, path.y, x, y, o));
+          ops = ops.concat(this.doubleLine(path.x, path.y, x, y, o));
           path.setPosition(x, y);
         }
         break;
@@ -353,7 +373,7 @@ export class RoughRenderer {
           if (delta) {
             x += path.x;
           }
-          ops = ops.concat(this._doubleLine(path.x, path.y, x, path.y, o));
+          ops = ops.concat(this.doubleLine(path.x, path.y, x, path.y, o));
           path.setPosition(x, path.y);
         }
         break;
@@ -366,7 +386,7 @@ export class RoughRenderer {
           if (delta) {
             y += path.y;
           }
-          ops = ops.concat(this._doubleLine(path.x, path.y, path.x, y, o));
+          ops = ops.concat(this.doubleLine(path.x, path.y, path.x, y, o));
           path.setPosition(path.x, y);
         }
         break;
@@ -374,7 +394,7 @@ export class RoughRenderer {
       case 'Z':
       case 'z': {
         if (path.first) {
-          ops = ops.concat(this._doubleLine(path.x, path.y, path.first[0], path.first[1], o));
+          ops = ops.concat(this.doubleLine(path.x, path.y, path.first[0], path.first[1], o));
           path.setPosition(path.first[0], path.first[1]);
           path.first = null;
         }
@@ -451,19 +471,19 @@ export class RoughRenderer {
           }
           const offset1 = 1 * (1 + o.roughness * 0.2);
           const offset2 = 1.5 * (1 + o.roughness * 0.22);
-          ops.push({ op: 'move', data: [path.x + this._getOffset(-offset1, offset1, o), path.y + this._getOffset(-offset1, offset1, o)] });
-          let f = [x + this._getOffset(-offset1, offset1, o), y + this._getOffset(-offset1, offset1, o)];
+          ops.push({ op: 'move', data: [path.x + this.getOffset(-offset1, offset1, o), path.y + this.getOffset(-offset1, offset1, o)] });
+          let f = [x + this.getOffset(-offset1, offset1, o), y + this.getOffset(-offset1, offset1, o)];
           ops.push({
             op: 'qcurveTo', data: [
-              x1 + this._getOffset(-offset1, offset1, o), y1 + this._getOffset(-offset1, offset1, o),
+              x1 + this.getOffset(-offset1, offset1, o), y1 + this.getOffset(-offset1, offset1, o),
               f[0], f[1]
             ]
           });
-          ops.push({ op: 'move', data: [path.x + this._getOffset(-offset2, offset2, o), path.y + this._getOffset(-offset2, offset2, o)] });
-          f = [x + this._getOffset(-offset2, offset2, o), y + this._getOffset(-offset2, offset2, o)];
+          ops.push({ op: 'move', data: [path.x + this.getOffset(-offset2, offset2, o), path.y + this.getOffset(-offset2, offset2, o)] });
+          f = [x + this.getOffset(-offset2, offset2, o), y + this.getOffset(-offset2, offset2, o)];
           ops.push({
             op: 'qcurveTo', data: [
-              x1 + this._getOffset(-offset2, offset2, o), y1 + this._getOffset(-offset2, offset2, o),
+              x1 + this.getOffset(-offset2, offset2, o), y1 + this.getOffset(-offset2, offset2, o),
               f[0], f[1]
             ]
           });
@@ -495,19 +515,19 @@ export class RoughRenderer {
           }
           const offset1 = 1 * (1 + o.roughness * 0.2);
           const offset2 = 1.5 * (1 + o.roughness * 0.22);
-          ops.push({ op: 'move', data: [path.x + this._getOffset(-offset1, offset1, o), path.y + this._getOffset(-offset1, offset1, o)] });
-          let f = [x + this._getOffset(-offset1, offset1, o), y + this._getOffset(-offset1, offset1, o)];
+          ops.push({ op: 'move', data: [path.x + this.getOffset(-offset1, offset1, o), path.y + this.getOffset(-offset1, offset1, o)] });
+          let f = [x + this.getOffset(-offset1, offset1, o), y + this.getOffset(-offset1, offset1, o)];
           ops.push({
             op: 'qcurveTo', data: [
-              x1 + this._getOffset(-offset1, offset1, o), y1 + this._getOffset(-offset1, offset1, o),
+              x1 + this.getOffset(-offset1, offset1, o), y1 + this.getOffset(-offset1, offset1, o),
               f[0], f[1]
             ]
           });
-          ops.push({ op: 'move', data: [path.x + this._getOffset(-offset2, offset2, o), path.y + this._getOffset(-offset2, offset2, o)] });
-          f = [x + this._getOffset(-offset2, offset2, o), y + this._getOffset(-offset2, offset2, o)];
+          ops.push({ op: 'move', data: [path.x + this.getOffset(-offset2, offset2, o), path.y + this.getOffset(-offset2, offset2, o)] });
+          f = [x + this.getOffset(-offset2, offset2, o), y + this.getOffset(-offset2, offset2, o)];
           ops.push({
             op: 'qcurveTo', data: [
-              x1 + this._getOffset(-offset2, offset2, o), y1 + this._getOffset(-offset2, offset2, o),
+              x1 + this.getOffset(-offset2, offset2, o), y1 + this.getOffset(-offset2, offset2, o),
               f[0], f[1]
             ]
           });
@@ -535,7 +555,7 @@ export class RoughRenderer {
             break;
           }
           if (rx === 0 || ry === 0) {
-            ops = ops.concat(this._doubleLine(path.x, path.y, x, y, o));
+            ops = ops.concat(this.doubleLine(path.x, path.y, x, y, o));
             path.setPosition(x, y);
           } else {
             for (let i = 0; i < 1; i++) {
