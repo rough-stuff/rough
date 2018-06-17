@@ -70,11 +70,11 @@ export class RoughCanvas {
     return d;
   }
 
-  // path(d: string, options?: Options) {
-  //   const drawing = this.gen.path(d, options);
-  //   this.draw(drawing);
-  //   return drawing;
-  // }
+  path(d: string, options?: Options) {
+    const drawing = this.gen.path(d, options);
+    this.draw(drawing);
+    return drawing;
+  }
 
   draw(drawable: Drawable) {
     const sets = drawable.sets || [];

@@ -59,7 +59,7 @@ class ParsedPath {
         tokens[tokens.length] = { type: this.COMMAND, text: RegExp.$1 };
         d = d.substr(RegExp.$1.length);
       } else if (d.match(/^(([-+]?[0-9]+(\.[0-9]*)?|[-+]?\.[0-9]+)([eE][-+]?[0-9]+)?)/)) {
-        tokens[tokens.length] = { type: this.NUMBER, text: `parseFloat(RegExp.$1)` };
+        tokens[tokens.length] = { type: this.NUMBER, text: `${parseFloat(RegExp.$1)}` };
         d = d.substr(RegExp.$1.length);
       } else {
         console.error('Unrecognized segment command: ' + d);

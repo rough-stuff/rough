@@ -1,6 +1,8 @@
 import { RoughRenderer } from './renderer.js';
-import { Config, DrawingSurface, Options, Drawable, OpSet } from './core';
+import { Config, DrawingSurface, Options, Drawable, OpSet, PathInfo, PatternInfo } from './core';
 import { Point } from './geometry.js';
+
+const hasSelf = typeof self !== 'undefined';
 
 export class RoughGenerator {
   private config: Config;
@@ -44,7 +46,7 @@ export class RoughGenerator {
     return this.renderer;
   }
 
-  protected getCanvasSize(): Point {
+  private getCanvasSize(): Point {
     const val = (w: any): number => {
       if (w && typeof w === 'object') {
         if (w.baseVal && w.baseVal.value) {
@@ -57,6 +59,35 @@ export class RoughGenerator {
       return [val(this.surface.width), val(this.surface.height)];
     }
     return [100, 100];
+  }
+
+  private computePathSize(d: string): Point {
+    let size: Point = [0, 0];
+    if (hasSelf && self.document) {
+      try {
+        const ns = 'http://www.w3.org/2000/svg';
+        const svg = self.document.createElementNS(ns, 'svg');
+        svg.setAttribute('width', '0');
+        svg.setAttribute('height', '0');
+        const pathNode = self.document.createElementNS(ns, 'path');
+        pathNode.setAttribute('d', d);
+        svg.appendChild(pathNode);
+        self.document.body.appendChild(svg);
+        const bb = pathNode.getBBox();
+        if (bb) {
+          size[0] = bb.width || 0;
+          size[1] = bb.height || 0;
+        }
+        self.document.body.removeChild(svg);
+      } catch (err) { }
+    }
+    const canvasSize = this.getCanvasSize();
+    if (!(size[0] * size[1])) {
+      size = canvasSize;
+    }
+    size[0] = Math.min(size[0], canvasSize[0]);
+    size[1] = Math.min(size[1], canvasSize[1]);
+    return size;
   }
 
   line(x1: number, y1: number, x2: number, y2: number, options?: Options): Drawable {
@@ -139,5 +170,127 @@ export class RoughGenerator {
   curve(points: Point[], options?: Options): Drawable {
     const o = this._options(options);
     return this._drawable('curve', [this.lib.curve(points, o)], o);
+  }
+
+  path(d: string, options?: Options): Drawable {
+    const o = this._options(options);
+    const paths: OpSet[] = [];
+    if (!d) {
+      return this._drawable('path', paths, o);
+    }
+    if (o.fill) {
+      if (o.fillStyle === 'solid') {
+        const shape: OpSet = { type: 'path2Dfill', path: d, ops: [] };
+        paths.push(shape);
+      } else {
+        const size = this.computePathSize(d);
+        const points: Point[] = [
+          [0, 0],
+          [size[0], 0],
+          [size[0], size[1]],
+          [0, size[1]]
+        ];
+        const shape = this.lib.patternFillPolygon(points, o);
+        shape.type = 'path2Dpattern';
+        shape.size = size;
+        shape.path = d;
+        paths.push(shape);
+      }
+    }
+    paths.push(this.lib.svgPath(d, o));
+    return this._drawable('path', paths, o);
+  }
+
+  toPaths(drawable: Drawable): PathInfo[] {
+    const sets = drawable.sets || [];
+    const o = drawable.options || this.defaultOptions;
+    const paths: PathInfo[] = [];
+    for (const drawing of sets) {
+      let path: PathInfo | null = null;
+      switch (drawing.type) {
+        case 'path':
+          path = {
+            d: this.opsToPath(drawing),
+            stroke: o.stroke,
+            strokeWidth: o.strokeWidth,
+            fill: 'none'
+          };
+          break;
+        case 'fillPath':
+          path = {
+            d: this.opsToPath(drawing),
+            stroke: 'none',
+            strokeWidth: 0,
+            fill: o.fill || 'none'
+          };
+          break;
+        case 'fillSketch':
+          path = this.fillSketch(drawing, o);
+          break;
+        case 'path2Dfill':
+          path = {
+            d: drawing.path || '',
+            stroke: 'none',
+            strokeWidth: 0,
+            fill: o.fill || 'none'
+          };
+          break;
+        case 'path2Dpattern': {
+          const size = drawing.size!;
+          const pattern: PatternInfo = {
+            x: 0, y: 0, width: 1, height: 1,
+            viewBox: `0 0 ${Math.round(size[0])} ${Math.round(size[1])}`,
+            patternUnits: 'objectBoundingBox',
+            path: this.fillSketch(drawing, o)
+          };
+          path = {
+            d: drawing.path!,
+            stroke: 'none',
+            strokeWidth: 0,
+            pattern: pattern
+          };
+          break;
+        }
+      }
+      if (path) {
+        paths.push(path);
+      }
+    }
+    return paths;
+  }
+
+  private fillSketch(drawing: OpSet, o: Options): PathInfo {
+    let fweight = o.fillWeight;
+    if (fweight < 0) {
+      fweight = o.strokeWidth / 2;
+    }
+    return {
+      d: this.opsToPath(drawing),
+      stroke: o.fill || 'none',
+      strokeWidth: fweight,
+      fill: 'none'
+    };
+  }
+
+  private opsToPath(drawing: OpSet): string {
+    let path = '';
+    for (const item of drawing.ops) {
+      const data = item.data;
+      switch (item.op) {
+        case 'move':
+          path += `M${data[0]} ${data[1]} `;
+          break;
+        case 'bcurveTo':
+          path += `C${data[0]} ${data[1]}, ${data[2]} ${data[3]}, ${data[4]} ${data[5]} `;
+          break;
+        case 'qcurveTo':
+          path += `Q${data[0]} ${data[1]}, ${data[2]} ${data[3]} `;
+          break;
+        case 'lineTo':
+          path += `L${data[0]} ${data[1]} `;
+          break;
+      }
+    }
+    return path.trim();
   }
 }

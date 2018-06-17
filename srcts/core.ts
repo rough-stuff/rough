@@ -29,7 +29,7 @@ export interface Options {
 }
 
 export declare type OpType = 'move' | 'bcurveTo' | 'lineTo' | 'qcurveTo';
-export declare type OpSetType = 'path' | 'fillPath' | 'fillSketch';
+export declare type OpSetType = 'path' | 'fillPath' | 'fillSketch' | 'path2Dfill' | 'path2Dpattern';
 
 export interface Op {
   op: OpType;
@@ -47,4 +47,22 @@ export interface Drawable {
   shape: string;
   options: Options;
   sets: OpSet[];
+}
+
+export interface PathInfo {
+  d: string;
+  stroke: string;
+  strokeWidth: number;
+  fill?: string;
+  pattern?: PatternInfo;
+}
+
+export interface PatternInfo {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  viewBox: string;
+  patternUnits: string;
+  path: PathInfo;
 }
