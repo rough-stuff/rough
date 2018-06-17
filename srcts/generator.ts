@@ -31,15 +31,15 @@ export class RoughGenerator {
     }
   }
 
-  private _options(options?: Options): Options {
+  protected _options(options?: Options): Options {
     return options ? Object.assign({}, this.defaultOptions, options) : this.defaultOptions;
   }
 
-  private _drawable(shape: string, sets: OpSet[], options: Options): Drawable {
+  protected _drawable(shape: string, sets: OpSet[], options: Options): Drawable {
     return { shape, sets: sets || [], options: options || this.defaultOptions };
   }
 
-  private get lib(): RoughRenderer {
+  protected get lib(): RoughRenderer {
     if (!this.renderer) {
       this.renderer = new RoughRenderer();
     }
@@ -61,7 +61,7 @@ export class RoughGenerator {
     return [100, 100];
   }
 
-  private computePathSize(d: string): Point {
+  protected computePathSize(d: string): Point {
     let size: Point = [0, 0];
     if (hasSelf && self.document) {
       try {

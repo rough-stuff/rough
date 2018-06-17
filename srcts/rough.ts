@@ -2,11 +2,13 @@ import { Config, DrawingSurface } from './core';
 import { RoughCanvas } from './canvas';
 import { RoughRenderer } from './renderer';
 import { RoughGenerator } from './generator';
+import { RoughGeneratorAsync } from './generator-async';
+import { RoughCanvasAsync } from './canvas-async';
 
 export default {
-  canvas(canvas: HTMLCanvasElement, config?: Config): RoughCanvas {
+  canvas(canvas: HTMLCanvasElement, config?: Config) {
     if (config && config.async) {
-      // TODO:
+      return new RoughCanvasAsync(canvas, config);
     }
     return new RoughCanvas(canvas, config);
   },
@@ -16,10 +18,9 @@ export default {
   },
 
   generator(config: Config | null, surface: DrawingSurface) {
-    // if (config && config.async) {
-    //   return new RoughGeneratorAsync(config, size);
-    // }
-    // return new RoughGenerator(config, size);
+    if (config && config.async) {
+      return new RoughGeneratorAsync(config, surface);
+    }
     return new RoughGenerator(config, surface);
   }
 };

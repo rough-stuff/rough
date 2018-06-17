@@ -6,8 +6,8 @@ import { Point } from './geometry';
 const hasDocument = typeof document !== 'undefined';
 
 export class RoughCanvas {
-  private canvas: HTMLCanvasElement;
-  private ctx: CanvasRenderingContext2D;
+  protected canvas: HTMLCanvasElement;
+  protected ctx: CanvasRenderingContext2D;
   private gen: RoughGenerator;
 
   constructor(canvas: HTMLCanvasElement, config?: Config) {
