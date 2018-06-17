@@ -4,6 +4,8 @@ import { RoughRenderer } from './renderer';
 import { RoughGenerator } from './generator';
 import { RoughGeneratorAsync } from './generator-async';
 import { RoughCanvasAsync } from './canvas-async';
+import { RoughSVG } from './svg';
+import { RoughSVGAsync } from './svg-async';
 
 export default {
   canvas(canvas: HTMLCanvasElement, config?: Config) {
@@ -11,6 +13,13 @@ export default {
       return new RoughCanvasAsync(canvas, config);
     }
     return new RoughCanvas(canvas, config);
+  },
+
+  svg(svg: SVGSVGElement, config?: Config) {
+    if (config && config.async) {
+      return new RoughSVGAsync(svg, config);
+    }
+    return new RoughSVG(svg, config);
   },
 
   createRenderer(): RoughRenderer {

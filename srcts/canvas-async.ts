@@ -12,6 +12,11 @@ export class RoughCanvasAsync extends RoughCanvas {
   }
 
   // @ts-ignore
+  get generator(): RoughGeneratorAsync {
+    return this.genAsync;
+  }
+
+  // @ts-ignore
   async line(x1: number, y1: number, x2: number, y2: number, options?: Options): Promise<Drawable> {
     const d = await this.genAsync.line(x1, y1, x2, y2, options);
     this.draw(d);

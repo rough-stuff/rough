@@ -8,8 +8,8 @@ export interface Config {
 }
 
 export interface DrawingSurface {
-  width: number;
-  height: number;
+  width: number | SVGAnimatedLength;
+  height: number | SVGAnimatedLength;
 }
 
 export interface Options {

@@ -272,7 +272,7 @@ export class RoughGenerator {
     };
   }
 
-  private opsToPath(drawing: OpSet): string {
+  opsToPath(drawing: OpSet): string {
     let path = '';
     for (const item of drawing.ops) {
       const data = item.data;
