@@ -1,6 +1,7 @@
 import { Config, Options, Drawable, OpSet } from './core';
 import { RoughGenerator } from './generator';
 import { RoughRenderer } from './renderer';
+import { Point } from './geometry';
 
 export class RoughCanvas {
   private canvas: HTMLCanvasElement;
@@ -27,11 +28,53 @@ export class RoughCanvas {
     return d;
   }
 
-  rectangle(x: number, y: number, width: number, height: number, options: Options) {
+  rectangle(x: number, y: number, width: number, height: number, options?: Options) {
     const d = this.gen.rectangle(x, y, width, height, options);
     this.draw(d);
     return d;
   }
+
+  ellipse(x: number, y: number, width: number, height: number, options?: Options) {
+    const d = this.gen.ellipse(x, y, width, height, options);
+    this.draw(d);
+    return d;
+  }
+
+  circle(x: number, y: number, diameter: number, options?: Options) {
+    const d = this.gen.circle(x, y, diameter, options);
+    this.draw(d);
+    return d;
+  }
+
+  linearPath(points: Point[], options?: Options) {
+    const d = this.gen.linearPath(points, options);
+    this.draw(d);
+    return d;
+  }
+
+  polygon(points: Point[], options?: Options) {
+    const d = this.gen.polygon(points, options);
+    this.draw(d);
+    return d;
+  }
+
+  arc(x: number, y: number, width: number, height: number, start: number, stop: number, closed: boolean = false, options?: Options) {
+    const d = this.gen.arc(x, y, width, height, start, stop, closed, options);
+    this.draw(d);
+    return d;
+  }
+
+  curve(points: Point[], options?: Options) {
+    const d = this.gen.curve(points, options);
+    this.draw(d);
+    return d;
+  }
+
+  // path(d: string, options?: Options) {
+  //   const drawing = this.gen.path(d, options);
+  //   this.draw(drawing);
+  //   return drawing;
+  // }
 
   draw(drawable: Drawable) {
     const sets = drawable.sets || [];
@@ -52,8 +95,23 @@ export class RoughCanvas {
           this._drawToContext(ctx, drawing);
           ctx.restore();
           break;
+        case 'fillSketch':
+          this.fillSketch(ctx, drawing, o);
+          break;
       }
     }
+  }
+
+  private fillSketch(ctx: CanvasRenderingContext2D, drawing: OpSet, o: Options) {
+    let fweight = o.fillWeight;
+    if (fweight < 0) {
+      fweight = o.strokeWidth / 2;
+    }
+    ctx.save();
+    ctx.strokeStyle = o.fill || '';
+    ctx.lineWidth = fweight;
+    this._drawToContext(ctx, drawing);
+    ctx.restore();
   }
 
   private _drawToContext(ctx: CanvasRenderingContext2D, drawing: OpSet) {

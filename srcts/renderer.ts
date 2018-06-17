@@ -1,6 +1,7 @@
 import { Options, OpSet, Op } from './core';
 import { RoughPath, RoughArcConverter, PathFitter, Segment } from './path.js';
 import { Point } from './geometry';
+import { getFiller } from './fillers/filler';
 
 export class RoughRenderer {
   line(x1: number, y1: number, x2: number, y2: number, o: Options): OpSet {
@@ -123,10 +124,42 @@ export class RoughRenderer {
     return { type: 'fillPath', ops };
   }
 
-  // fillPatern(box: Rectangle, o: Options): OpSet {
-  //   const filler = getFiller(this, o);
-  //   return filler.fill(box, o);
-  // }
+  patternFillPolygon(points: Point[], o: Options): OpSet {
+    const filler = getFiller(this, o);
+    return filler.fillPolygon(points, o);
+  }
+
+  patternFillEllipse(cx: number, cy: number, width: number, height: number, o: Options): OpSet {
+    const filler = getFiller(this, o);
+    return filler.fillEllipse(cx, cy, width, height, o);
+  }
+
+  patternFillArc(x: number, y: number, width: number, height: number, start: number, stop: number, o: Options): OpSet {
+    const cx = x;
+    const cy = y;
+    let rx = Math.abs(width / 2);
+    let ry = Math.abs(height / 2);
+    rx += this.getOffset(-rx * 0.01, rx * 0.01, o);
+    ry += this.getOffset(-ry * 0.01, ry * 0.01, o);
+    let strt = start;
+    let stp = stop;
+    while (strt < 0) {
+      strt += Math.PI * 2;
+      stp += Math.PI * 2;
+    }
+    if ((stp - strt) > (Math.PI * 2)) {
+      strt = 0;
+      stp = Math.PI * 2;
+    }
+    const increment = (stp - strt) / o.curveStepCount;
+    const points: Point[] = [];
+    for (let angle = strt; angle <= stp; angle = angle + increment) {
+      points.push([cx + rx * Math.cos(angle), cy + ry * Math.sin(angle)]);
+    }
+    points.push([cx + rx * Math.cos(stp), cy + ry * Math.sin(stp)]);
+    points.push([cx, cy]);
+    return this.patternFillPolygon(points, o);
+  }
 
   /// 
 
