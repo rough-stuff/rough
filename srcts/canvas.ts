@@ -3,6 +3,8 @@ import { RoughGenerator } from './generator';
 import { RoughRenderer } from './renderer';
 import { Point } from './geometry';
 
+const hasDocument = typeof document !== 'undefined';
+
 export class RoughCanvas {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
@@ -98,8 +100,58 @@ export class RoughCanvas {
         case 'fillSketch':
           this.fillSketch(ctx, drawing, o);
           break;
+        case 'path2Dfill': {
+          this.ctx.save();
+          this.ctx.fillStyle = o.fill || '';
+          const p2d = new Path2D(drawing.path);
+          this.ctx.fill(p2d);
+          this.ctx.restore();
+          break;
+        }
+        case 'path2Dpattern': {
+          if (hasDocument) {
+            const size = drawing.size!;
+            const hcanvas = document.createElement('canvas');
+            const hcontext = hcanvas.getContext('2d')!;
+            const bbox = this.computeBBox(drawing.path!);
+            if (bbox && (bbox.width || bbox.height)) {
+              hcanvas.width = this.canvas.width;
+              hcanvas.height = this.canvas.height;
+              hcontext.translate(bbox.x || 0, bbox.y || 0);
+            } else {
+              hcanvas.width = size[0];
+              hcanvas.height = size[1];
+            }
+            this.fillSketch(hcontext, drawing, o);
+            this.ctx.save();
+            this.ctx.fillStyle = this.ctx.createPattern(hcanvas, 'repeat');
+            const p2d = new Path2D(drawing.path);
+            this.ctx.fill(p2d);
+            this.ctx.restore();
+          }
+          break;
+        }
       }
     }
+  }
+
+  private computeBBox(d: string): SVGRect | null {
+    if (hasDocument) {
+      try {
+        const ns = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(ns, 'svg');
+        svg.setAttribute('width', '0');
+        svg.setAttribute('height', '0');
+        const pathNode = self.document.createElementNS(ns, 'path');
+        pathNode.setAttribute('d', d);
+        svg.appendChild(pathNode);
+        document.body.appendChild(svg);
+        const bbox = pathNode.getBBox();
+        document.body.removeChild(svg);
+        return bbox;
+      } catch (err) { }
+    }
+    return null;
   }
 
   private fillSketch(ctx: CanvasRenderingContext2D, drawing: OpSet, o: Options) {
