@@ -1,4 +1,7 @@
 import minify from 'rollup-plugin-babel-minify';
+import babel from 'rollup-plugin-babel';
+import babelrc from 'babelrc-rollup';
+import 'babel-polyfill/dist/polyfill.js';
 
 const outFolder = 'dist';
 
@@ -37,4 +40,22 @@ export default [
     },
     plugins: [minify({ comments: false })]
   },
+  {
+    input: 'bin/rough.js',
+    output: {
+      file: `${outFolder}/rough.es5.js`,
+      format: 'iife',
+      name: 'rough'
+    },
+    plugins: [babel(babelrc())]
+  },
+  {
+    input: 'bin/rough.js',
+    output: {
+      file: `${outFolder}/rough.es5.min.js`,
+      format: 'iife',
+      name: 'rough'
+    },
+    plugins: [babel(babelrc()), minify({ comments: false })]
+  }
 ];
