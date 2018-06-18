@@ -1,5 +1,4 @@
 .cache
 .DS_Store
-z
 node_modules
-bin
+z
