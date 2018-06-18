@@ -18,7 +18,7 @@ export class HachureFiller implements PatternFiller {
     return this._fillEllipse(cx, cy, width, height, o);
   }
 
-  protected _fillPolygon(points: Point[], o: Options): OpSet {
+  protected _fillPolygon(points: Point[], o: Options, connectEnds: boolean = false): OpSet {
     let ops: Op[] = [];
     if (points && points.length) {
       let left = points[0][0];
@@ -44,6 +44,7 @@ export class HachureFiller implements PatternFiller {
       const tanAngle = Math.tan(hachureAngle);
       const it = new HachureIterator(top - 1, bottom + 1, left - 1, right + 1, gap, sinAngle, cosAngle, tanAngle);
       let rect: number[] | null;
+      let prevPoint: Point | null = null;
       while ((rect = it.nextLine()) != null) {
         const lines = this.getIntersectingLines(rect, points);
         for (let i = 0; i < lines.length; i++) {
@@ -51,6 +52,10 @@ export class HachureFiller implements PatternFiller {
             const p1 = lines[i];
             const p2 = lines[i + 1];
             ops = ops.concat(this.renderer.doubleLine(p1[0], p1[1], p2[0], p2[1], o));
+            if (connectEnds && prevPoint) {
+              ops = ops.concat(this.renderer.doubleLine(prevPoint[0], prevPoint[1], p1[0], p1[1], o));
+            }
+            prevPoint = p2;
           }
         }
       }
@@ -58,7 +63,7 @@ export class HachureFiller implements PatternFiller {
     return { type: 'fillSketch', ops };
   }
 
-  protected _fillEllipse(cx: number, cy: number, width: number, height: number, o: Options): OpSet {
+  protected _fillEllipse(cx: number, cy: number, width: number, height: number, o: Options, connectEnds: boolean = false): OpSet {
     let ops: Op[] = [];
     let rx = Math.abs(width / 2);
     let ry = Math.abs(height / 2);
@@ -82,11 +87,16 @@ export class HachureFiller implements PatternFiller {
     const cosAnglePrime = 1 / hyp;
     const gapPrime = gap / ((rx * ry / Math.sqrt((ry * cosAnglePrime) * (ry * cosAnglePrime) + (rx * sinAnglePrime) * (rx * sinAnglePrime))) / rx);
     let halfLen = Math.sqrt((rx * rx) - (cx - rx + gapPrime) * (cx - rx + gapPrime));
+    let prevPoint: Point | null = null;
     for (let xPos = cx - rx + gapPrime; xPos < cx + rx; xPos += gapPrime) {
       halfLen = Math.sqrt((rx * rx) - (cx - xPos) * (cx - xPos));
       const p1 = this.affine(xPos, cy - halfLen, cx, cy, sinAnglePrime, cosAnglePrime, aspectRatio);
       const p2 = this.affine(xPos, cy + halfLen, cx, cy, sinAnglePrime, cosAnglePrime, aspectRatio);
       ops = ops.concat(this.renderer.doubleLine(p1[0], p1[1], p2[0], p2[1], o));
+      if (connectEnds && prevPoint) {
+        ops = ops.concat(this.renderer.doubleLine(prevPoint[0], prevPoint[1], p1[0], p1[1], o));
+      }
+      prevPoint = p2;
     }
     return { type: 'fillSketch', ops };
   }
