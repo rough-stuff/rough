@@ -57,5 +57,23 @@ export default [
       name: 'rough'
     },
     plugins: [babel(babelrc()), minify({ comments: false })]
+  },
+  {
+    input: 'bin/rough.js',
+    output: {
+      file: `${outFolder}/rough.umd.es5.js`,
+      format: 'umd',
+      name: 'rough'
+    },
+    plugins: [babel(babelrc())]
+  },
+  {
+    input: 'bin/rough.js',
+    output: {
+      file: `${outFolder}/rough.umd.es5.min.js`,
+      format: 'umd',
+      name: 'rough'
+    },
+    plugins: [babel(babelrc()), minify({ comments: false })]
   }
 ];
