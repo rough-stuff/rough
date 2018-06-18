@@ -5,11 +5,7 @@
   "main": "dist/rough.umd.js",
   "jsnext:main": "src/index.js",
   "scripts": {
-    "build": "npm run build-d && npm run build-umd",
-    "build-d": "rollup src/index.js --o dist/rough.js --f iife --name \"rough\" && npm run minify-d",
-    "minify-d": "babel-minify dist/rough.js -o dist/rough.min.js --mangle",
-    "build-umd": "rollup src/index.js --o dist/rough.umd.js --f umd --name \"rough\" && npm run minify-umd",
-    "minify-umd": "babel-minify dist/rough.umd.js -o dist/rough.umd.min.js --mangle",
+    "build": "tsc && rollup -c",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
