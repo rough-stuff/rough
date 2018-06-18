@@ -15,27 +15,27 @@ export interface Segment {
   point?: Point;
 }
 
-const PARAMS: { [key: string]: { length: number } } = {
-  A: { length: 7 },
-  a: { length: 7 },
-  C: { length: 6 },
-  c: { length: 6 },
-  H: { length: 1 },
-  h: { length: 1 },
-  L: { length: 2 },
-  l: { length: 2 },
-  M: { length: 2 },
-  m: { length: 2 },
-  Q: { length: 4 },
-  q: { length: 4 },
-  S: { length: 4 },
-  s: { length: 4 },
-  T: { length: 4 },
-  t: { length: 2 },
-  V: { length: 1 },
-  v: { length: 1 },
-  Z: { length: 0 },
-  z: { length: 0 }
+const PARAMS: { [key: string]: number } = {
+  A: 7,
+  a: 7,
+  C: 6,
+  c: 6,
+  H: 1,
+  h: 1,
+  L: 2,
+  l: 2,
+  M: 2,
+  m: 2,
+  Q: 4,
+  q: 4,
+  S: 4,
+  s: 4,
+  T: 4,
+  t: 2,
+  V: 1,
+  v: 1,
+  Z: 0,
+  z: 0
 };
 
 class ParsedPath {
@@ -82,7 +82,7 @@ class ParsedPath {
       if (mode === 'BOD') {
         if (token.text === 'M' || token.text === 'm') {
           index++;
-          param_length = PARAMS[token.text].length;
+          param_length = PARAMS[token.text];
           mode = token.text;
         } else {
           this.parseData('M0,0' + d);
@@ -90,10 +90,10 @@ class ParsedPath {
         }
       } else {
         if (isType(token, this.NUMBER)) {
-          param_length = PARAMS[mode].length;
+          param_length = PARAMS[mode];
         } else {
           index++;
-          param_length = PARAMS[token.text].length;
+          param_length = PARAMS[token.text];
           mode = token.text;
         }
       }
@@ -108,7 +108,7 @@ class ParsedPath {
             return;
           }
         }
-        if (PARAMS[mode]) {
+        if (typeof PARAMS[mode] === 'number') {
           const segment: Segment = { key: mode, data: params };
           this.segments.push(segment);
           index += param_length;
