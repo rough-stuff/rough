@@ -50,21 +50,6 @@ export class RoughGeneratorAsync extends RoughGenerator {
         return this._drawable('linearPath', [await this.lib.linearPath(points, false, o)], o);
     }
     // @ts-ignore
-    async polygon(points, options) {
-        const o = this._options(options);
-        const paths = [];
-        if (o.fill) {
-            if (o.fillStyle === 'solid') {
-                paths.push(await this.lib.solidFillPolygon(points, o));
-            }
-            else {
-                paths.push(await this.lib.patternFillPolygon(points, o));
-            }
-        }
-        paths.push(await this.lib.linearPath(points, true, o));
-        return this._drawable('polygon', paths, o);
-    }
-    // @ts-ignore
     async arc(x, y, width, height, start, stop, closed = false, options) {
         const o = this._options(options);
         const paths = [];
@@ -85,6 +70,32 @@ export class RoughGeneratorAsync extends RoughGenerator {
     async curve(points, options) {
         const o = this._options(options);
         return this._drawable('curve', [await this.lib.curve(points, o)], o);
+    }
+    // @ts-ignore
+    async polygon(points, options) {
+        const o = this._options(options);
+        const paths = [];
+        if (o.fill) {
+            if (o.fillStyle === 'solid') {
+                paths.push(await this.lib.solidFillPolygon(points, o));
+            }
+            else {
+                const size = this.computePolygonSize(points);
+                const fillPoints = [
+                    [0, 0],
+                    [size[0], 0],
+                    [size[0], size[1]],
+                    [0, size[1]]
+                ];
+                const shape = await this.lib.patternFillPolygon(fillPoints, o);
+                shape.type = 'path2Dpattern';
+                shape.size = size;
+                shape.path = this.polygonPath(points);
+                paths.push(shape);
+            }
+        }
+        paths.push(await this.lib.linearPath(points, true, o));
+        return this._drawable('polygon', paths, o);
     }
     // @ts-ignore
     async path(d, options) {

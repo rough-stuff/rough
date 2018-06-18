@@ -56,21 +56,6 @@ export class RoughGeneratorAsync extends RoughGenerator {
   }
 
   // @ts-ignore
-  async polygon(points: Point[], options?: Options): Promise<Drawable> {
-    const o = this._options(options);
-    const paths = [];
-    if (o.fill) {
-      if (o.fillStyle === 'solid') {
-        paths.push(await this.lib.solidFillPolygon(points, o));
-      } else {
-        paths.push(await this.lib.patternFillPolygon(points, o));
-      }
-    }
-    paths.push(await this.lib.linearPath(points, true, o));
-    return this._drawable('polygon', paths, o);
-  }
-
-  // @ts-ignore
   async arc(x: number, y: number, width: number, height: number, start: number, stop: number, closed: boolean = false, options?: Options): Promise<Drawable> {
     const o = this._options(options);
     const paths = [];
@@ -91,6 +76,32 @@ export class RoughGeneratorAsync extends RoughGenerator {
   async curve(points: Point[], options?: Options): Promise<Drawable> {
     const o = this._options(options);
     return this._drawable('curve', [await this.lib.curve(points, o)], o);
+  }
+
+  // @ts-ignore
+  async polygon(points: Point[], options?: Options): Promise<Drawable> {
+    const o = this._options(options);
+    const paths = [];
+    if (o.fill) {
+      if (o.fillStyle === 'solid') {
+        paths.push(await this.lib.solidFillPolygon(points, o));
+      } else {
+        const size = this.computePolygonSize(points);
+        const fillPoints: Point[] = [
+          [0, 0],
+          [size[0], 0],
+          [size[0], size[1]],
+          [0, size[1]]
+        ];
+        const shape = await this.lib.patternFillPolygon(fillPoints, o);
+        shape.type = 'path2Dpattern';
+        shape.size = size;
+        shape.path = this.polygonPath(points);
+        paths.push(shape);
+      }
+    }
+    paths.push(await this.lib.linearPath(points, true, o));
+    return this._drawable('polygon', paths, o);
   }
 
   // @ts-ignore

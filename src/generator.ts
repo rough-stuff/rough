@@ -60,6 +60,34 @@ export class RoughGenerator {
     return [100, 100];
   }
 
+  protected computePolygonSize(points: Point[]): Point {
+    if (points.length) {
+      let left = points[0][0];
+      let right = points[0][0];
+      let top = points[0][1];
+      let bottom = points[0][1];
+      for (let i = 1; i < points.length; i++) {
+        left = Math.min(left, points[i][0]);
+        right = Math.max(right, points[i][0]);
+        top = Math.min(top, points[i][1]);
+        bottom = Math.max(bottom, points[i][1]);
+      }
+      return [(right - left), (bottom - top)];
+    }
+    return [0, 0];
+  }
+
+  protected polygonPath(points: Point[]): string {
+    let d = '';
+    if (points.length) {
+      d = `M${points[0][0]},${points[0][1]}`;
+      for (let i = 1; i < points.length; i++) {
+        d = `${d} L${points[i][0]},${points[i][1]}`;
+      }
+    }
+    return d;
+  }
+
   protected computePathSize(d: string): Point {
     let size: Point = [0, 0];
     if (hasSelf && self.document) {
@@ -136,20 +164,6 @@ export class RoughGenerator {
     return this._drawable('linearPath', [this.lib.linearPath(points, false, o)], o);
   }
 
-  polygon(points: Point[], options?: Options): Drawable {
-    const o = this._options(options);
-    const paths = [];
-    if (o.fill) {
-      if (o.fillStyle === 'solid') {
-        paths.push(this.lib.solidFillPolygon(points, o));
-      } else {
-        paths.push(this.lib.patternFillPolygon(points, o));
-      }
-    }
-    paths.push(this.lib.linearPath(points, true, o));
-    return this._drawable('polygon', paths, o);
-  }
-
   arc(x: number, y: number, width: number, height: number, start: number, stop: number, closed: boolean = false, options?: Options): Drawable {
     const o = this._options(options);
     const paths = [];
@@ -169,6 +183,31 @@ export class RoughGenerator {
   curve(points: Point[], options?: Options): Drawable {
     const o = this._options(options);
     return this._drawable('curve', [this.lib.curve(points, o)], o);
+  }
+
+  polygon(points: Point[], options?: Options): Drawable {
+    const o = this._options(options);
+    const paths = [];
+    if (o.fill) {
+      if (o.fillStyle === 'solid') {
+        paths.push(this.lib.solidFillPolygon(points, o));
+      } else {
+        const size = this.computePolygonSize(points);
+        const fillPoints: Point[] = [
+          [0, 0],
+          [size[0], 0],
+          [size[0], size[1]],
+          [0, size[1]]
+        ];
+        const shape = this.lib.patternFillPolygon(fillPoints, o);
+        shape.type = 'path2Dpattern';
+        shape.size = size;
+        shape.path = this.polygonPath(points);
+        paths.push(shape);
+      }
+    }
+    paths.push(this.lib.linearPath(points, true, o));
+    return this._drawable('polygon', paths, o);
   }
 
   path(d: string, options?: Options): Drawable {
