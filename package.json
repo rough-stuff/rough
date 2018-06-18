@@ -1,15 +1,13 @@
 {
   "name": "roughjs",
-  "version": "2.1.3",
+  "version": "2.2.0",
   "description": "Create graphics using HTML Canvas or SVG with a hand-drawn, sketchy, appearance.",
   "main": "dist/rough.umd.js",
-  "jsnext:main": "src/index.js",
+  "module": "bin/rough.js",
+  "jsnext:main": "bin/rough.js",
+  "types": "bin/rough.d.ts",
   "scripts": {
-    "build": "npm run build-d && npm run build-umd",
-    "build-d": "rollup src/index.js --o dist/rough.js --f iife --name \"rough\" && npm run minify-d",
-    "minify-d": "babel-minify dist/rough.js -o dist/rough.min.js --mangle",
-    "build-umd": "rollup src/index.js --o dist/rough.umd.js --f umd --name \"rough\" && npm run minify-umd",
-    "minify-umd": "babel-minify dist/rough.umd.js -o dist/rough.umd.min.js --mangle",
+    "build": "tsc && rollup -c",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -31,7 +29,15 @@
   },
   "homepage": "https://roughjs.com",
   "devDependencies": {
-    "babel-minify": "^0.3.0",
-    "rollup": "^0.56.5"
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babelrc-rollup": "^3.0.0",
+    "rollup": "^0.60.7",
+    "rollup-plugin-babel": "^3.0.4",
+    "rollup-plugin-babel-minify": "^5.0.0",
+    "tslint": "^5.10.0",
+    "typescript": "^2.9.2"
   }
 }

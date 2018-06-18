@@ -1,7 +1,20 @@
-import { RoughSegmentRelation, RoughSegment } from "./segment";
+import { Segment } from '../geometry';
 
-export class RoughHachureIterator {
-  constructor(top, bottom, left, right, gap, sinAngle, cosAngle, tanAngle) {
+export class HachureIterator {
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+  gap: number;
+  sinAngle: number;
+  tanAngle: number;
+  pos: number;
+  deltaX: number = 0;
+  hGap: number = 0;
+  sLeft?: Segment;
+  sRight?: Segment;
+
+  constructor(top: number, bottom: number, left: number, right: number, gap: number, sinAngle: number, cosAngle: number, tanAngle: number) {
     this.top = top;
     this.bottom = bottom;
     this.left = left;
@@ -18,21 +31,21 @@ export class RoughHachureIterator {
       this.deltaX = (bottom - top) * Math.abs(tanAngle);
       this.pos = left - Math.abs(this.deltaX);
       this.hGap = Math.abs(gap / cosAngle);
-      this.sLeft = new RoughSegment(left, bottom, left, top);
-      this.sRight = new RoughSegment(right, bottom, right, top);
+      this.sLeft = new Segment([left, bottom], [left, top]);
+      this.sRight = new Segment([right, bottom], [right, top]);
     }
   }
 
-  getNextLine() {
+  nextLine(): number[] | null {
     if (Math.abs(this.sinAngle) < 0.0001) {
       if (this.pos < this.right) {
-        let line = [this.pos, this.top, this.pos, this.bottom];
+        const line = [this.pos, this.top, this.pos, this.bottom];
         this.pos += this.gap;
         return line;
       }
     } else if (Math.abs(this.sinAngle) > 0.9999) {
       if (this.pos < this.bottom) {
-        let line = [this.left, this.pos, this.right, this.pos];
+        const line = [this.left, this.pos, this.right, this.pos];
         this.pos += this.gap;
         return line;
       }
@@ -50,12 +63,12 @@ export class RoughHachureIterator {
             return null;
           }
         }
-        let s = new RoughSegment(xLower, yLower, xUpper, yUpper);
-        if (s.compare(this.sLeft) == RoughSegmentRelation().INTERSECTS) {
+        const s = new Segment([xLower, yLower], [xUpper, yUpper]);
+        if (this.sLeft && s.intersects(this.sLeft)) {
           xLower = s.xi;
           yLower = s.yi;
         }
-        if (s.compare(this.sRight) == RoughSegmentRelation().INTERSECTS) {
+        if (this.sRight && s.intersects(this.sRight)) {
           xUpper = s.xi;
           yUpper = s.yi;
         }
@@ -63,7 +76,7 @@ export class RoughHachureIterator {
           xLower = this.right - (xLower - this.left);
           xUpper = this.right - (xUpper - this.left);
         }
-        let line = [xLower, yLower, xUpper, yUpper];
+        const line = [xLower, yLower, xUpper, yUpper];
         this.pos += this.hGap;
         return line;
       }
