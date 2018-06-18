@@ -1373,6 +1373,20 @@
     }
 
     const hasSelf = typeof self !== 'undefined';
+    const roughScript = hasSelf && self && self.document && self.document.currentScript && self.document.currentScript.src;
+    function createRenderer(config) {
+        if (hasSelf && roughScript && self && self.workly && config.async && (!config.noWorker)) {
+            const worklySource = config.worklyURL || 'https://cdn.jsdelivr.net/gh/pshihn/workly/dist/workly.min.js';
+            if (worklySource) {
+                const code = `importScripts('${worklySource}', '${roughScript}');\nworkly.expose(self.rough.createRenderer());`;
+                const ourl = URL.createObjectURL(new Blob([code]));
+                return self.workly.proxy(ourl);
+            }
+        }
+        return new RoughRenderer();
+    }
+
+    const hasSelf$1 = typeof self !== 'undefined';
     class RoughGenerator {
         constructor(config, surface) {
             this.defaultOptions = {
@@ -1391,6 +1405,7 @@
             };
             this.config = config || {};
             this.surface = surface;
+            this.renderer = createRenderer(this.config);
             if (this.config.options) {
                 this.defaultOptions = this._options(this.config.options);
             }
@@ -1402,9 +1417,6 @@
             return { shape, sets: sets || [], options: options || this.defaultOptions };
         }
         get lib() {
-            if (!this.renderer) {
-                this.renderer = new RoughRenderer();
-            }
             return this.renderer;
         }
         getCanvasSize() {
@@ -1423,7 +1435,7 @@
         }
         computePathSize(d) {
             let size = [0, 0];
-            if (hasSelf && self.document) {
+            if (hasSelf$1 && self.document) {
                 try {
                     const ns = 'http://www.w3.org/2000/svg';
                     const svg = self.document.createElementNS(ns, 'svg');
