@@ -7,4 +7,5 @@ export interface PatternFiller {
 export interface RenderHelper {
     doubleLine(x1: number, y1: number, x2: number, y2: number, o: Options): Op[];
     getOffset(min: number, max: number, ops: Options): number;
+    ellipse(x: number, y: number, width: number, height: number, o: Options): OpSet;
 }

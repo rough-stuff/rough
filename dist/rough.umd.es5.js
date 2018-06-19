@@ -793,6 +793,103 @@
       return HachureIterator;
   }();
 
+  function lineLength(line) {
+      var p1 = line[0];
+      var p2 = line[1];
+      return Math.sqrt(Math.pow(p1[0] - p2[0], 2) + Math.pow(p1[1] - p2[1], 2));
+  }
+  function getIntersectingLines(line, points) {
+      var intersections = [];
+      var s1 = new Segment([line[0], line[1]], [line[2], line[3]]);
+      for (var i = 0; i < points.length; i++) {
+          var s2 = new Segment(points[i], points[(i + 1) % points.length]);
+          if (s1.intersects(s2)) {
+              intersections.push([s1.xi, s1.yi]);
+          }
+      }
+      return intersections;
+  }
+  function affine(x, y, cx, cy, sinAnglePrime, cosAnglePrime, R) {
+      var A = -cx * cosAnglePrime - cy * sinAnglePrime + cx;
+      var B = R * (cx * sinAnglePrime - cy * cosAnglePrime) + cy;
+      var C = cosAnglePrime;
+      var D = sinAnglePrime;
+      var E = -R * sinAnglePrime;
+      var F = R * cosAnglePrime;
+      return [A + C * x + D * y, B + E * x + F * y];
+  }
+  function hachureLinesForPolygon(points, o) {
+      var ret = [];
+      if (points && points.length) {
+          var left = points[0][0];
+          var right = points[0][0];
+          var top = points[0][1];
+          var bottom = points[0][1];
+          for (var i = 1; i < points.length; i++) {
+              left = Math.min(left, points[i][0]);
+              right = Math.max(right, points[i][0]);
+              top = Math.min(top, points[i][1]);
+              bottom = Math.max(bottom, points[i][1]);
+          }
+          var angle = o.hachureAngle;
+          var gap = o.hachureGap;
+          if (gap < 0) {
+              gap = o.strokeWidth * 4;
+          }
+          gap = Math.max(gap, 0.1);
+          var radPerDeg = Math.PI / 180;
+          var hachureAngle = angle % 180 * radPerDeg;
+          var cosAngle = Math.cos(hachureAngle);
+          var sinAngle = Math.sin(hachureAngle);
+          var tanAngle = Math.tan(hachureAngle);
+          var it = new HachureIterator(top - 1, bottom + 1, left - 1, right + 1, gap, sinAngle, cosAngle, tanAngle);
+          var rect = void 0;
+          while ((rect = it.nextLine()) != null) {
+              var lines = getIntersectingLines(rect, points);
+              for (var _i = 0; _i < lines.length; _i++) {
+                  if (_i < lines.length - 1) {
+                      var p1 = lines[_i];
+                      var p2 = lines[_i + 1];
+                      ret.push([p1, p2]);
+                  }
+              }
+          }
+      }
+      return ret;
+  }
+  function hachureLinesForEllipse(cx, cy, width, height, o, renderer) {
+      var ret = [];
+      var rx = Math.abs(width / 2);
+      var ry = Math.abs(height / 2);
+      rx += renderer.getOffset(-rx * 0.05, rx * 0.05, o);
+      ry += renderer.getOffset(-ry * 0.05, ry * 0.05, o);
+      var angle = o.hachureAngle;
+      var gap = o.hachureGap;
+      if (gap <= 0) {
+          gap = o.strokeWidth * 4;
+      }
+      var fweight = o.fillWeight;
+      if (fweight < 0) {
+          fweight = o.strokeWidth / 2;
+      }
+      var radPerDeg = Math.PI / 180;
+      var hachureAngle = angle % 180 * radPerDeg;
+      var tanAngle = Math.tan(hachureAngle);
+      var aspectRatio = ry / rx;
+      var hyp = Math.sqrt(aspectRatio * tanAngle * aspectRatio * tanAngle + 1);
+      var sinAnglePrime = aspectRatio * tanAngle / hyp;
+      var cosAnglePrime = 1 / hyp;
+      var gapPrime = gap / (rx * ry / Math.sqrt(ry * cosAnglePrime * (ry * cosAnglePrime) + rx * sinAnglePrime * (rx * sinAnglePrime)) / rx);
+      var halfLen = Math.sqrt(rx * rx - (cx - rx + gapPrime) * (cx - rx + gapPrime));
+      for (var xPos = cx - rx + gapPrime; xPos < cx + rx; xPos += gapPrime) {
+          halfLen = Math.sqrt(rx * rx - (cx - xPos) * (cx - xPos));
+          var p1 = affine(xPos, cy - halfLen, cx, cy, sinAnglePrime, cosAnglePrime, aspectRatio);
+          var p2 = affine(xPos, cy + halfLen, cx, cy, sinAnglePrime, cosAnglePrime, aspectRatio);
+          ret.push([p1, p2]);
+      }
+      return ret;
+  }
+
   var HachureFiller = function () {
       function HachureFiller(renderer) {
           classCallCheck(this, HachureFiller);
@@ -815,47 +912,8 @@
           value: function _fillPolygon(points, o) {
               var connectEnds = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
 
-              var ops = [];
-              if (points && points.length) {
-                  var left = points[0][0];
-                  var right = points[0][0];
-                  var top = points[0][1];
-                  var bottom = points[0][1];
-                  for (var i = 1; i < points.length; i++) {
-                      left = Math.min(left, points[i][0]);
-                      right = Math.max(right, points[i][0]);
-                      top = Math.min(top, points[i][1]);
-                      bottom = Math.max(bottom, points[i][1]);
-                  }
-                  var angle = o.hachureAngle;
-                  var gap = o.hachureGap;
-                  if (gap < 0) {
-                      gap = o.strokeWidth * 4;
-                  }
-                  gap = Math.max(gap, 0.1);
-                  var radPerDeg = Math.PI / 180;
-                  var hachureAngle = angle % 180 * radPerDeg;
-                  var cosAngle = Math.cos(hachureAngle);
-                  var sinAngle = Math.sin(hachureAngle);
-                  var tanAngle = Math.tan(hachureAngle);
-                  var it = new HachureIterator(top - 1, bottom + 1, left - 1, right + 1, gap, sinAngle, cosAngle, tanAngle);
-                  var rect = void 0;
-                  var prevPoint = null;
-                  while ((rect = it.nextLine()) != null) {
-                      var lines = this.getIntersectingLines(rect, points);
-                      for (var _i = 0; _i < lines.length; _i++) {
-                          if (_i < lines.length - 1) {
-                              var p1 = lines[_i];
-                              var p2 = lines[_i + 1];
-                              ops = ops.concat(this.renderer.doubleLine(p1[0], p1[1], p2[0], p2[1], o));
-                              if (connectEnds && prevPoint) {
-                                  ops = ops.concat(this.renderer.doubleLine(prevPoint[0], prevPoint[1], p1[0], p1[1], o));
-                              }
-                              prevPoint = p2;
-                          }
-                      }
-                  }
-              }
+              var lines = hachureLinesForPolygon(points, o);
+              var ops = this.renderLines(lines, o, connectEnds);
               return { type: 'fillSketch', ops: ops };
           }
       }, {
@@ -863,65 +921,45 @@
           value: function _fillEllipse(cx, cy, width, height, o) {
               var connectEnds = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : false;
 
-              var ops = [];
-              var rx = Math.abs(width / 2);
-              var ry = Math.abs(height / 2);
-              rx += this.renderer.getOffset(-rx * 0.05, rx * 0.05, o);
-              ry += this.renderer.getOffset(-ry * 0.05, ry * 0.05, o);
-              var angle = o.hachureAngle;
-              var gap = o.hachureGap;
-              if (gap <= 0) {
-                  gap = o.strokeWidth * 4;
-              }
-              var fweight = o.fillWeight;
-              if (fweight < 0) {
-                  fweight = o.strokeWidth / 2;
-              }
-              var radPerDeg = Math.PI / 180;
-              var hachureAngle = angle % 180 * radPerDeg;
-              var tanAngle = Math.tan(hachureAngle);
-              var aspectRatio = ry / rx;
-              var hyp = Math.sqrt(aspectRatio * tanAngle * aspectRatio * tanAngle + 1);
-              var sinAnglePrime = aspectRatio * tanAngle / hyp;
-              var cosAnglePrime = 1 / hyp;
-              var gapPrime = gap / (rx * ry / Math.sqrt(ry * cosAnglePrime * (ry * cosAnglePrime) + rx * sinAnglePrime * (rx * sinAnglePrime)) / rx);
-              var halfLen = Math.sqrt(rx * rx - (cx - rx + gapPrime) * (cx - rx + gapPrime));
-              var prevPoint = null;
-              for (var xPos = cx - rx + gapPrime; xPos < cx + rx; xPos += gapPrime) {
-                  halfLen = Math.sqrt(rx * rx - (cx - xPos) * (cx - xPos));
-                  var p1 = this.affine(xPos, cy - halfLen, cx, cy, sinAnglePrime, cosAnglePrime, aspectRatio);
-                  var p2 = this.affine(xPos, cy + halfLen, cx, cy, sinAnglePrime, cosAnglePrime, aspectRatio);
-                  ops = ops.concat(this.renderer.doubleLine(p1[0], p1[1], p2[0], p2[1], o));
-                  if (connectEnds && prevPoint) {
-                      ops = ops.concat(this.renderer.doubleLine(prevPoint[0], prevPoint[1], p1[0], p1[1], o));
-                  }
-                  prevPoint = p2;
-              }
+              var lines = hachureLinesForEllipse(cx, cy, width, height, o, this.renderer);
+              var ops = this.renderLines(lines, o, connectEnds);
               return { type: 'fillSketch', ops: ops };
           }
       }, {
-          key: 'getIntersectingLines',
-          value: function getIntersectingLines(line, points) {
-              var intersections = [];
-              var s1 = new Segment([line[0], line[1]], [line[2], line[3]]);
-              for (var i = 0; i < points.length; i++) {
-                  var s2 = new Segment(points[i], points[(i + 1) % points.length]);
-                  if (s1.intersects(s2)) {
-                      intersections.push([s1.xi, s1.yi]);
+          key: 'renderLines',
+          value: function renderLines(lines, o, connectEnds) {
+              var ops = [];
+              var prevPoint = null;
+              var _iteratorNormalCompletion = true;
+              var _didIteratorError = false;
+              var _iteratorError = undefined;
+
+              try {
+                  for (var _iterator = lines[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                      var line = _step.value;
+
+                      ops = ops.concat(this.renderer.doubleLine(line[0][0], line[0][1], line[1][0], line[1][1], o));
+                      if (connectEnds && prevPoint) {
+                          ops = ops.concat(this.renderer.doubleLine(prevPoint[0], prevPoint[1], line[0][0], line[0][1], o));
+                      }
+                      prevPoint = line[1];
+                  }
+              } catch (err) {
+                  _didIteratorError = true;
+                  _iteratorError = err;
+              } finally {
+                  try {
+                      if (!_iteratorNormalCompletion && _iterator.return) {
+                          _iterator.return();
+                      }
+                  } finally {
+                      if (_didIteratorError) {
+                          throw _iteratorError;
+                      }
                   }
               }
-              return intersections;
-          }
-      }, {
-          key: 'affine',
-          value: function affine(x, y, cx, cy, sinAnglePrime, cosAnglePrime, R) {
-              var A = -cx * cosAnglePrime - cy * sinAnglePrime + cx;
-              var B = R * (cx * sinAnglePrime - cy * cosAnglePrime) + cy;
-              var C = cosAnglePrime;
-              var D = sinAnglePrime;
-              var E = -R * sinAnglePrime;
-              var F = R * cosAnglePrime;
-              return [A + C * x + D * y, B + E * x + F * y];
+
+              return ops;
           }
       }]);
       return HachureFiller;
@@ -979,6 +1017,84 @@
       return HatchFiller;
   }(HachureFiller);
 
+  var DotFiller = function () {
+      function DotFiller(renderer) {
+          classCallCheck(this, DotFiller);
+
+          this.renderer = renderer;
+      }
+
+      createClass(DotFiller, [{
+          key: 'fillPolygon',
+          value: function fillPolygon(points, o) {
+              o = Object.assign({}, o, { curveStepCount: 4, hachureAngle: 0 });
+              var lines = hachureLinesForPolygon(points, o);
+              return this.dotsOnLines(lines, o);
+          }
+      }, {
+          key: 'fillEllipse',
+          value: function fillEllipse(cx, cy, width, height, o) {
+              o = Object.assign({}, o, { curveStepCount: 4, hachureAngle: 0 });
+              var lines = hachureLinesForEllipse(cx, cy, width, height, o, this.renderer);
+              return this.dotsOnLines(lines, o);
+          }
+      }, {
+          key: 'dotsOnLines',
+          value: function dotsOnLines(lines, o) {
+              var ops = [];
+              var gap = o.hachureGap;
+              if (gap < 0) {
+                  gap = o.strokeWidth * 4;
+              }
+              gap = Math.max(gap, 0.1);
+              var fweight = o.fillWeight;
+              if (fweight < 0) {
+                  fweight = o.strokeWidth / 2;
+              }
+              var _iteratorNormalCompletion = true;
+              var _didIteratorError = false;
+              var _iteratorError = undefined;
+
+              try {
+                  for (var _iterator = lines[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                      var line = _step.value;
+
+                      var length = lineLength(line);
+                      var dl = length / gap;
+                      var count = Math.ceil(dl) - 1;
+                      var alpha = Math.atan((line[1][1] - line[0][1]) / (line[1][0] - line[0][0]));
+                      for (var i = 0; i < count; i++) {
+                          var l = gap * (i + 1);
+                          var dy = l * Math.sin(alpha);
+                          var dx = l * Math.cos(alpha);
+                          var c = [line[0][0] - dx, line[0][1] + dy];
+                          var cx = this.renderer.getOffset(c[0] - gap / 4, c[0] + gap / 4, o);
+                          var cy = this.renderer.getOffset(c[1] - gap / 4, c[1] + gap / 4, o);
+                          var ellipse = this.renderer.ellipse(cx, cy, fweight, fweight, o);
+                          ops = ops.concat(ellipse.ops);
+                      }
+                  }
+              } catch (err) {
+                  _didIteratorError = true;
+                  _iteratorError = err;
+              } finally {
+                  try {
+                      if (!_iteratorNormalCompletion && _iterator.return) {
+                          _iterator.return();
+                      }
+                  } finally {
+                      if (_didIteratorError) {
+                          throw _iteratorError;
+                      }
+                  }
+              }
+
+              return { type: 'fillSketch', ops: ops };
+          }
+      }]);
+      return DotFiller;
+  }();
+
   var fillers = {};
   function getFiller(renderer, o) {
       var fillerName = o.fillStyle || 'hachure';
@@ -992,6 +1108,11 @@
               case 'cross-hatch':
                   if (!fillers[fillerName]) {
                       fillers[fillerName] = new HatchFiller(renderer);
+                  }
+                  break;
+              case 'dots':
+                  if (!fillers[fillerName]) {
+                      fillers[fillerName] = new DotFiller(renderer);
                   }
                   break;
               case 'hachure':
@@ -1126,7 +1247,7 @@
           key: 'solidFillPolygon',
           value: function solidFillPolygon(points, o) {
               var ops = [];
-              if (PointerEvent.length) {
+              if (points.length) {
                   var offset = o.maxRandomnessOffset || 0;
                   var len = points.length;
                   if (len > 2) {
