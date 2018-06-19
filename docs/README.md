@@ -68,6 +68,10 @@ rc.rectangle(120, 105, 80, 80, {
 });
 ```
 
+Fill styles can be: **hachure**(default), **solid**, **zigzag**, **cross-hatch**, or **dots**
+
+![Rough.js fill examples](https://roughjs.com/images/main/m13.png)
+
 ### Sketching style
 
 ![Rough.js rectangle](https://roughjs.com/images/main/m4.png)
