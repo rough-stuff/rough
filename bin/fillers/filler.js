@@ -1,6 +1,7 @@
 import { HachureFiller } from './hachure-filler';
 import { ZigZagFiller } from './zigzag-filler';
 import { HatchFiller } from './hatch-filler';
+import { DotFiller } from './dot-filler';
 const fillers = {};
 export function getFiller(renderer, o) {
     let fillerName = o.fillStyle || 'hachure';
@@ -14,6 +15,11 @@ export function getFiller(renderer, o) {
             case 'cross-hatch':
                 if (!fillers[fillerName]) {
                     fillers[fillerName] = new HatchFiller(renderer);
+                }
+                break;
+            case 'dots':
+                if (!fillers[fillerName]) {
+                    fillers[fillerName] = new DotFiller(renderer);
                 }
                 break;
             case 'hachure':

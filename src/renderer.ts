@@ -111,7 +111,7 @@ export class RoughRenderer {
 
   solidFillPolygon(points: Point[], o: Options): OpSet {
     const ops: Op[] = [];
-    if (PointerEvent.length) {
+    if (points.length) {
       const offset = o.maxRandomnessOffset || 0;
       const len = points.length;
       if (len > 2) {
