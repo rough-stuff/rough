@@ -89,9 +89,10 @@ export class RoughCanvas {
                     break;
                 }
                 case 'path2Dpattern': {
-                    if (hasDocument) {
+                    const doc = this.canvas.ownerDocument || (hasDocument && document);
+                    if (doc) {
                         const size = drawing.size;
-                        const hcanvas = document.createElement('canvas');
+                        const hcanvas = doc.createElement('canvas');
                         const hcontext = hcanvas.getContext('2d');
                         const bbox = this.computeBBox(drawing.path);
                         if (bbox && (bbox.width || bbox.height)) {
@@ -109,6 +110,9 @@ export class RoughCanvas {
                         const p2d = new Path2D(drawing.path);
                         this.ctx.fill(p2d);
                         this.ctx.restore();
+                    }
+                    else {
+                        console.error('Cannot render path2Dpattern. No defs/document defined.');
                     }
                     break;
                 }
