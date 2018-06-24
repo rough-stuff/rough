@@ -1852,9 +1852,10 @@ var rough = (function () {
                         break;
                     }
                     case 'path2Dpattern': {
-                        if (hasDocument) {
+                        const doc = this.canvas.ownerDocument || (hasDocument && document);
+                        if (doc) {
                             const size = drawing.size;
-                            const hcanvas = document.createElement('canvas');
+                            const hcanvas = doc.createElement('canvas');
                             const hcontext = hcanvas.getContext('2d');
                             const bbox = this.computeBBox(drawing.path);
                             if (bbox && (bbox.width || bbox.height)) {
@@ -1872,6 +1873,9 @@ var rough = (function () {
                             const p2d = new Path2D(drawing.path);
                             this.ctx.fill(p2d);
                             this.ctx.restore();
+                        }
+                        else {
+                            console.error('Cannot render path2Dpattern. No defs/document defined.');
                         }
                         break;
                     }
@@ -2144,9 +2148,9 @@ var rough = (function () {
             return new RoughRenderer();
         }
         get defs() {
-            if (hasDocument$1) {
+            const doc = this.svg.ownerDocument || (hasDocument$1 && document);
+            if (doc) {
                 if (!this._defs) {
-                    const doc = this.svg.ownerDocument || document;
                     const dnode = doc.createElementNS('http://www.w3.org/2000/svg', 'defs');
                     if (this.svg.firstChild) {
                         this.svg.insertBefore(dnode, this.svg.firstChild);
@@ -2232,25 +2236,30 @@ var rough = (function () {
                         break;
                     }
                     case 'path2Dpattern': {
-                        const size = drawing.size;
-                        const pattern = doc.createElementNS('http://www.w3.org/2000/svg', 'pattern');
-                        const id = `rough-${Math.floor(Math.random() * (Number.MAX_SAFE_INTEGER || 999999))}`;
-                        pattern.setAttribute('id', id);
-                        pattern.setAttribute('x', '0');
-                        pattern.setAttribute('y', '0');
-                        pattern.setAttribute('width', '1');
-                        pattern.setAttribute('height', '1');
-                        pattern.setAttribute('height', '1');
-                        pattern.setAttribute('viewBox', `0 0 ${Math.round(size[0])} ${Math.round(size[1])}`);
-                        pattern.setAttribute('patternUnits', 'objectBoundingBox');
-                        const patternPath = this.fillSketch(doc, drawing, o);
-                        pattern.appendChild(patternPath);
-                        this.defs.appendChild(pattern);
-                        path = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
-                        path.setAttribute('d', drawing.path || '');
-                        path.style.stroke = 'none';
-                        path.style.strokeWidth = '0';
-                        path.style.fill = `url(#${id})`;
+                        if (!this.defs) {
+                            console.error('Cannot render path2Dpattern. No defs/document defined.');
+                        }
+                        else {
+                            const size = drawing.size;
+                            const pattern = doc.createElementNS('http://www.w3.org/2000/svg', 'pattern');
+                            const id = `rough-${Math.floor(Math.random() * (Number.MAX_SAFE_INTEGER || 999999))}`;
+                            pattern.setAttribute('id', id);
+                            pattern.setAttribute('x', '0');
+                            pattern.setAttribute('y', '0');
+                            pattern.setAttribute('width', '1');
+                            pattern.setAttribute('height', '1');
+                            pattern.setAttribute('height', '1');
+                            pattern.setAttribute('viewBox', `0 0 ${Math.round(size[0])} ${Math.round(size[1])}`);
+                            pattern.setAttribute('patternUnits', 'objectBoundingBox');
+                            const patternPath = this.fillSketch(doc, drawing, o);
+                            pattern.appendChild(patternPath);
+                            this.defs.appendChild(pattern);
+                            path = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
+                            path.setAttribute('d', drawing.path || '');
+                            path.style.stroke = 'none';
+                            path.style.strokeWidth = '0';
+                            path.style.fill = `url(#${id})`;
+                        }
                         break;
                     }
                 }

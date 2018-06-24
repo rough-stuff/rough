@@ -2209,9 +2209,10 @@ var rough = (function () {
                               }
                           case 'path2Dpattern':
                               {
-                                  if (hasDocument) {
+                                  var doc = this.canvas.ownerDocument || hasDocument && document;
+                                  if (doc) {
                                       var size = drawing.size;
-                                      var hcanvas = document.createElement('canvas');
+                                      var hcanvas = doc.createElement('canvas');
                                       var hcontext = hcanvas.getContext('2d');
                                       var bbox = this.computeBBox(drawing.path);
                                       if (bbox && (bbox.width || bbox.height)) {
@@ -2228,6 +2229,8 @@ var rough = (function () {
                                       var _p2d = new Path2D(drawing.path);
                                       this.ctx.fill(_p2d);
                                       this.ctx.restore();
+                                  } else {
+                                      console.error('Cannot render path2Dpattern. No defs/document defined.');
                                   }
                                   break;
                               }
@@ -2722,25 +2725,29 @@ var rough = (function () {
                               }
                           case 'path2Dpattern':
                               {
-                                  var size = drawing.size;
-                                  var pattern = doc.createElementNS('http://www.w3.org/2000/svg', 'pattern');
-                                  var id = 'rough-' + Math.floor(Math.random() * (Number.MAX_SAFE_INTEGER || 999999));
-                                  pattern.setAttribute('id', id);
-                                  pattern.setAttribute('x', '0');
-                                  pattern.setAttribute('y', '0');
-                                  pattern.setAttribute('width', '1');
-                                  pattern.setAttribute('height', '1');
-                                  pattern.setAttribute('height', '1');
-                                  pattern.setAttribute('viewBox', '0 0 ' + Math.round(size[0]) + ' ' + Math.round(size[1]));
-                                  pattern.setAttribute('patternUnits', 'objectBoundingBox');
-                                  var patternPath = this.fillSketch(doc, drawing, o);
-                                  pattern.appendChild(patternPath);
-                                  this.defs.appendChild(pattern);
-                                  path = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
-                                  path.setAttribute('d', drawing.path || '');
-                                  path.style.stroke = 'none';
-                                  path.style.strokeWidth = '0';
-                                  path.style.fill = 'url(#' + id + ')';
+                                  if (!this.defs) {
+                                      console.error('Cannot render path2Dpattern. No defs/document defined.');
+                                  } else {
+                                      var size = drawing.size;
+                                      var pattern = doc.createElementNS('http://www.w3.org/2000/svg', 'pattern');
+                                      var id = 'rough-' + Math.floor(Math.random() * (Number.MAX_SAFE_INTEGER || 999999));
+                                      pattern.setAttribute('id', id);
+                                      pattern.setAttribute('x', '0');
+                                      pattern.setAttribute('y', '0');
+                                      pattern.setAttribute('width', '1');
+                                      pattern.setAttribute('height', '1');
+                                      pattern.setAttribute('height', '1');
+                                      pattern.setAttribute('viewBox', '0 0 ' + Math.round(size[0]) + ' ' + Math.round(size[1]));
+                                      pattern.setAttribute('patternUnits', 'objectBoundingBox');
+                                      var patternPath = this.fillSketch(doc, drawing, o);
+                                      pattern.appendChild(patternPath);
+                                      this.defs.appendChild(pattern);
+                                      path = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
+                                      path.setAttribute('d', drawing.path || '');
+                                      path.style.stroke = 'none';
+                                      path.style.strokeWidth = '0';
+                                      path.style.fill = 'url(#' + id + ')';
+                                  }
                                   break;
                               }
                       }
@@ -2792,9 +2799,9 @@ var rough = (function () {
       }, {
           key: 'defs',
           get: function get$$1() {
-              if (hasDocument$1) {
+              var doc = this.svg.ownerDocument || hasDocument$1 && document;
+              if (doc) {
                   if (!this._defs) {
-                      var doc = this.svg.ownerDocument || document;
                       var dnode = doc.createElementNS('http://www.w3.org/2000/svg', 'defs');
                       if (this.svg.firstChild) {
                           this.svg.insertBefore(dnode, this.svg.firstChild);
