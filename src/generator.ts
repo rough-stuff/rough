@@ -112,8 +112,6 @@ export class RoughGenerator {
     if (!(size[0] * size[1])) {
       size = canvasSize;
     }
-    size[0] = Math.min(size[0], canvasSize[0]);
-    size[1] = Math.min(size[1], canvasSize[1]);
     return size;
   }
 
