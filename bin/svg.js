@@ -74,7 +74,7 @@ export class RoughSVG {
             switch (drawing.type) {
                 case 'path': {
                     path = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
-                    path.setAttribute('d', this.opsToPath(drawing));
+                    path.setAttribute('d', this.opsToPath(drawing, o));
                     path.style.stroke = o.stroke;
                     path.style.strokeWidth = o.strokeWidth + '';
                     path.style.fill = 'none';
@@ -82,7 +82,7 @@ export class RoughSVG {
                 }
                 case 'fillPath': {
                     path = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
-                    path.setAttribute('d', this.opsToPath(drawing));
+                    path.setAttribute('d', this.opsToPath(drawing, o));
                     path.style.stroke = 'none';
                     path.style.strokeWidth = '0';
                     path.style.fill = o.fill;
@@ -134,8 +134,8 @@ export class RoughSVG {
         }
         return g;
     }
-    opsToPath(drawing) {
-        return this.gen.opsToPath(drawing);
+    opsToPath(drawing, o) {
+        return this.gen.opsToPath(drawing, o);
     }
     fillSketch(doc, drawing, o) {
         let fweight = o.fillWeight;
@@ -143,7 +143,7 @@ export class RoughSVG {
             fweight = o.strokeWidth / 2;
         }
         const path = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', this.opsToPath(drawing));
+        path.setAttribute('d', this.opsToPath(drawing, o));
         path.style.stroke = o.fill;
         path.style.strokeWidth = fweight + '';
         path.style.fill = 'none';

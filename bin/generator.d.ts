@@ -25,5 +25,5 @@ export declare class RoughGenerator {
     path(d: string, options?: Options): Drawable;
     toPaths(drawable: Drawable): PathInfo[];
     private fillSketch;
-    opsToPath(drawing: OpSet): string;
+    opsToPath(drawing: OpSet, o: Options): string;
 }

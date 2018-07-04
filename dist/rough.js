@@ -1457,6 +1457,7 @@ var rough = (function () {
             this.defaultOptions = {
                 maxRandomnessOffset: 2,
                 roughness: 1,
+                precision: 3,
                 bowing: 1,
                 stroke: '#000',
                 strokeWidth: 1,
@@ -1678,7 +1679,7 @@ var rough = (function () {
                 switch (drawing.type) {
                     case 'path':
                         path = {
-                            d: this.opsToPath(drawing),
+                            d: this.opsToPath(drawing, o),
                             stroke: o.stroke,
                             strokeWidth: o.strokeWidth,
                             fill: 'none'
@@ -1686,7 +1687,7 @@ var rough = (function () {
                         break;
                     case 'fillPath':
                         path = {
-                            d: this.opsToPath(drawing),
+                            d: this.opsToPath(drawing, o),
                             stroke: 'none',
                             strokeWidth: 0,
                             fill: o.fill || 'none'
@@ -1732,28 +1733,41 @@ var rough = (function () {
                 fweight = o.strokeWidth / 2;
             }
             return {
-                d: this.opsToPath(drawing),
+                d: this.opsToPath(drawing, o),
                 stroke: o.fill || 'none',
                 strokeWidth: fweight,
                 fill: 'none'
             };
         }
-        opsToPath(drawing) {
+        opsToPath(drawing, o) {
             let path = '';
+            let round;
+            if (o.precision == undefined || o.precision < 0) {
+                round = function (value) { return value; };
+            }
+            else if (o.precision == 0) {
+                round = Math.round;
+            }
+            else {
+                var dec = Math.pow(10, Math.min(15, o.precision));
+                round = (function (dec, r) {
+                    return function (value) { return r(value * dec) / dec; };
+                })(dec, Math.round);
+            }
             for (const item of drawing.ops) {
                 const data = item.data;
                 switch (item.op) {
                     case 'move':
-                        path += `M${data[0]} ${data[1]} `;
+                        path += `M${round(data[0])} ${round(data[1])} `;
                         break;
                     case 'bcurveTo':
-                        path += `C${data[0]} ${data[1]}, ${data[2]} ${data[3]}, ${data[4]} ${data[5]} `;
+                        path += `C${round(data[0])} ${round(data[1])}, ${round(data[2])} ${round(data[3])}, ${round(data[4])} ${round(data[5])} `;
                         break;
                     case 'qcurveTo':
-                        path += `Q${data[0]} ${data[1]}, ${data[2]} ${data[3]} `;
+                        path += `Q${round(data[0])} ${round(data[1])}, ${round(data[2])} ${round(data[3])} `;
                         break;
                     case 'lineTo':
-                        path += `L${data[0]} ${data[1]} `;
+                        path += `L${round(data[0])} ${round(data[1])} `;
                         break;
                 }
             }
@@ -2207,7 +2221,7 @@ var rough = (function () {
                 switch (drawing.type) {
                     case 'path': {
                         path = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
-                        path.setAttribute('d', this.opsToPath(drawing));
+                        path.setAttribute('d', this.opsToPath(drawing, o));
                         path.style.stroke = o.stroke;
                         path.style.strokeWidth = o.strokeWidth + '';
                         path.style.fill = 'none';
@@ -2215,7 +2229,7 @@ var rough = (function () {
                     }
                     case 'fillPath': {
                         path = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
-                        path.setAttribute('d', this.opsToPath(drawing));
+                        path.setAttribute('d', this.opsToPath(drawing, o));
                         path.style.stroke = 'none';
                         path.style.strokeWidth = '0';
                         path.style.fill = o.fill;
@@ -2267,8 +2281,8 @@ var rough = (function () {
             }
             return g;
         }
-        opsToPath(drawing) {
-            return this.gen.opsToPath(drawing);
+        opsToPath(drawing, o) {
+            return this.gen.opsToPath(drawing, o);
         }
         fillSketch(doc, drawing, o) {
             let fweight = o.fillWeight;
@@ -2276,7 +2290,7 @@ var rough = (function () {
                 fweight = o.strokeWidth / 2;
             }
             const path = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
-            path.setAttribute('d', this.opsToPath(drawing));
+            path.setAttribute('d', this.opsToPath(drawing, o));
             path.style.stroke = o.fill;
             path.style.strokeWidth = fweight + '';
             path.style.fill = 'none';
