@@ -12,6 +12,7 @@ export class RoughGenerator {
   defaultOptions: Options = {
     maxRandomnessOffset: 2,
     roughness: 1,
+    precision: 3,
     bowing: 1,
     stroke: '#000',
     strokeWidth: 1,
@@ -246,7 +247,7 @@ export class RoughGenerator {
       switch (drawing.type) {
         case 'path':
           path = {
-            d: this.opsToPath(drawing),
+            d: this.opsToPath(drawing,o),
             stroke: o.stroke,
             strokeWidth: o.strokeWidth,
             fill: 'none'
@@ -254,7 +255,7 @@ export class RoughGenerator {
           break;
         case 'fillPath':
           path = {
-            d: this.opsToPath(drawing),
+            d: this.opsToPath(drawing,o),
             stroke: 'none',
             strokeWidth: 0,
             fill: o.fill || 'none'
@@ -301,29 +302,43 @@ export class RoughGenerator {
       fweight = o.strokeWidth / 2;
     }
     return {
-      d: this.opsToPath(drawing),
+      d: this.opsToPath(drawing,o),
       stroke: o.fill || 'none',
       strokeWidth: fweight,
       fill: 'none'
     };
   }
 
-  opsToPath(drawing: OpSet): string {
+  opsToPath(drawing: OpSet,o: Options): string {
     let path = '';
+
+	let round: (value: number) => number;
+
+	if(o.precision == undefined || o.precision < 0){
+		round = function(value: number){return value;};
+	}else if(o.precision == 0){
+		round = Math.round;
+	}else{
+		var dec = Math.pow(10, Math.min(15, o.precision));
+		round = (function(dec:number, r:(x:number)=>number){
+			return function(value:number){return r(value * dec)/dec;}
+		})(dec, Math.round);
+	}
+
     for (const item of drawing.ops) {
       const data = item.data;
       switch (item.op) {
         case 'move':
-          path += `M${data[0]} ${data[1]} `;
+          path += `M${round(data[0])} ${round(data[1])} `;
           break;
         case 'bcurveTo':
-          path += `C${data[0]} ${data[1]}, ${data[2]} ${data[3]}, ${data[4]} ${data[5]} `;
+          path += `C${round(data[0])} ${round(data[1])}, ${round(data[2])} ${round(data[3])}, ${round(data[4])} ${round(data[5])} `;
           break;
         case 'qcurveTo':
-          path += `Q${data[0]} ${data[1]}, ${data[2]} ${data[3]} `;
+          path += `Q${round(data[0])} ${round(data[1])}, ${round(data[2])} ${round(data[3])} `;
           break;
         case 'lineTo':
-          path += `L${data[0]} ${data[1]} `;
+          path += `L${round(data[0])} ${round(data[1])} `;
           break;
       }
     }

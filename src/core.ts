@@ -15,6 +15,7 @@ export interface DrawingSurface {
 export interface Options {
   maxRandomnessOffset: number;
   roughness: number;
+  precision: number;
   bowing: number;
   stroke: string;
   strokeWidth: number;
