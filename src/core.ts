@@ -13,18 +13,18 @@ export interface DrawingSurface {
 }
 
 export interface Options {
-  maxRandomnessOffset: number;
-  roughness: number;
-  bowing: number;
-  stroke: string;
-  strokeWidth: number;
-  curveTightness: number;
-  curveStepCount: number;
-  fill: string | null;
-  fillStyle: string;
-  fillWeight: number;
-  hachureAngle: number;
-  hachureGap: number;
+  maxRandomnessOffset?: number;
+  roughness?: number;
+  bowing?: number;
+  stroke?: string;
+  strokeWidth?: number;
+  curveTightness?: number;
+  curveStepCount?: number;
+  fill?: string | null;
+  fillStyle?: string;
+  fillWeight?: number;
+  hachureAngle?: number;
+  hachureGap?: number;
   simplification?: number;
 }
 
