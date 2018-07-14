@@ -1,14 +1,12 @@
-import { Config, Options, Drawable } from './core';
+import { Config, Options, ResolvedOptions, Drawable } from './core';
 import { RoughGenerator } from './generator';
-import { RoughRenderer } from './renderer';
 import { Point } from './geometry';
-export declare class RoughCanvas {
-    protected canvas: HTMLCanvasElement;
-    protected ctx: CanvasRenderingContext2D;
+import { RoughCanvasBase } from './canvas-base';
+export declare class RoughCanvas extends RoughCanvasBase {
     private gen;
     constructor(canvas: HTMLCanvasElement, config?: Config);
     readonly generator: RoughGenerator;
-    static createRenderer(): RoughRenderer;
+    getDefaultOptions(): ResolvedOptions;
     line(x1: number, y1: number, x2: number, y2: number, options?: Options): Drawable;
     rectangle(x: number, y: number, width: number, height: number, options?: Options): Drawable;
     ellipse(x: number, y: number, width: number, height: number, options?: Options): Drawable;
@@ -18,8 +16,4 @@ export declare class RoughCanvas {
     arc(x: number, y: number, width: number, height: number, start: number, stop: number, closed?: boolean, options?: Options): Drawable;
     curve(points: Point[], options?: Options): Drawable;
     path(d: string, options?: Options): Drawable;
-    draw(drawable: Drawable): void;
-    private computeBBox;
-    private fillSketch;
-    private _drawToContext;
 }

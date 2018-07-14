@@ -1455,7 +1455,7 @@
     }
 
     const hasSelf$1 = typeof self !== 'undefined';
-    class RoughGenerator {
+    class RoughGeneratorBase {
         constructor(config, surface) {
             this.defaultOptions = {
                 maxRandomnessOffset: 2,
@@ -1552,6 +1552,102 @@
                 size = canvasSize;
             }
             return size;
+        }
+        toPaths(drawable) {
+            const sets = drawable.sets || [];
+            const o = drawable.options || this.defaultOptions;
+            const paths = [];
+            for (const drawing of sets) {
+                let path = null;
+                switch (drawing.type) {
+                    case 'path':
+                        path = {
+                            d: this.opsToPath(drawing),
+                            stroke: o.stroke,
+                            strokeWidth: o.strokeWidth,
+                            fill: 'none'
+                        };
+                        break;
+                    case 'fillPath':
+                        path = {
+                            d: this.opsToPath(drawing),
+                            stroke: 'none',
+                            strokeWidth: 0,
+                            fill: o.fill || 'none'
+                        };
+                        break;
+                    case 'fillSketch':
+                        path = this.fillSketch(drawing, o);
+                        break;
+                    case 'path2Dfill':
+                        path = {
+                            d: drawing.path || '',
+                            stroke: 'none',
+                            strokeWidth: 0,
+                            fill: o.fill || 'none'
+                        };
+                        break;
+                    case 'path2Dpattern': {
+                        const size = drawing.size;
+                        const pattern = {
+                            x: 0, y: 0, width: 1, height: 1,
+                            viewBox: `0 0 ${Math.round(size[0])} ${Math.round(size[1])}`,
+                            patternUnits: 'objectBoundingBox',
+                            path: this.fillSketch(drawing, o)
+                        };
+                        path = {
+                            d: drawing.path,
+                            stroke: 'none',
+                            strokeWidth: 0,
+                            pattern: pattern
+                        };
+                        break;
+                    }
+                }
+                if (path) {
+                    paths.push(path);
+                }
+            }
+            return paths;
+        }
+        fillSketch(drawing, o) {
+            let fweight = o.fillWeight;
+            if (fweight < 0) {
+                fweight = o.strokeWidth / 2;
+            }
+            return {
+                d: this.opsToPath(drawing),
+                stroke: o.fill || 'none',
+                strokeWidth: fweight,
+                fill: 'none'
+            };
+        }
+        opsToPath(drawing) {
+            let path = '';
+            for (const item of drawing.ops) {
+                const data = item.data;
+                switch (item.op) {
+                    case 'move':
+                        path += `M${data[0]} ${data[1]} `;
+                        break;
+                    case 'bcurveTo':
+                        path += `C${data[0]} ${data[1]}, ${data[2]} ${data[3]}, ${data[4]} ${data[5]} `;
+                        break;
+                    case 'qcurveTo':
+                        path += `Q${data[0]} ${data[1]}, ${data[2]} ${data[3]} `;
+                        break;
+                    case 'lineTo':
+                        path += `L${data[0]} ${data[1]} `;
+                        break;
+                }
+            }
+            return path.trim();
+        }
+    }
+
+    class RoughGenerator extends RoughGeneratorBase {
+        constructor(config, surface) {
+            super(config, surface);
         }
         line(x1, y1, x2, y2, options) {
             const o = this._options(options);
@@ -1671,159 +1767,20 @@
             paths.push(this.lib.svgPath(d, o));
             return this._drawable('path', paths, o);
         }
-        toPaths(drawable) {
-            const sets = drawable.sets || [];
-            const o = drawable.options || this.defaultOptions;
-            const paths = [];
-            for (const drawing of sets) {
-                let path = null;
-                switch (drawing.type) {
-                    case 'path':
-                        path = {
-                            d: this.opsToPath(drawing),
-                            stroke: o.stroke,
-                            strokeWidth: o.strokeWidth,
-                            fill: 'none'
-                        };
-                        break;
-                    case 'fillPath':
-                        path = {
-                            d: this.opsToPath(drawing),
-                            stroke: 'none',
-                            strokeWidth: 0,
-                            fill: o.fill || 'none'
-                        };
-                        break;
-                    case 'fillSketch':
-                        path = this.fillSketch(drawing, o);
-                        break;
-                    case 'path2Dfill':
-                        path = {
-                            d: drawing.path || '',
-                            stroke: 'none',
-                            strokeWidth: 0,
-                            fill: o.fill || 'none'
-                        };
-                        break;
-                    case 'path2Dpattern': {
-                        const size = drawing.size;
-                        const pattern = {
-                            x: 0, y: 0, width: 1, height: 1,
-                            viewBox: `0 0 ${Math.round(size[0])} ${Math.round(size[1])}`,
-                            patternUnits: 'objectBoundingBox',
-                            path: this.fillSketch(drawing, o)
-                        };
-                        path = {
-                            d: drawing.path,
-                            stroke: 'none',
-                            strokeWidth: 0,
-                            pattern: pattern
-                        };
-                        break;
-                    }
-                }
-                if (path) {
-                    paths.push(path);
-                }
-            }
-            return paths;
-        }
-        fillSketch(drawing, o) {
-            let fweight = o.fillWeight;
-            if (fweight < 0) {
-                fweight = o.strokeWidth / 2;
-            }
-            return {
-                d: this.opsToPath(drawing),
-                stroke: o.fill || 'none',
-                strokeWidth: fweight,
-                fill: 'none'
-            };
-        }
-        opsToPath(drawing) {
-            let path = '';
-            for (const item of drawing.ops) {
-                const data = item.data;
-                switch (item.op) {
-                    case 'move':
-                        path += `M${data[0]} ${data[1]} `;
-                        break;
-                    case 'bcurveTo':
-                        path += `C${data[0]} ${data[1]}, ${data[2]} ${data[3]}, ${data[4]} ${data[5]} `;
-                        break;
-                    case 'qcurveTo':
-                        path += `Q${data[0]} ${data[1]}, ${data[2]} ${data[3]} `;
-                        break;
-                    case 'lineTo':
-                        path += `L${data[0]} ${data[1]} `;
-                        break;
-                }
-            }
-            return path.trim();
-        }
     }
 
     const hasDocument = typeof document !== 'undefined';
-    class RoughCanvas {
-        constructor(canvas, config) {
+    class RoughCanvasBase {
+        constructor(canvas) {
             this.canvas = canvas;
             this.ctx = this.canvas.getContext('2d');
-            this.gen = new RoughGenerator(config || null, this.canvas);
-        }
-        get generator() {
-            return this.gen;
         }
         static createRenderer() {
             return new RoughRenderer();
         }
-        line(x1, y1, x2, y2, options) {
-            const d = this.gen.line(x1, y1, x2, y2, options);
-            this.draw(d);
-            return d;
-        }
-        rectangle(x, y, width, height, options) {
-            const d = this.gen.rectangle(x, y, width, height, options);
-            this.draw(d);
-            return d;
-        }
-        ellipse(x, y, width, height, options) {
-            const d = this.gen.ellipse(x, y, width, height, options);
-            this.draw(d);
-            return d;
-        }
-        circle(x, y, diameter, options) {
-            const d = this.gen.circle(x, y, diameter, options);
-            this.draw(d);
-            return d;
-        }
-        linearPath(points, options) {
-            const d = this.gen.linearPath(points, options);
-            this.draw(d);
-            return d;
-        }
-        polygon(points, options) {
-            const d = this.gen.polygon(points, options);
-            this.draw(d);
-            return d;
-        }
-        arc(x, y, width, height, start, stop, closed = false, options) {
-            const d = this.gen.arc(x, y, width, height, start, stop, closed, options);
-            this.draw(d);
-            return d;
-        }
-        curve(points, options) {
-            const d = this.gen.curve(points, options);
-            this.draw(d);
-            return d;
-        }
-        path(d, options) {
-            const drawing = this.gen.path(d, options);
-            this.draw(drawing);
-            return drawing;
-        }
         draw(drawable) {
             const sets = drawable.sets || [];
-            const o = drawable.options || this.gen.defaultOptions;
+            const o = drawable.options || this.getDefaultOptions();
             const ctx = this.ctx;
             for (const drawing of sets) {
                 switch (drawing.type) {
@@ -1940,13 +1897,69 @@
         }
     }
 
-    class RoughGeneratorAsync extends RoughGenerator {
-        // @ts-ignore
+    class RoughCanvas extends RoughCanvasBase {
+        constructor(canvas, config) {
+            super(canvas);
+            this.gen = new RoughGenerator(config || null, this.canvas);
+        }
+        get generator() {
+            return this.gen;
+        }
+        getDefaultOptions() {
+            return this.gen.defaultOptions;
+        }
+        line(x1, y1, x2, y2, options) {
+            const d = this.gen.line(x1, y1, x2, y2, options);
+            this.draw(d);
+            return d;
+        }
+        rectangle(x, y, width, height, options) {
+            const d = this.gen.rectangle(x, y, width, height, options);
+            this.draw(d);
+            return d;
+        }
+        ellipse(x, y, width, height, options) {
+            const d = this.gen.ellipse(x, y, width, height, options);
+            this.draw(d);
+            return d;
+        }
+        circle(x, y, diameter, options) {
+            const d = this.gen.circle(x, y, diameter, options);
+            this.draw(d);
+            return d;
+        }
+        linearPath(points, options) {
+            const d = this.gen.linearPath(points, options);
+            this.draw(d);
+            return d;
+        }
+        polygon(points, options) {
+            const d = this.gen.polygon(points, options);
+            this.draw(d);
+            return d;
+        }
+        arc(x, y, width, height, start, stop, closed = false, options) {
+            const d = this.gen.arc(x, y, width, height, start, stop, closed, options);
+            this.draw(d);
+            return d;
+        }
+        curve(points, options) {
+            const d = this.gen.curve(points, options);
+            this.draw(d);
+            return d;
+        }
+        path(d, options) {
+            const drawing = this.gen.path(d, options);
+            this.draw(drawing);
+            return drawing;
+        }
+    }
+
+    class RoughGeneratorAsync extends RoughGeneratorBase {
         async line(x1, y1, x2, y2, options) {
             const o = this._options(options);
             return this._drawable('line', [await this.lib.line(x1, y1, x2, y2, o)], o);
         }
-        // @ts-ignore
         async rectangle(x, y, width, height, options) {
             const o = this._options(options);
             const paths = [];
@@ -1962,7 +1975,6 @@
             paths.push(await this.lib.rectangle(x, y, width, height, o));
             return this._drawable('rectangle', paths, o);
         }
-        // @ts-ignore
         async ellipse(x, y, width, height, options) {
             const o = this._options(options);
             const paths = [];
@@ -1979,18 +1991,15 @@
             paths.push(await this.lib.ellipse(x, y, width, height, o));
             return this._drawable('ellipse', paths, o);
         }
-        // @ts-ignore
         async circle(x, y, diameter, options) {
             const ret = await this.ellipse(x, y, diameter, diameter, options);
             ret.shape = 'circle';
             return ret;
         }
-        // @ts-ignore
         async linearPath(points, options) {
             const o = this._options(options);
             return this._drawable('linearPath', [await this.lib.linearPath(points, false, o)], o);
         }
-        // @ts-ignore
         async arc(x, y, width, height, start, stop, closed = false, options) {
             const o = this._options(options);
             const paths = [];
@@ -2007,12 +2016,10 @@
             paths.push(await this.lib.arc(x, y, width, height, start, stop, closed, true, o));
             return this._drawable('arc', paths, o);
         }
-        // @ts-ignore
         async curve(points, options) {
             const o = this._options(options);
             return this._drawable('curve', [await this.lib.curve(points, o)], o);
         }
-        // @ts-ignore
         async polygon(points, options) {
             const o = this._options(options);
             const paths = [];
@@ -2038,7 +2045,6 @@
             paths.push(await this.lib.linearPath(points, true, o));
             return this._drawable('polygon', paths, o);
         }
-        // @ts-ignore
         async path(d, options) {
             const o = this._options(options);
             const paths = [];
@@ -2070,64 +2076,57 @@
         }
     }
 
-    class RoughCanvasAsync extends RoughCanvas {
+    class RoughCanvasAsync extends RoughCanvasBase {
         constructor(canvas, config) {
-            super(canvas, config);
+            super(canvas);
             this.genAsync = new RoughGeneratorAsync(config || null, this.canvas);
         }
-        // @ts-ignore
         get generator() {
             return this.genAsync;
         }
-        // @ts-ignore
+        getDefaultOptions() {
+            return this.genAsync.defaultOptions;
+        }
         async line(x1, y1, x2, y2, options) {
             const d = await this.genAsync.line(x1, y1, x2, y2, options);
             this.draw(d);
             return d;
         }
-        // @ts-ignore
         async rectangle(x, y, width, height, options) {
             const d = await this.genAsync.rectangle(x, y, width, height, options);
             this.draw(d);
             return d;
         }
-        // @ts-ignore
         async ellipse(x, y, width, height, options) {
             const d = await this.genAsync.ellipse(x, y, width, height, options);
             this.draw(d);
             return d;
         }
-        // @ts-ignore
         async circle(x, y, diameter, options) {
             const d = await this.genAsync.circle(x, y, diameter, options);
             this.draw(d);
             return d;
         }
-        // @ts-ignore
         async linearPath(points, options) {
             const d = await this.genAsync.linearPath(points, options);
             this.draw(d);
             return d;
         }
-        // @ts-ignore
         async polygon(points, options) {
             const d = await this.genAsync.polygon(points, options);
             this.draw(d);
             return d;
         }
-        // @ts-ignore
         async arc(x, y, width, height, start, stop, closed = false, options) {
             const d = await this.genAsync.arc(x, y, width, height, start, stop, closed, options);
             this.draw(d);
             return d;
         }
-        // @ts-ignore
         async curve(points, options) {
             const d = await this.genAsync.curve(points, options);
             this.draw(d);
             return d;
         }
-        // @ts-ignore
         async path(d, options) {
             const drawing = await this.genAsync.path(d, options);
             this.draw(drawing);
@@ -2136,13 +2135,9 @@
     }
 
     const hasDocument$1 = typeof document !== 'undefined';
-    class RoughSVG {
-        constructor(svg, config) {
+    class RoughSVGBase {
+        constructor(svg) {
             this.svg = svg;
-            this.gen = new RoughGenerator(config || null, this.svg);
-        }
-        get generator() {
-            return this.gen;
         }
         static createRenderer() {
             return new RoughRenderer();
@@ -2163,45 +2158,9 @@
             }
             return this._defs || null;
         }
-        line(x1, y1, x2, y2, options) {
-            const d = this.gen.line(x1, y1, x2, y2, options);
-            return this.draw(d);
-        }
-        rectangle(x, y, width, height, options) {
-            const d = this.gen.rectangle(x, y, width, height, options);
-            return this.draw(d);
-        }
-        ellipse(x, y, width, height, options) {
-            const d = this.gen.ellipse(x, y, width, height, options);
-            return this.draw(d);
-        }
-        circle(x, y, diameter, options) {
-            const d = this.gen.circle(x, y, diameter, options);
-            return this.draw(d);
-        }
-        linearPath(points, options) {
-            const d = this.gen.linearPath(points, options);
-            return this.draw(d);
-        }
-        polygon(points, options) {
-            const d = this.gen.polygon(points, options);
-            return this.draw(d);
-        }
-        arc(x, y, width, height, start, stop, closed = false, options) {
-            const d = this.gen.arc(x, y, width, height, start, stop, closed, options);
-            return this.draw(d);
-        }
-        curve(points, options) {
-            const d = this.gen.curve(points, options);
-            return this.draw(d);
-        }
-        path(d, options) {
-            const drawing = this.gen.path(d, options);
-            return this.draw(drawing);
-        }
         draw(drawable) {
             const sets = drawable.sets || [];
-            const o = drawable.options || this.gen.defaultOptions;
+            const o = drawable.options || this.getDefaultOptions();
             const doc = this.svg.ownerDocument || (hasDocument$1 && document);
             const g = doc.createElementNS('http://www.w3.org/2000/svg', 'g');
             for (const drawing of sets) {
@@ -2269,9 +2228,6 @@
             }
             return g;
         }
-        opsToPath(drawing) {
-            return this.gen.opsToPath(drawing);
-        }
         fillSketch(doc, drawing, o) {
             let fweight = o.fillWeight;
             if (fweight < 0) {
@@ -2286,56 +2242,104 @@
         }
     }
 
-    class RoughSVGAsync extends RoughSVG {
+    class RoughSVG extends RoughSVGBase {
         constructor(svg, config) {
-            super(svg, config);
+            super(svg);
+            this.gen = new RoughGenerator(config || null, this.svg);
+        }
+        get generator() {
+            return this.gen;
+        }
+        getDefaultOptions() {
+            return this.gen.defaultOptions;
+        }
+        opsToPath(drawing) {
+            return this.gen.opsToPath(drawing);
+        }
+        line(x1, y1, x2, y2, options) {
+            const d = this.gen.line(x1, y1, x2, y2, options);
+            return this.draw(d);
+        }
+        rectangle(x, y, width, height, options) {
+            const d = this.gen.rectangle(x, y, width, height, options);
+            return this.draw(d);
+        }
+        ellipse(x, y, width, height, options) {
+            const d = this.gen.ellipse(x, y, width, height, options);
+            return this.draw(d);
+        }
+        circle(x, y, diameter, options) {
+            const d = this.gen.circle(x, y, diameter, options);
+            return this.draw(d);
+        }
+        linearPath(points, options) {
+            const d = this.gen.linearPath(points, options);
+            return this.draw(d);
+        }
+        polygon(points, options) {
+            const d = this.gen.polygon(points, options);
+            return this.draw(d);
+        }
+        arc(x, y, width, height, start, stop, closed = false, options) {
+            const d = this.gen.arc(x, y, width, height, start, stop, closed, options);
+            return this.draw(d);
+        }
+        curve(points, options) {
+            const d = this.gen.curve(points, options);
+            return this.draw(d);
+        }
+        path(d, options) {
+            const drawing = this.gen.path(d, options);
+            return this.draw(drawing);
+        }
+    }
+
+    class RoughSVGAsync extends RoughSVGBase {
+        constructor(svg, config) {
+            super(svg);
             this.genAsync = new RoughGeneratorAsync(config || null, this.svg);
         }
-        // @ts-ignore
         get generator() {
             return this.genAsync;
         }
-        // @ts-ignore
+        getDefaultOptions() {
+            return this.genAsync.defaultOptions;
+        }
+        opsToPath(drawing) {
+            return this.genAsync.opsToPath(drawing);
+        }
         async line(x1, y1, x2, y2, options) {
             const d = await this.genAsync.line(x1, y1, x2, y2, options);
             return this.draw(d);
         }
-        // @ts-ignore
         async rectangle(x, y, width, height, options) {
             const d = await this.genAsync.rectangle(x, y, width, height, options);
             return this.draw(d);
         }
-        // @ts-ignore
         async ellipse(x, y, width, height, options) {
             const d = await this.genAsync.ellipse(x, y, width, height, options);
             return this.draw(d);
         }
-        // @ts-ignore
         async circle(x, y, diameter, options) {
             const d = await this.genAsync.circle(x, y, diameter, options);
             return this.draw(d);
         }
-        // @ts-ignore
         async linearPath(points, options) {
             const d = await this.genAsync.linearPath(points, options);
             return this.draw(d);
         }
-        // @ts-ignore
         async polygon(points, options) {
             const d = await this.genAsync.polygon(points, options);
             return this.draw(d);
         }
-        // @ts-ignore
         async arc(x, y, width, height, start, stop, closed = false, options) {
             const d = await this.genAsync.arc(x, y, width, height, start, stop, closed, options);
             return this.draw(d);
         }
-        // @ts-ignore
         async curve(points, options) {
             const d = await this.genAsync.curve(points, options);
             return this.draw(d);
         }
-        // @ts-ignore
         async path(d, options) {
             const drawing = await this.genAsync.path(d, options);
             return this.draw(drawing);
