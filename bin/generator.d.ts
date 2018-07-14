@@ -1,14 +1,14 @@
 import { RoughRenderer } from './renderer.js';
-import { Config, DrawingSurface, Options, Drawable, OpSet, PathInfo } from './core';
+import { Config, DrawingSurface, Options, ResolvedOptions, Drawable, OpSet, PathInfo } from './core';
 import { Point } from './geometry.js';
 export declare class RoughGenerator {
     private config;
     private surface;
     private renderer;
-    defaultOptions: Options;
+    defaultOptions: ResolvedOptions;
     constructor(config: Config | null, surface: DrawingSurface);
-    protected _options(options?: Options): Options;
-    protected _drawable(shape: string, sets: OpSet[], options: Options): Drawable;
+    protected _options(options?: Options): ResolvedOptions;
+    protected _drawable(shape: string, sets: OpSet[], options: ResolvedOptions): Drawable;
     protected readonly lib: RoughRenderer;
     private getCanvasSize;
     protected computePolygonSize(points: Point[]): Point;

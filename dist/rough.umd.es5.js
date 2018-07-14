@@ -1720,7 +1720,6 @@
               strokeWidth: 1,
               curveTightness: 0,
               curveStepCount: 9,
-              fill: null,
               fillStyle: 'hachure',
               fillWeight: -1,
               hachureAngle: -41,
@@ -2707,7 +2706,7 @@
                                   path.setAttribute('d', this.opsToPath(drawing));
                                   path.style.stroke = 'none';
                                   path.style.strokeWidth = '0';
-                                  path.style.fill = o.fill;
+                                  path.style.fill = o.fill || null;
                                   break;
                               }
                           case 'fillSketch':
@@ -2721,7 +2720,7 @@
                                   path.setAttribute('d', drawing.path || '');
                                   path.style.stroke = 'none';
                                   path.style.strokeWidth = '0';
-                                  path.style.fill = o.fill;
+                                  path.style.fill = o.fill || null;
                                   break;
                               }
                           case 'path2Dpattern':
@@ -2787,7 +2786,7 @@
               }
               var path = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
               path.setAttribute('d', this.opsToPath(drawing));
-              path.style.stroke = o.fill;
+              path.style.stroke = o.fill || null;
               path.style.strokeWidth = fweight + '';
               path.style.fill = 'none';
               return path;

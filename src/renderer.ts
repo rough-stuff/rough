@@ -1,15 +1,15 @@
-import { Options, OpSet, Op } from './core';
+import { ResolvedOptions, OpSet, Op } from './core';
 import { RoughPath, RoughArcConverter, PathFitter, Segment } from './path.js';
 import { Point } from './geometry';
 import { getFiller } from './fillers/filler';
 
 export class RoughRenderer {
-  line(x1: number, y1: number, x2: number, y2: number, o: Options): OpSet {
+  line(x1: number, y1: number, x2: number, y2: number, o: ResolvedOptions): OpSet {
     const ops = this.doubleLine(x1, y1, x2, y2, o);
     return { type: 'path', ops };
   }
 
-  linearPath(points: Point[], close: boolean, o: Options): OpSet {
+  linearPath(points: Point[], close: boolean, o: ResolvedOptions): OpSet {
     const len = (points || []).length;
     if (len > 2) {
       let ops: Op[] = [];
@@ -26,24 +26,24 @@ export class RoughRenderer {
     return { type: 'path', ops: [] };
   }
 
-  polygon(points: Point[], o: Options): OpSet {
+  polygon(points: Point[], o: ResolvedOptions): OpSet {
     return this.linearPath(points, true, o);
   }
 
-  rectangle(x: number, y: number, width: number, height: number, o: Options): OpSet {
+  rectangle(x: number, y: number, width: number, height: number, o: ResolvedOptions): OpSet {
     const points: Point[] = [
       [x, y], [x + width, y], [x + width, y + height], [x, y + height]
     ];
     return this.polygon(points, o);
   }
 
-  curve(points: Point[], o: Options): OpSet {
+  curve(points: Point[], o: ResolvedOptions): OpSet {
     const o1 = this._curveWithOffset(points, 1 * (1 + o.roughness * 0.2), o);
     const o2 = this._curveWithOffset(points, 1.5 * (1 + o.roughness * 0.22), o);
     return { type: 'path', ops: o1.concat(o2) };
   }
 
-  ellipse(x: number, y: number, width: number, height: number, o: Options): OpSet {
+  ellipse(x: number, y: number, width: number, height: number, o: ResolvedOptions): OpSet {
     const increment = (Math.PI * 2) / o.curveStepCount;
     let rx = Math.abs(width / 2);
     let ry = Math.abs(height / 2);
@@ -54,7 +54,7 @@ export class RoughRenderer {
     return { type: 'path', ops: o1.concat(o2) };
   }
 
-  arc(x: number, y: number, width: number, height: number, start: number, stop: number, closed: boolean, roughClosure: boolean, o: Options): OpSet {
+  arc(x: number, y: number, width: number, height: number, start: number, stop: number, closed: boolean, roughClosure: boolean, o: ResolvedOptions): OpSet {
     const cx = x;
     const cy = y;
     let rx = Math.abs(width / 2);
@@ -88,7 +88,7 @@ export class RoughRenderer {
     return { type: 'path', ops };
   }
 
-  svgPath(path: string, o: Options): OpSet {
+  svgPath(path: string, o: ResolvedOptions): OpSet {
     path = (path || '').replace(/\n/g, ' ').replace(/(-\s)/g, '-').replace('/(\s\s)/g', ' ');
     let p = new RoughPath(path);
     if (o.simplification) {
@@ -109,7 +109,7 @@ export class RoughRenderer {
     return { type: 'path', ops };
   }
 
-  solidFillPolygon(points: Point[], o: Options): OpSet {
+  solidFillPolygon(points: Point[], o: ResolvedOptions): OpSet {
     const ops: Op[] = [];
     if (points.length) {
       const offset = o.maxRandomnessOffset || 0;
@@ -124,17 +124,17 @@ export class RoughRenderer {
     return { type: 'fillPath', ops };
   }
 
-  patternFillPolygon(points: Point[], o: Options): OpSet {
+  patternFillPolygon(points: Point[], o: ResolvedOptions): OpSet {
     const filler = getFiller(this, o);
     return filler.fillPolygon(points, o);
   }
 
-  patternFillEllipse(cx: number, cy: number, width: number, height: number, o: Options): OpSet {
+  patternFillEllipse(cx: number, cy: number, width: number, height: number, o: ResolvedOptions): OpSet {
     const filler = getFiller(this, o);
     return filler.fillEllipse(cx, cy, width, height, o);
   }
 
-  patternFillArc(x: number, y: number, width: number, height: number, start: number, stop: number, o: Options): OpSet {
+  patternFillArc(x: number, y: number, width: number, height: number, start: number, stop: number, o: ResolvedOptions): OpSet {
     const cx = x;
     const cy = y;
     let rx = Math.abs(width / 2);
@@ -163,17 +163,17 @@ export class RoughRenderer {
 
   /// 
 
-  getOffset(min: number, max: number, ops: Options): number {
+  getOffset(min: number, max: number, ops: ResolvedOptions): number {
     return ops.roughness * ((Math.random() * (max - min)) + min);
   }
 
-  doubleLine(x1: number, y1: number, x2: number, y2: number, o: Options): Op[] {
+  doubleLine(x1: number, y1: number, x2: number, y2: number, o: ResolvedOptions): Op[] {
     const o1 = this._line(x1, y1, x2, y2, o, true, false);
     const o2 = this._line(x1, y1, x2, y2, o, true, true);
     return o1.concat(o2);
   }
 
-  private _line(x1: number, y1: number, x2: number, y2: number, o: Options, move: boolean, overlay: boolean): Op[] {
+  private _line(x1: number, y1: number, x2: number, y2: number, o: ResolvedOptions, move: boolean, overlay: boolean): Op[] {
     const lengthSq = Math.pow((x1 - x2), 2) + Math.pow((y1 - y2), 2);
     let offset = o.maxRandomnessOffset || 0;
     if ((offset * offset * 100) > lengthSq) {
@@ -229,7 +229,7 @@ export class RoughRenderer {
     return ops;
   }
 
-  private _curve(points: Point[], closePoint: Point | null, o: Options): Op[] {
+  private _curve(points: Point[], closePoint: Point | null, o: ResolvedOptions): Op[] {
     const len = points.length;
     let ops: Op[] = [];
     if (len > 3) {
@@ -262,7 +262,7 @@ export class RoughRenderer {
     return ops;
   }
 
-  private _ellipse(increment: number, cx: number, cy: number, rx: number, ry: number, offset: number, overlap: number, o: Options): Op[] {
+  private _ellipse(increment: number, cx: number, cy: number, rx: number, ry: number, offset: number, overlap: number, o: ResolvedOptions): Op[] {
     const radOffset = this.getOffset(-0.5, 0.5, o) - (Math.PI / 2);
     const points: Point[] = [];
     points.push([
@@ -290,7 +290,7 @@ export class RoughRenderer {
     return this._curve(points, null, o);
   }
 
-  private _curveWithOffset(points: Point[], offset: number, o: Options): Op[] {
+  private _curveWithOffset(points: Point[], offset: number, o: ResolvedOptions): Op[] {
     const ps: Point[] = [];
     ps.push([
       points[0][0] + this.getOffset(-offset, offset, o),
@@ -315,7 +315,7 @@ export class RoughRenderer {
     return this._curve(ps, null, o);
   }
 
-  private _arc(increment: number, cx: number, cy: number, rx: number, ry: number, strt: number, stp: number, offset: number, o: Options) {
+  private _arc(increment: number, cx: number, cy: number, rx: number, ry: number, strt: number, stp: number, offset: number, o: ResolvedOptions) {
     const radOffset = strt + this.getOffset(-0.1, 0.1, o);
     const points: Point[] = [];
     points.push([
@@ -339,7 +339,7 @@ export class RoughRenderer {
     return this._curve(points, null, o);
   }
 
-  private _bezierTo(x1: number, y1: number, x2: number, y2: number, x: number, y: number, path: RoughPath, o: Options): Op[] {
+  private _bezierTo(x1: number, y1: number, x2: number, y2: number, x: number, y: number, path: RoughPath, o: ResolvedOptions): Op[] {
     const ops: Op[] = [];
     const ros = [o.maxRandomnessOffset || 1, (o.maxRandomnessOffset || 1) + 0.5];
     let f: Point = [0, 0];
@@ -362,7 +362,7 @@ export class RoughRenderer {
     return ops;
   }
 
-  private _processSegment(path: RoughPath, seg: Segment, prevSeg: Segment | null, o: Options): Op[] {
+  private _processSegment(path: RoughPath, seg: Segment, prevSeg: Segment | null, o: ResolvedOptions): Op[] {
     let ops: Op[] = [];
     switch (seg.key) {
       case 'M':
