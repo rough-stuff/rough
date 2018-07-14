@@ -1,5 +1,5 @@
 import { RoughRenderer } from './renderer.js';
-import { Config, DrawingSurface, Options, Drawable, OpSet, PathInfo, PatternInfo } from './core';
+import { Config, DrawingSurface, Options, ResolvedOptions, Drawable, OpSet, PathInfo, PatternInfo } from './core';
 import { Point } from './geometry.js';
 import { createRenderer } from './renderer-factory.js';
 
@@ -9,7 +9,7 @@ export class RoughGenerator {
   private config: Config;
   private surface: DrawingSurface;
   private renderer: RoughRenderer;
-  defaultOptions: Options = {
+  defaultOptions: ResolvedOptions = {
     maxRandomnessOffset: 2,
     roughness: 1,
     bowing: 1,
@@ -17,7 +17,6 @@ export class RoughGenerator {
     strokeWidth: 1,
     curveTightness: 0,
     curveStepCount: 9,
-    fill: null,
     fillStyle: 'hachure',
     fillWeight: -1,
     hachureAngle: -41,
@@ -33,11 +32,11 @@ export class RoughGenerator {
     }
   }
 
-  protected _options(options?: Options): Options {
+  protected _options(options?: Options): ResolvedOptions {
     return options ? Object.assign({}, this.defaultOptions, options) : this.defaultOptions;
   }
 
-  protected _drawable(shape: string, sets: OpSet[], options: Options): Drawable {
+  protected _drawable(shape: string, sets: OpSet[], options: ResolvedOptions): Drawable {
     return { shape, sets: sets || [], options: options || this.defaultOptions };
   }
 
@@ -295,7 +294,7 @@ export class RoughGenerator {
     return paths;
   }
 
-  private fillSketch(drawing: OpSet, o: Options): PathInfo {
+  private fillSketch(drawing: OpSet, o: ResolvedOptions): PathInfo {
     let fweight = o.fillWeight;
     if (fweight < 0) {
       fweight = o.strokeWidth / 2;

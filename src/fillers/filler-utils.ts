@@ -1,5 +1,5 @@
 import { Point, Segment, Line } from '../geometry';
-import { Options } from '../core';
+import { ResolvedOptions } from '../core';
 import { HachureIterator } from '../utils/hachure';
 import { RenderHelper } from './filler-interface';
 
@@ -34,7 +34,7 @@ export function affine(x: number, y: number, cx: number, cy: number, sinAnglePri
   ];
 }
 
-export function hachureLinesForPolygon(points: Point[], o: Options): Line[] {
+export function hachureLinesForPolygon(points: Point[], o: ResolvedOptions): Line[] {
   const ret: Line[] = [];
   if (points && points.length) {
     let left = points[0][0];
@@ -74,7 +74,7 @@ export function hachureLinesForPolygon(points: Point[], o: Options): Line[] {
   return ret;
 }
 
-export function hachureLinesForEllipse(cx: number, cy: number, width: number, height: number, o: Options, renderer: RenderHelper): Line[] {
+export function hachureLinesForEllipse(cx: number, cy: number, width: number, height: number, o: ResolvedOptions, renderer: RenderHelper): Line[] {
   const ret: Line[] = [];
   let rx = Math.abs(width / 2);
   let ry = Math.abs(height / 2);

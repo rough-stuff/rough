@@ -1,4 +1,4 @@
-import { Options } from '../core';
+import { ResolvedOptions } from '../core';
 import { PatternFiller, RenderHelper } from './filler-interface';
 import { HachureFiller } from './hachure-filler';
 import { ZigZagFiller } from './zigzag-filler';
@@ -7,7 +7,7 @@ import { DotFiller } from './dot-filler';
 
 const fillers: { [name: string]: PatternFiller } = {};
 
-export function getFiller(renderer: RenderHelper, o: Options): PatternFiller {
+export function getFiller(renderer: RenderHelper, o: ResolvedOptions): PatternFiller {
   let fillerName = o.fillStyle || 'hachure';
   if (!fillers[fillerName]) {
     switch (fillerName) {

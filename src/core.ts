@@ -13,6 +13,22 @@ export interface DrawingSurface {
 }
 
 export interface Options {
+  maxRandomnessOffset?: number;
+  roughness?: number;
+  bowing?: number;
+  stroke?: string;
+  strokeWidth?: number;
+  curveTightness?: number;
+  curveStepCount?: number;
+  fill?: string;
+  fillStyle?: string;
+  fillWeight?: number;
+  hachureAngle?: number;
+  hachureGap?: number;
+  simplification?: number;
+}
+
+export interface ResolvedOptions extends Options {
   maxRandomnessOffset: number;
   roughness: number;
   bowing: number;
@@ -20,12 +36,10 @@ export interface Options {
   strokeWidth: number;
   curveTightness: number;
   curveStepCount: number;
-  fill: string | null;
   fillStyle: string;
   fillWeight: number;
   hachureAngle: number;
   hachureGap: number;
-  simplification?: number;
 }
 
 export declare type OpType = 'move' | 'bcurveTo' | 'lineTo' | 'qcurveTo';
@@ -45,7 +59,7 @@ export interface OpSet {
 
 export interface Drawable {
   shape: string;
-  options: Options;
+  options: ResolvedOptions;
   sets: OpSet[];
 }
 

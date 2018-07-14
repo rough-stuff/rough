@@ -10,6 +10,21 @@ export interface DrawingSurface {
     height: number | SVGAnimatedLength;
 }
 export interface Options {
+    maxRandomnessOffset?: number;
+    roughness?: number;
+    bowing?: number;
+    stroke?: string;
+    strokeWidth?: number;
+    curveTightness?: number;
+    curveStepCount?: number;
+    fill?: string;
+    fillStyle?: string;
+    fillWeight?: number;
+    hachureAngle?: number;
+    hachureGap?: number;
+    simplification?: number;
+}
+export interface ResolvedOptions extends Options {
     maxRandomnessOffset: number;
     roughness: number;
     bowing: number;
@@ -17,12 +32,10 @@ export interface Options {
     strokeWidth: number;
     curveTightness: number;
     curveStepCount: number;
-    fill: string | null;
     fillStyle: string;
     fillWeight: number;
     hachureAngle: number;
     hachureGap: number;
-    simplification?: number;
 }
 export declare type OpType = 'move' | 'bcurveTo' | 'lineTo' | 'qcurveTo';
 export declare type OpSetType = 'path' | 'fillPath' | 'fillSketch' | 'path2Dfill' | 'path2Dpattern';
@@ -38,7 +51,7 @@ export interface OpSet {
 }
 export interface Drawable {
     shape: string;
-    options: Options;
+    options: ResolvedOptions;
     sets: OpSet[];
 }
 export interface PathInfo {

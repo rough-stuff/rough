@@ -1,4 +1,4 @@
-import { Config, Options, Drawable, OpSet } from './core';
+import { Config, Options, ResolvedOptions, Drawable, OpSet } from './core';
 import { RoughGenerator } from './generator';
 import { RoughRenderer } from './renderer';
 import { Point } from './geometry';
@@ -157,7 +157,7 @@ export class RoughCanvas {
     return null;
   }
 
-  private fillSketch(ctx: CanvasRenderingContext2D, drawing: OpSet, o: Options) {
+  private fillSketch(ctx: CanvasRenderingContext2D, drawing: OpSet, o: ResolvedOptions) {
     let fweight = o.fillWeight;
     if (fweight < 0) {
       fweight = o.strokeWidth / 2;

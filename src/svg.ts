@@ -1,4 +1,4 @@
-import { Config, Options, Drawable, OpSet } from './core';
+import { Config, Options, Drawable, OpSet, ResolvedOptions } from './core';
 import { RoughGenerator } from './generator';
 import { RoughRenderer } from './renderer';
 import { Point } from './geometry';
@@ -105,7 +105,7 @@ export class RoughSVG {
           path.setAttribute('d', this.opsToPath(drawing));
           path.style.stroke = 'none';
           path.style.strokeWidth = '0';
-          path.style.fill = o.fill;
+          path.style.fill = o.fill || null;
           break;
         }
         case 'fillSketch': {
@@ -117,7 +117,7 @@ export class RoughSVG {
           path.setAttribute('d', drawing.path || '');
           path.style.stroke = 'none';
           path.style.strokeWidth = '0';
-          path.style.fill = o.fill;
+          path.style.fill = o.fill || null;
           break;
         }
         case 'path2Dpattern': {
@@ -159,14 +159,14 @@ export class RoughSVG {
     return this.gen.opsToPath(drawing);
   }
 
-  private fillSketch(doc: Document, drawing: OpSet, o: Options): SVGPathElement {
+  private fillSketch(doc: Document, drawing: OpSet, o: ResolvedOptions): SVGPathElement {
     let fweight = o.fillWeight;
     if (fweight < 0) {
       fweight = o.strokeWidth / 2;
     }
     const path = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
     path.setAttribute('d', this.opsToPath(drawing));
-    path.style.stroke = o.fill;
+    path.style.stroke = o.fill || null;
     path.style.strokeWidth = fweight + '';
     path.style.fill = 'none';
     return path;
