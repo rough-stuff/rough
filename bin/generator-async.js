@@ -1,11 +1,9 @@
-import { RoughGenerator } from './generator';
-export class RoughGeneratorAsync extends RoughGenerator {
-    // @ts-ignore
+import { RoughGeneratorBase } from './generator-base';
+export class RoughGeneratorAsync extends RoughGeneratorBase {
     async line(x1, y1, x2, y2, options) {
         const o = this._options(options);
         return this._drawable('line', [await this.lib.line(x1, y1, x2, y2, o)], o);
     }
-    // @ts-ignore
     async rectangle(x, y, width, height, options) {
         const o = this._options(options);
         const paths = [];
@@ -21,7 +19,6 @@ export class RoughGeneratorAsync extends RoughGenerator {
         paths.push(await this.lib.rectangle(x, y, width, height, o));
         return this._drawable('rectangle', paths, o);
     }
-    // @ts-ignore
     async ellipse(x, y, width, height, options) {
         const o = this._options(options);
         const paths = [];
@@ -38,18 +35,15 @@ export class RoughGeneratorAsync extends RoughGenerator {
         paths.push(await this.lib.ellipse(x, y, width, height, o));
         return this._drawable('ellipse', paths, o);
     }
-    // @ts-ignore
     async circle(x, y, diameter, options) {
         const ret = await this.ellipse(x, y, diameter, diameter, options);
         ret.shape = 'circle';
         return ret;
     }
-    // @ts-ignore
     async linearPath(points, options) {
         const o = this._options(options);
         return this._drawable('linearPath', [await this.lib.linearPath(points, false, o)], o);
     }
-    // @ts-ignore
     async arc(x, y, width, height, start, stop, closed = false, options) {
         const o = this._options(options);
         const paths = [];
@@ -66,12 +60,10 @@ export class RoughGeneratorAsync extends RoughGenerator {
         paths.push(await this.lib.arc(x, y, width, height, start, stop, closed, true, o));
         return this._drawable('arc', paths, o);
     }
-    // @ts-ignore
     async curve(points, options) {
         const o = this._options(options);
         return this._drawable('curve', [await this.lib.curve(points, o)], o);
     }
-    // @ts-ignore
     async polygon(points, options) {
         const o = this._options(options);
         const paths = [];
@@ -97,7 +89,6 @@ export class RoughGeneratorAsync extends RoughGenerator {
         paths.push(await this.lib.linearPath(points, true, o));
         return this._drawable('polygon', paths, o);
     }
-    // @ts-ignore
     async path(d, options) {
         const o = this._options(options);
         const paths = [];

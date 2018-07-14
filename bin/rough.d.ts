@@ -7,9 +7,9 @@ import { RoughCanvasAsync } from './canvas-async';
 import { RoughSVG } from './svg';
 import { RoughSVGAsync } from './svg-async';
 declare const _default: {
-    canvas(canvas: HTMLCanvasElement, config?: Config | undefined): RoughCanvas | RoughCanvasAsync;
+    canvas(canvas: HTMLCanvasElement, config?: Config | undefined): RoughCanvasAsync | RoughCanvas;
     svg(svg: SVGSVGElement, config?: Config | undefined): RoughSVG | RoughSVGAsync;
     createRenderer(): RoughRenderer;
-    generator(config: Config | null, surface: DrawingSurface): RoughGenerator | RoughGeneratorAsync;
+    generator(config: Config | null, surface: DrawingSurface): RoughGeneratorAsync | RoughGenerator;
 };
 export default _default;

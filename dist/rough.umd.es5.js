@@ -1708,9 +1708,9 @@
   }
 
   var hasSelf$1 = typeof self !== 'undefined';
-  var RoughGenerator = function () {
-      function RoughGenerator(config, surface) {
-          classCallCheck(this, RoughGenerator);
+  var RoughGeneratorBase = function () {
+      function RoughGeneratorBase(config, surface) {
+          classCallCheck(this, RoughGeneratorBase);
 
           this.defaultOptions = {
               maxRandomnessOffset: 2,
@@ -1733,7 +1733,7 @@
           }
       }
 
-      createClass(RoughGenerator, [{
+      createClass(RoughGeneratorBase, [{
           key: '_options',
           value: function _options(options) {
               return options ? Object.assign({}, this.defaultOptions, options) : this.defaultOptions;
@@ -1816,130 +1816,6 @@
                   size = canvasSize;
               }
               return size;
-          }
-      }, {
-          key: 'line',
-          value: function line(x1, y1, x2, y2, options) {
-              var o = this._options(options);
-              return this._drawable('line', [this.lib.line(x1, y1, x2, y2, o)], o);
-          }
-      }, {
-          key: 'rectangle',
-          value: function rectangle(x, y, width, height, options) {
-              var o = this._options(options);
-              var paths = [];
-              if (o.fill) {
-                  var points = [[x, y], [x + width, y], [x + width, y + height], [x, y + height]];
-                  if (o.fillStyle === 'solid') {
-                      paths.push(this.lib.solidFillPolygon(points, o));
-                  } else {
-                      paths.push(this.lib.patternFillPolygon(points, o));
-                  }
-              }
-              paths.push(this.lib.rectangle(x, y, width, height, o));
-              return this._drawable('rectangle', paths, o);
-          }
-      }, {
-          key: 'ellipse',
-          value: function ellipse(x, y, width, height, options) {
-              var o = this._options(options);
-              var paths = [];
-              if (o.fill) {
-                  if (o.fillStyle === 'solid') {
-                      var shape = this.lib.ellipse(x, y, width, height, o);
-                      shape.type = 'fillPath';
-                      paths.push(shape);
-                  } else {
-                      paths.push(this.lib.patternFillEllipse(x, y, width, height, o));
-                  }
-              }
-              paths.push(this.lib.ellipse(x, y, width, height, o));
-              return this._drawable('ellipse', paths, o);
-          }
-      }, {
-          key: 'circle',
-          value: function circle(x, y, diameter, options) {
-              var ret = this.ellipse(x, y, diameter, diameter, options);
-              ret.shape = 'circle';
-              return ret;
-          }
-      }, {
-          key: 'linearPath',
-          value: function linearPath(points, options) {
-              var o = this._options(options);
-              return this._drawable('linearPath', [this.lib.linearPath(points, false, o)], o);
-          }
-      }, {
-          key: 'arc',
-          value: function arc(x, y, width, height, start, stop) {
-              var closed = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : false;
-              var options = arguments[7];
-
-              var o = this._options(options);
-              var paths = [];
-              if (closed && o.fill) {
-                  if (o.fillStyle === 'solid') {
-                      var shape = this.lib.arc(x, y, width, height, start, stop, true, false, o);
-                      shape.type = 'fillPath';
-                      paths.push(shape);
-                  } else {
-                      paths.push(this.lib.patternFillArc(x, y, width, height, start, stop, o));
-                  }
-              }
-              paths.push(this.lib.arc(x, y, width, height, start, stop, closed, true, o));
-              return this._drawable('arc', paths, o);
-          }
-      }, {
-          key: 'curve',
-          value: function curve(points, options) {
-              var o = this._options(options);
-              return this._drawable('curve', [this.lib.curve(points, o)], o);
-          }
-      }, {
-          key: 'polygon',
-          value: function polygon(points, options) {
-              var o = this._options(options);
-              var paths = [];
-              if (o.fill) {
-                  if (o.fillStyle === 'solid') {
-                      paths.push(this.lib.solidFillPolygon(points, o));
-                  } else {
-                      var size = this.computePolygonSize(points);
-                      var fillPoints = [[0, 0], [size[0], 0], [size[0], size[1]], [0, size[1]]];
-                      var shape = this.lib.patternFillPolygon(fillPoints, o);
-                      shape.type = 'path2Dpattern';
-                      shape.size = size;
-                      shape.path = this.polygonPath(points);
-                      paths.push(shape);
-                  }
-              }
-              paths.push(this.lib.linearPath(points, true, o));
-              return this._drawable('polygon', paths, o);
-          }
-      }, {
-          key: 'path',
-          value: function path(d, options) {
-              var o = this._options(options);
-              var paths = [];
-              if (!d) {
-                  return this._drawable('path', paths, o);
-              }
-              if (o.fill) {
-                  if (o.fillStyle === 'solid') {
-                      var shape = { type: 'path2Dfill', path: d, ops: [] };
-                      paths.push(shape);
-                  } else {
-                      var size = this.computePathSize(d);
-                      var points = [[0, 0], [size[0], 0], [size[0], size[1]], [0, size[1]]];
-                      var _shape = this.lib.patternFillPolygon(points, o);
-                      _shape.type = 'path2Dpattern';
-                      _shape.size = size;
-                      _shape.path = d;
-                      paths.push(_shape);
-                  }
-              }
-              paths.push(this.lib.svgPath(d, o));
-              return this._drawable('path', paths, o);
           }
       }, {
           key: 'toPaths',
@@ -2088,60 +1964,68 @@
               return this.renderer;
           }
       }]);
-      return RoughGenerator;
+      return RoughGeneratorBase;
   }();
 
-  var hasDocument = typeof document !== 'undefined';
-  var RoughCanvas = function () {
-      function RoughCanvas(canvas, config) {
-          classCallCheck(this, RoughCanvas);
+  var RoughGenerator = function (_RoughGeneratorBase) {
+      inherits(RoughGenerator, _RoughGeneratorBase);
 
-          this.canvas = canvas;
-          this.ctx = this.canvas.getContext('2d');
-          this.gen = new RoughGenerator(config || null, this.canvas);
+      function RoughGenerator(config, surface) {
+          classCallCheck(this, RoughGenerator);
+          return possibleConstructorReturn(this, (RoughGenerator.__proto__ || Object.getPrototypeOf(RoughGenerator)).call(this, config, surface));
       }
 
-      createClass(RoughCanvas, [{
+      createClass(RoughGenerator, [{
           key: 'line',
           value: function line(x1, y1, x2, y2, options) {
-              var d = this.gen.line(x1, y1, x2, y2, options);
-              this.draw(d);
-              return d;
+              var o = this._options(options);
+              return this._drawable('line', [this.lib.line(x1, y1, x2, y2, o)], o);
           }
       }, {
           key: 'rectangle',
           value: function rectangle(x, y, width, height, options) {
-              var d = this.gen.rectangle(x, y, width, height, options);
-              this.draw(d);
-              return d;
+              var o = this._options(options);
+              var paths = [];
+              if (o.fill) {
+                  var points = [[x, y], [x + width, y], [x + width, y + height], [x, y + height]];
+                  if (o.fillStyle === 'solid') {
+                      paths.push(this.lib.solidFillPolygon(points, o));
+                  } else {
+                      paths.push(this.lib.patternFillPolygon(points, o));
+                  }
+              }
+              paths.push(this.lib.rectangle(x, y, width, height, o));
+              return this._drawable('rectangle', paths, o);
           }
       }, {
           key: 'ellipse',
           value: function ellipse(x, y, width, height, options) {
-              var d = this.gen.ellipse(x, y, width, height, options);
-              this.draw(d);
-              return d;
+              var o = this._options(options);
+              var paths = [];
+              if (o.fill) {
+                  if (o.fillStyle === 'solid') {
+                      var shape = this.lib.ellipse(x, y, width, height, o);
+                      shape.type = 'fillPath';
+                      paths.push(shape);
+                  } else {
+                      paths.push(this.lib.patternFillEllipse(x, y, width, height, o));
+                  }
+              }
+              paths.push(this.lib.ellipse(x, y, width, height, o));
+              return this._drawable('ellipse', paths, o);
           }
       }, {
           key: 'circle',
           value: function circle(x, y, diameter, options) {
-              var d = this.gen.circle(x, y, diameter, options);
-              this.draw(d);
-              return d;
+              var ret = this.ellipse(x, y, diameter, diameter, options);
+              ret.shape = 'circle';
+              return ret;
           }
       }, {
           key: 'linearPath',
           value: function linearPath(points, options) {
-              var d = this.gen.linearPath(points, options);
-              this.draw(d);
-              return d;
-          }
-      }, {
-          key: 'polygon',
-          value: function polygon(points, options) {
-              var d = this.gen.polygon(points, options);
-              this.draw(d);
-              return d;
+              var o = this._options(options);
+              return this._drawable('linearPath', [this.lib.linearPath(points, false, o)], o);
           }
       }, {
           key: 'arc',
@@ -2149,29 +2033,90 @@
               var closed = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : false;
               var options = arguments[7];
 
-              var d = this.gen.arc(x, y, width, height, start, stop, closed, options);
-              this.draw(d);
-              return d;
+              var o = this._options(options);
+              var paths = [];
+              if (closed && o.fill) {
+                  if (o.fillStyle === 'solid') {
+                      var shape = this.lib.arc(x, y, width, height, start, stop, true, false, o);
+                      shape.type = 'fillPath';
+                      paths.push(shape);
+                  } else {
+                      paths.push(this.lib.patternFillArc(x, y, width, height, start, stop, o));
+                  }
+              }
+              paths.push(this.lib.arc(x, y, width, height, start, stop, closed, true, o));
+              return this._drawable('arc', paths, o);
           }
       }, {
           key: 'curve',
           value: function curve(points, options) {
-              var d = this.gen.curve(points, options);
-              this.draw(d);
-              return d;
+              var o = this._options(options);
+              return this._drawable('curve', [this.lib.curve(points, o)], o);
+          }
+      }, {
+          key: 'polygon',
+          value: function polygon(points, options) {
+              var o = this._options(options);
+              var paths = [];
+              if (o.fill) {
+                  if (o.fillStyle === 'solid') {
+                      paths.push(this.lib.solidFillPolygon(points, o));
+                  } else {
+                      var size = this.computePolygonSize(points);
+                      var fillPoints = [[0, 0], [size[0], 0], [size[0], size[1]], [0, size[1]]];
+                      var shape = this.lib.patternFillPolygon(fillPoints, o);
+                      shape.type = 'path2Dpattern';
+                      shape.size = size;
+                      shape.path = this.polygonPath(points);
+                      paths.push(shape);
+                  }
+              }
+              paths.push(this.lib.linearPath(points, true, o));
+              return this._drawable('polygon', paths, o);
           }
       }, {
           key: 'path',
           value: function path(d, options) {
-              var drawing = this.gen.path(d, options);
-              this.draw(drawing);
-              return drawing;
+              var o = this._options(options);
+              var paths = [];
+              if (!d) {
+                  return this._drawable('path', paths, o);
+              }
+              if (o.fill) {
+                  if (o.fillStyle === 'solid') {
+                      var shape = { type: 'path2Dfill', path: d, ops: [] };
+                      paths.push(shape);
+                  } else {
+                      var size = this.computePathSize(d);
+                      var points = [[0, 0], [size[0], 0], [size[0], size[1]], [0, size[1]]];
+                      var _shape = this.lib.patternFillPolygon(points, o);
+                      _shape.type = 'path2Dpattern';
+                      _shape.size = size;
+                      _shape.path = d;
+                      paths.push(_shape);
+                  }
+              }
+              paths.push(this.lib.svgPath(d, o));
+              return this._drawable('path', paths, o);
           }
-      }, {
+      }]);
+      return RoughGenerator;
+  }(RoughGeneratorBase);
+
+  var hasDocument = typeof document !== 'undefined';
+  var RoughCanvasBase = function () {
+      function RoughCanvasBase(canvas) {
+          classCallCheck(this, RoughCanvasBase);
+
+          this.canvas = canvas;
+          this.ctx = this.canvas.getContext('2d');
+      }
+
+      createClass(RoughCanvasBase, [{
           key: 'draw',
           value: function draw(drawable) {
               var sets = drawable.sets || [];
-              var o = drawable.options || this.gen.defaultOptions;
+              var o = drawable.options || this.getDefaultOptions();
               var ctx = this.ctx;
               var _iteratorNormalCompletion = true;
               var _didIteratorError = false;
@@ -2333,22 +2278,109 @@
                   ctx.stroke();
               }
           }
-      }, {
-          key: 'generator',
-          get: function get$$1() {
-              return this.gen;
-          }
       }], [{
           key: 'createRenderer',
           value: function createRenderer() {
               return new RoughRenderer();
           }
       }]);
-      return RoughCanvas;
+      return RoughCanvasBase;
   }();
 
-  var RoughGeneratorAsync = function (_RoughGenerator) {
-      inherits(RoughGeneratorAsync, _RoughGenerator);
+  var RoughCanvas = function (_RoughCanvasBase) {
+      inherits(RoughCanvas, _RoughCanvasBase);
+
+      function RoughCanvas(canvas, config) {
+          classCallCheck(this, RoughCanvas);
+
+          var _this = possibleConstructorReturn(this, (RoughCanvas.__proto__ || Object.getPrototypeOf(RoughCanvas)).call(this, canvas));
+
+          _this.gen = new RoughGenerator(config || null, _this.canvas);
+          return _this;
+      }
+
+      createClass(RoughCanvas, [{
+          key: 'getDefaultOptions',
+          value: function getDefaultOptions() {
+              return this.gen.defaultOptions;
+          }
+      }, {
+          key: 'line',
+          value: function line(x1, y1, x2, y2, options) {
+              var d = this.gen.line(x1, y1, x2, y2, options);
+              this.draw(d);
+              return d;
+          }
+      }, {
+          key: 'rectangle',
+          value: function rectangle(x, y, width, height, options) {
+              var d = this.gen.rectangle(x, y, width, height, options);
+              this.draw(d);
+              return d;
+          }
+      }, {
+          key: 'ellipse',
+          value: function ellipse(x, y, width, height, options) {
+              var d = this.gen.ellipse(x, y, width, height, options);
+              this.draw(d);
+              return d;
+          }
+      }, {
+          key: 'circle',
+          value: function circle(x, y, diameter, options) {
+              var d = this.gen.circle(x, y, diameter, options);
+              this.draw(d);
+              return d;
+          }
+      }, {
+          key: 'linearPath',
+          value: function linearPath(points, options) {
+              var d = this.gen.linearPath(points, options);
+              this.draw(d);
+              return d;
+          }
+      }, {
+          key: 'polygon',
+          value: function polygon(points, options) {
+              var d = this.gen.polygon(points, options);
+              this.draw(d);
+              return d;
+          }
+      }, {
+          key: 'arc',
+          value: function arc(x, y, width, height, start, stop) {
+              var closed = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : false;
+              var options = arguments[7];
+
+              var d = this.gen.arc(x, y, width, height, start, stop, closed, options);
+              this.draw(d);
+              return d;
+          }
+      }, {
+          key: 'curve',
+          value: function curve(points, options) {
+              var d = this.gen.curve(points, options);
+              this.draw(d);
+              return d;
+          }
+      }, {
+          key: 'path',
+          value: function path(d, options) {
+              var drawing = this.gen.path(d, options);
+              this.draw(drawing);
+              return drawing;
+          }
+      }, {
+          key: 'generator',
+          get: function get$$1() {
+              return this.gen;
+          }
+      }]);
+      return RoughCanvas;
+  }(RoughCanvasBase);
+
+  var RoughGeneratorAsync = function (_RoughGeneratorBase) {
+      inherits(RoughGeneratorAsync, _RoughGeneratorBase);
 
       function RoughGeneratorAsync() {
           classCallCheck(this, RoughGeneratorAsync);
@@ -2357,14 +2389,10 @@
 
       createClass(RoughGeneratorAsync, [{
           key: 'line',
-
-          // @ts-ignore
           value: async function line(x1, y1, x2, y2, options) {
               var o = this._options(options);
               return this._drawable('line', [await this.lib.line(x1, y1, x2, y2, o)], o);
           }
-          // @ts-ignore
-
       }, {
           key: 'rectangle',
           value: async function rectangle(x, y, width, height, options) {
@@ -2381,8 +2409,6 @@
               paths.push((await this.lib.rectangle(x, y, width, height, o)));
               return this._drawable('rectangle', paths, o);
           }
-          // @ts-ignore
-
       }, {
           key: 'ellipse',
           value: async function ellipse(x, y, width, height, options) {
@@ -2400,8 +2426,6 @@
               paths.push((await this.lib.ellipse(x, y, width, height, o)));
               return this._drawable('ellipse', paths, o);
           }
-          // @ts-ignore
-
       }, {
           key: 'circle',
           value: async function circle(x, y, diameter, options) {
@@ -2409,16 +2433,12 @@
               ret.shape = 'circle';
               return ret;
           }
-          // @ts-ignore
-
       }, {
           key: 'linearPath',
           value: async function linearPath(points, options) {
               var o = this._options(options);
               return this._drawable('linearPath', [await this.lib.linearPath(points, false, o)], o);
           }
-          // @ts-ignore
-
       }, {
           key: 'arc',
           value: async function arc(x, y, width, height, start, stop) {
@@ -2439,16 +2459,12 @@
               paths.push((await this.lib.arc(x, y, width, height, start, stop, closed, true, o)));
               return this._drawable('arc', paths, o);
           }
-          // @ts-ignore
-
       }, {
           key: 'curve',
           value: async function curve(points, options) {
               var o = this._options(options);
               return this._drawable('curve', [await this.lib.curve(points, o)], o);
           }
-          // @ts-ignore
-
       }, {
           key: 'polygon',
           value: async function polygon(points, options) {
@@ -2470,8 +2486,6 @@
               paths.push((await this.lib.linearPath(points, true, o)));
               return this._drawable('polygon', paths, o);
           }
-          // @ts-ignore
-
       }, {
           key: 'path',
           value: async function path(d, options) {
@@ -2499,33 +2513,32 @@
           }
       }]);
       return RoughGeneratorAsync;
-  }(RoughGenerator);
+  }(RoughGeneratorBase);
 
-  var RoughCanvasAsync = function (_RoughCanvas) {
-      inherits(RoughCanvasAsync, _RoughCanvas);
+  var RoughCanvasAsync = function (_RoughCanvasBase) {
+      inherits(RoughCanvasAsync, _RoughCanvasBase);
 
       function RoughCanvasAsync(canvas, config) {
           classCallCheck(this, RoughCanvasAsync);
 
-          var _this = possibleConstructorReturn(this, (RoughCanvasAsync.__proto__ || Object.getPrototypeOf(RoughCanvasAsync)).call(this, canvas, config));
+          var _this = possibleConstructorReturn(this, (RoughCanvasAsync.__proto__ || Object.getPrototypeOf(RoughCanvasAsync)).call(this, canvas));
 
           _this.genAsync = new RoughGeneratorAsync(config || null, _this.canvas);
           return _this;
       }
-      // @ts-ignore
-
 
       createClass(RoughCanvasAsync, [{
+          key: 'getDefaultOptions',
+          value: function getDefaultOptions() {
+              return this.genAsync.defaultOptions;
+          }
+      }, {
           key: 'line',
-
-          // @ts-ignore
           value: async function line(x1, y1, x2, y2, options) {
               var d = await this.genAsync.line(x1, y1, x2, y2, options);
               this.draw(d);
               return d;
           }
-          // @ts-ignore
-
       }, {
           key: 'rectangle',
           value: async function rectangle(x, y, width, height, options) {
@@ -2533,8 +2546,6 @@
               this.draw(d);
               return d;
           }
-          // @ts-ignore
-
       }, {
           key: 'ellipse',
           value: async function ellipse(x, y, width, height, options) {
@@ -2542,8 +2553,6 @@
               this.draw(d);
               return d;
           }
-          // @ts-ignore
-
       }, {
           key: 'circle',
           value: async function circle(x, y, diameter, options) {
@@ -2551,8 +2560,6 @@
               this.draw(d);
               return d;
           }
-          // @ts-ignore
-
       }, {
           key: 'linearPath',
           value: async function linearPath(points, options) {
@@ -2560,8 +2567,6 @@
               this.draw(d);
               return d;
           }
-          // @ts-ignore
-
       }, {
           key: 'polygon',
           value: async function polygon(points, options) {
@@ -2569,8 +2574,6 @@
               this.draw(d);
               return d;
           }
-          // @ts-ignore
-
       }, {
           key: 'arc',
           value: async function arc(x, y, width, height, start, stop) {
@@ -2581,8 +2584,6 @@
               this.draw(d);
               return d;
           }
-          // @ts-ignore
-
       }, {
           key: 'curve',
           value: async function curve(points, options) {
@@ -2590,8 +2591,6 @@
               this.draw(d);
               return d;
           }
-          // @ts-ignore
-
       }, {
           key: 'path',
           value: async function path(d, options) {
@@ -2606,79 +2605,21 @@
           }
       }]);
       return RoughCanvasAsync;
-  }(RoughCanvas);
+  }(RoughCanvasBase);
 
   var hasDocument$1 = typeof document !== 'undefined';
-  var RoughSVG = function () {
-      function RoughSVG(svg, config) {
-          classCallCheck(this, RoughSVG);
+  var RoughSVGBase = function () {
+      function RoughSVGBase(svg) {
+          classCallCheck(this, RoughSVGBase);
 
           this.svg = svg;
-          this.gen = new RoughGenerator(config || null, this.svg);
       }
 
-      createClass(RoughSVG, [{
-          key: 'line',
-          value: function line(x1, y1, x2, y2, options) {
-              var d = this.gen.line(x1, y1, x2, y2, options);
-              return this.draw(d);
-          }
-      }, {
-          key: 'rectangle',
-          value: function rectangle(x, y, width, height, options) {
-              var d = this.gen.rectangle(x, y, width, height, options);
-              return this.draw(d);
-          }
-      }, {
-          key: 'ellipse',
-          value: function ellipse(x, y, width, height, options) {
-              var d = this.gen.ellipse(x, y, width, height, options);
-              return this.draw(d);
-          }
-      }, {
-          key: 'circle',
-          value: function circle(x, y, diameter, options) {
-              var d = this.gen.circle(x, y, diameter, options);
-              return this.draw(d);
-          }
-      }, {
-          key: 'linearPath',
-          value: function linearPath(points, options) {
-              var d = this.gen.linearPath(points, options);
-              return this.draw(d);
-          }
-      }, {
-          key: 'polygon',
-          value: function polygon(points, options) {
-              var d = this.gen.polygon(points, options);
-              return this.draw(d);
-          }
-      }, {
-          key: 'arc',
-          value: function arc(x, y, width, height, start, stop) {
-              var closed = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : false;
-              var options = arguments[7];
-
-              var d = this.gen.arc(x, y, width, height, start, stop, closed, options);
-              return this.draw(d);
-          }
-      }, {
-          key: 'curve',
-          value: function curve(points, options) {
-              var d = this.gen.curve(points, options);
-              return this.draw(d);
-          }
-      }, {
-          key: 'path',
-          value: function path(d, options) {
-              var drawing = this.gen.path(d, options);
-              return this.draw(drawing);
-          }
-      }, {
+      createClass(RoughSVGBase, [{
           key: 'draw',
           value: function draw(drawable) {
               var sets = drawable.sets || [];
-              var o = drawable.options || this.gen.defaultOptions;
+              var o = drawable.options || this.getDefaultOptions();
               var doc = this.svg.ownerDocument || hasDocument$1 && document;
               var g = doc.createElementNS('http://www.w3.org/2000/svg', 'g');
               var _iteratorNormalCompletion = true;
@@ -2773,11 +2714,6 @@
               return g;
           }
       }, {
-          key: 'opsToPath',
-          value: function opsToPath(drawing) {
-              return this.gen.opsToPath(drawing);
-          }
-      }, {
           key: 'fillSketch',
           value: function fillSketch(doc, drawing, o) {
               var fweight = o.fillWeight;
@@ -2790,11 +2726,6 @@
               path.style.strokeWidth = fweight + '';
               path.style.fill = 'none';
               return path;
-          }
-      }, {
-          key: 'generator',
-          get: function get$$1() {
-              return this.gen;
           }
       }, {
           key: 'defs',
@@ -2819,73 +2750,155 @@
               return new RoughRenderer();
           }
       }]);
-      return RoughSVG;
+      return RoughSVGBase;
   }();
 
-  var RoughSVGAsync = function (_RoughSVG) {
-      inherits(RoughSVGAsync, _RoughSVG);
+  var RoughSVG = function (_RoughSVGBase) {
+      inherits(RoughSVG, _RoughSVGBase);
+
+      function RoughSVG(svg, config) {
+          classCallCheck(this, RoughSVG);
+
+          var _this = possibleConstructorReturn(this, (RoughSVG.__proto__ || Object.getPrototypeOf(RoughSVG)).call(this, svg));
+
+          _this.gen = new RoughGenerator(config || null, _this.svg);
+          return _this;
+      }
+
+      createClass(RoughSVG, [{
+          key: 'getDefaultOptions',
+          value: function getDefaultOptions() {
+              return this.gen.defaultOptions;
+          }
+      }, {
+          key: 'opsToPath',
+          value: function opsToPath(drawing) {
+              return this.gen.opsToPath(drawing);
+          }
+      }, {
+          key: 'line',
+          value: function line(x1, y1, x2, y2, options) {
+              var d = this.gen.line(x1, y1, x2, y2, options);
+              return this.draw(d);
+          }
+      }, {
+          key: 'rectangle',
+          value: function rectangle(x, y, width, height, options) {
+              var d = this.gen.rectangle(x, y, width, height, options);
+              return this.draw(d);
+          }
+      }, {
+          key: 'ellipse',
+          value: function ellipse(x, y, width, height, options) {
+              var d = this.gen.ellipse(x, y, width, height, options);
+              return this.draw(d);
+          }
+      }, {
+          key: 'circle',
+          value: function circle(x, y, diameter, options) {
+              var d = this.gen.circle(x, y, diameter, options);
+              return this.draw(d);
+          }
+      }, {
+          key: 'linearPath',
+          value: function linearPath(points, options) {
+              var d = this.gen.linearPath(points, options);
+              return this.draw(d);
+          }
+      }, {
+          key: 'polygon',
+          value: function polygon(points, options) {
+              var d = this.gen.polygon(points, options);
+              return this.draw(d);
+          }
+      }, {
+          key: 'arc',
+          value: function arc(x, y, width, height, start, stop) {
+              var closed = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : false;
+              var options = arguments[7];
+
+              var d = this.gen.arc(x, y, width, height, start, stop, closed, options);
+              return this.draw(d);
+          }
+      }, {
+          key: 'curve',
+          value: function curve(points, options) {
+              var d = this.gen.curve(points, options);
+              return this.draw(d);
+          }
+      }, {
+          key: 'path',
+          value: function path(d, options) {
+              var drawing = this.gen.path(d, options);
+              return this.draw(drawing);
+          }
+      }, {
+          key: 'generator',
+          get: function get$$1() {
+              return this.gen;
+          }
+      }]);
+      return RoughSVG;
+  }(RoughSVGBase);
+
+  var RoughSVGAsync = function (_RoughSVGBase) {
+      inherits(RoughSVGAsync, _RoughSVGBase);
 
       function RoughSVGAsync(svg, config) {
           classCallCheck(this, RoughSVGAsync);
 
-          var _this = possibleConstructorReturn(this, (RoughSVGAsync.__proto__ || Object.getPrototypeOf(RoughSVGAsync)).call(this, svg, config));
+          var _this = possibleConstructorReturn(this, (RoughSVGAsync.__proto__ || Object.getPrototypeOf(RoughSVGAsync)).call(this, svg));
 
           _this.genAsync = new RoughGeneratorAsync(config || null, _this.svg);
           return _this;
       }
-      // @ts-ignore
-
 
       createClass(RoughSVGAsync, [{
+          key: 'getDefaultOptions',
+          value: function getDefaultOptions() {
+              return this.genAsync.defaultOptions;
+          }
+      }, {
+          key: 'opsToPath',
+          value: function opsToPath(drawing) {
+              return this.genAsync.opsToPath(drawing);
+          }
+      }, {
           key: 'line',
-
-          // @ts-ignore
           value: async function line(x1, y1, x2, y2, options) {
               var d = await this.genAsync.line(x1, y1, x2, y2, options);
               return this.draw(d);
           }
-          // @ts-ignore
-
       }, {
           key: 'rectangle',
           value: async function rectangle(x, y, width, height, options) {
               var d = await this.genAsync.rectangle(x, y, width, height, options);
               return this.draw(d);
           }
-          // @ts-ignore
-
       }, {
           key: 'ellipse',
           value: async function ellipse(x, y, width, height, options) {
               var d = await this.genAsync.ellipse(x, y, width, height, options);
               return this.draw(d);
           }
-          // @ts-ignore
-
       }, {
           key: 'circle',
           value: async function circle(x, y, diameter, options) {
               var d = await this.genAsync.circle(x, y, diameter, options);
               return this.draw(d);
           }
-          // @ts-ignore
-
       }, {
           key: 'linearPath',
           value: async function linearPath(points, options) {
               var d = await this.genAsync.linearPath(points, options);
               return this.draw(d);
           }
-          // @ts-ignore
-
       }, {
           key: 'polygon',
           value: async function polygon(points, options) {
               var d = await this.genAsync.polygon(points, options);
               return this.draw(d);
           }
-          // @ts-ignore
-
       }, {
           key: 'arc',
           value: async function arc(x, y, width, height, start, stop) {
@@ -2895,16 +2908,12 @@
               var d = await this.genAsync.arc(x, y, width, height, start, stop, closed, options);
               return this.draw(d);
           }
-          // @ts-ignore
-
       }, {
           key: 'curve',
           value: async function curve(points, options) {
               var d = await this.genAsync.curve(points, options);
               return this.draw(d);
           }
-          // @ts-ignore
-
       }, {
           key: 'path',
           value: async function path(d, options) {
@@ -2918,7 +2927,7 @@
           }
       }]);
       return RoughSVGAsync;
-  }(RoughSVG);
+  }(RoughSVGBase);
 
   var rough = {
       canvas: function canvas(_canvas, config) {

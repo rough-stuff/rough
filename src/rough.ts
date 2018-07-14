@@ -8,14 +8,14 @@ import { RoughSVG } from './svg';
 import { RoughSVGAsync } from './svg-async';
 
 export default {
-  canvas(canvas: HTMLCanvasElement, config?: Config) {
+  canvas(canvas: HTMLCanvasElement, config?: Config): RoughCanvas | RoughCanvasAsync {
     if (config && config.async) {
       return new RoughCanvasAsync(canvas, config);
     }
     return new RoughCanvas(canvas, config);
   },
 
-  svg(svg: SVGSVGElement, config?: Config) {
+  svg(svg: SVGSVGElement, config?: Config): RoughSVG | RoughSVGAsync {
     if (config && config.async) {
       return new RoughSVGAsync(svg, config);
     }
@@ -26,7 +26,7 @@ export default {
     return RoughCanvas.createRenderer();
   },
 
-  generator(config: Config | null, surface: DrawingSurface) {
+  generator(config: Config | null, surface: DrawingSurface): RoughGenerator | RoughGeneratorAsync {
     if (config && config.async) {
       return new RoughGeneratorAsync(config, surface);
     }

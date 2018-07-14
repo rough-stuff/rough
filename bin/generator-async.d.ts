@@ -1,7 +1,7 @@
-import { RoughGenerator } from './generator';
 import { Options, Drawable } from './core';
 import { Point } from './geometry.js';
-export declare class RoughGeneratorAsync extends RoughGenerator {
+import { RoughGeneratorBase } from './generator-base';
+export declare class RoughGeneratorAsync extends RoughGeneratorBase {
     line(x1: number, y1: number, x2: number, y2: number, options?: Options): Promise<Drawable>;
     rectangle(x: number, y: number, width: number, height: number, options?: Options): Promise<Drawable>;
     ellipse(x: number, y: number, width: number, height: number, options?: Options): Promise<Drawable>;

@@ -1,19 +1,8 @@
-import { RoughRenderer } from './renderer.js';
-import { Config, DrawingSurface, Options, ResolvedOptions, Drawable, OpSet, PathInfo } from './core';
+import { Config, DrawingSurface, Options, Drawable } from './core';
 import { Point } from './geometry.js';
-export declare class RoughGenerator {
-    private config;
-    private surface;
-    private renderer;
-    defaultOptions: ResolvedOptions;
+import { RoughGeneratorBase } from './generator-base';
+export declare class RoughGenerator extends RoughGeneratorBase {
     constructor(config: Config | null, surface: DrawingSurface);
-    protected _options(options?: Options): ResolvedOptions;
-    protected _drawable(shape: string, sets: OpSet[], options: ResolvedOptions): Drawable;
-    protected readonly lib: RoughRenderer;
-    private getCanvasSize;
-    protected computePolygonSize(points: Point[]): Point;
-    protected polygonPath(points: Point[]): string;
-    protected computePathSize(d: string): Point;
     line(x1: number, y1: number, x2: number, y2: number, options?: Options): Drawable;
     rectangle(x: number, y: number, width: number, height: number, options?: Options): Drawable;
     ellipse(x: number, y: number, width: number, height: number, options?: Options): Drawable;
@@ -23,7 +12,4 @@ export declare class RoughGenerator {
     curve(points: Point[], options?: Options): Drawable;
     polygon(points: Point[], options?: Options): Drawable;
     path(d: string, options?: Options): Drawable;
-    toPaths(drawable: Drawable): PathInfo[];
-    private fillSketch;
-    opsToPath(drawing: OpSet): string;
 }

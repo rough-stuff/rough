@@ -1,11 +1,13 @@
-import { RoughSVG } from './svg';
-import { Config, Options } from './core';
+import { Config, Options, ResolvedOptions, OpSet } from './core';
 import { RoughGeneratorAsync } from './generator-async';
 import { Point } from './geometry';
-export declare class RoughSVGAsync extends RoughSVG {
+import { RoughSVGBase } from './svg-base';
+export declare class RoughSVGAsync extends RoughSVGBase {
     private genAsync;
     constructor(svg: SVGSVGElement, config?: Config);
     readonly generator: RoughGeneratorAsync;
+    getDefaultOptions(): ResolvedOptions;
+    opsToPath(drawing: OpSet): string;
     line(x1: number, y1: number, x2: number, y2: number, options?: Options): Promise<SVGGElement>;
     rectangle(x: number, y: number, width: number, height: number, options?: Options): Promise<SVGGElement>;
     ellipse(x: number, y: number, width: number, height: number, options?: Options): Promise<SVGGElement>;

@@ -1,11 +1,12 @@
-import { RoughCanvas } from './canvas';
-import { Config, Options, Drawable } from './core';
+import { Config, Options, ResolvedOptions, Drawable } from './core';
 import { RoughGeneratorAsync } from './generator-async';
 import { Point } from './geometry';
-export declare class RoughCanvasAsync extends RoughCanvas {
+import { RoughCanvasBase } from './canvas-base';
+export declare class RoughCanvasAsync extends RoughCanvasBase {
     private genAsync;
     constructor(canvas: HTMLCanvasElement, config?: Config);
     readonly generator: RoughGeneratorAsync;
+    getDefaultOptions(): ResolvedOptions;
     line(x1: number, y1: number, x2: number, y2: number, options?: Options): Promise<Drawable>;
     rectangle(x: number, y: number, width: number, height: number, options?: Options): Promise<Drawable>;
     ellipse(x: number, y: number, width: number, height: number, options?: Options): Promise<Drawable>;
