@@ -49,6 +49,7 @@ export abstract class RoughSVGBase {
           path.style.stroke = o.stroke;
           path.style.strokeWidth = o.strokeWidth + '';
           path.style.fill = 'none';
+          path.style.markerEnd = o.markerEnd;
           break;
         }
         case 'fillPath': {
