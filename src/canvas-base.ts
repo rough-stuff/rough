@@ -26,6 +26,7 @@ export abstract class RoughCanvasBase {
       switch (drawing.type) {
         case 'path':
           ctx.save();
+          ctx.setLineDash(o.lineDash);
           ctx.strokeStyle = o.stroke;
           ctx.lineWidth = o.strokeWidth;
           this._drawToContext(ctx, drawing);

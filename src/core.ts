@@ -40,6 +40,7 @@ export interface ResolvedOptions extends Options {
   fillWeight: number;
   hachureAngle: number;
   hachureGap: number;
+  lineDash: Array<number>;
 }
 
 export declare type OpType = 'move' | 'bcurveTo' | 'lineTo' | 'qcurveTo';
