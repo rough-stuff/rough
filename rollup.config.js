@@ -1,79 +1,85 @@
-import minify from 'rollup-plugin-babel-minify';
-import babel from 'rollup-plugin-babel';
-import babelrc from 'babelrc-rollup';
-import 'babel-polyfill/dist/polyfill.js';
+/* eslint-disable strict */
+/* eslint-env node */
+
+const minify = require('rollup-plugin-babel-minify');
+const typescript = require('rollup-plugin-typescript');
 
 const outFolder = 'dist';
+const outName = 'rough';
+const input = 'src/rough.ts';
 
-export default [
+
+module.exports = [
   {
-    input: 'bin/rough.js',
+    input,
     output: {
       file: `${outFolder}/rough.js`,
       format: 'iife',
-      name: 'rough'
-    }
+      name: outName,
+    },
+    plugins: [typescript()]
   },
   {
-    input: 'bin/rough.js',
+    input,
     output: {
       file: `${outFolder}/rough.min.js`,
       format: 'iife',
-      name: 'rough'
+      name: outName
     },
-    plugins: [minify({ comments: false })]
+    plugins: [typescript(), minify({ comments: false })]
   },
   {
-    input: 'bin/rough.js',
+    input,
     output: {
       file: `${outFolder}/rough.umd.js`,
       format: 'umd',
-      name: 'rough'
-    }
+      name: outName
+    },
+    plugins: [typescript()]
   },
   {
-    input: 'bin/rough.js',
+    input,
     output: {
       file: `${outFolder}/rough.umd.min.js`,
       format: 'umd',
-      name: 'rough'
+      name: outName
     },
-    plugins: [minify({ comments: false })]
+    plugins: [typescript(), minify({ comments: false })]
   },
   {
-    input: 'bin/rough.js',
+    input,
     output: {
       file: `${outFolder}/rough.es5.js`,
       format: 'iife',
-      name: 'rough'
+      name: outName
     },
-    plugins: [babel(babelrc())]
+    plugins: [typescript({ target: "es5" })]
   },
   {
-    input: 'bin/rough.js',
+    input,
     output: {
       file: `${outFolder}/rough.es5.min.js`,
       format: 'iife',
-      name: 'rough'
+      name: outName
     },
-    plugins: [babel(babelrc()), minify({ comments: false })]
+    plugins: [typescript({ target: "es5" }), minify({ comments: false })]
   },
   {
-    input: 'bin/rough.js',
+    input,
     output: {
       file: `${outFolder}/rough.umd.es5.js`,
       format: 'umd',
-      name: 'rough'
+      name: outName
     },
-    plugins: [babel(babelrc())]
+    plugins: [typescript({ target: "es5" })]
   },
   {
-    input: 'bin/rough.js',
+    input,
     output: {
       file: `${outFolder}/rough.umd.es5.min.js`,
       format: 'umd',
-      name: 'rough'
+      name: outName
     },
-    plugins: [babel(babelrc()), minify({ comments: false })]
+    plugins: [typescript({ target: "es5" }), minify({ comments: false })]
   }
 ];
