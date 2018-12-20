@@ -1,5 +1,4 @@
 import { Drawable, OpSet, ResolvedOptions } from './core';
-import { RoughRenderer } from './renderer';
 
 const hasDocument = typeof document !== 'undefined';
 
@@ -14,10 +13,6 @@ export abstract class RoughSVGBase {
   abstract getDefaultOptions(): ResolvedOptions;
 
   abstract opsToPath(drawing: OpSet): string;
-
-  static createRenderer(): RoughRenderer {
-    return new RoughRenderer();
-  }
 
   get defs(): SVGDefsElement | null {
     const doc = this.svg.ownerDocument || (hasDocument && document);
@@ -38,7 +33,7 @@ export abstract class RoughSVGBase {
   draw(drawable: Drawable): SVGGElement {
     const sets = drawable.sets || [];
     const o = drawable.options || this.getDefaultOptions();
-    const doc = this.svg.ownerDocument || (hasDocument && document);
+    const doc = this.svg.ownerDocument || window.document;
     const g = doc.createElementNS('http://www.w3.org/2000/svg', 'g');
     for (const drawing of sets) {
       let path = null;

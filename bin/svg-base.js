@@ -1,11 +1,7 @@
-import { RoughRenderer } from './renderer';
 const hasDocument = typeof document !== 'undefined';
 export class RoughSVGBase {
     constructor(svg) {
         this.svg = svg;
-    }
-    static createRenderer() {
-        return new RoughRenderer();
     }
     get defs() {
         const doc = this.svg.ownerDocument || (hasDocument && document);
@@ -26,7 +22,7 @@ export class RoughSVGBase {
     draw(drawable) {
         const sets = drawable.sets || [];
         const o = drawable.options || this.getDefaultOptions();
-        const doc = this.svg.ownerDocument || (hasDocument && document);
+        const doc = this.svg.ownerDocument || window.document;
         const g = doc.createElementNS('http://www.w3.org/2000/svg', 'g');
         for (const drawing of sets) {
             let path = null;

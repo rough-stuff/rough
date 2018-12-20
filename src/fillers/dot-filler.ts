@@ -1,15 +1,10 @@
-import { PatternFiller, RenderHelper } from './filler-interface';
+import { PatternFiller } from './filler-interface';
 import { ResolvedOptions, OpSet, Op } from '../core';
 import { Point, Line } from '../geometry';
 import { hachureLinesForPolygon, hachureLinesForEllipse, lineLength } from './filler-utils';
+import { randOffsetWithRange, ellipse } from '../renderer';
 
 export class DotFiller implements PatternFiller {
-  renderer: RenderHelper;
-
-  constructor(renderer: RenderHelper) {
-    this.renderer = renderer;
-  }
-
   fillPolygon(points: Point[], o: ResolvedOptions): OpSet {
     o = Object.assign({}, o, { curveStepCount: 4, hachureAngle: 0 });
     const lines = hachureLinesForPolygon(points, o);
@@ -18,7 +13,7 @@ export class DotFiller implements PatternFiller {
 
   fillEllipse(cx: number, cy: number, width: number, height: number, o: ResolvedOptions): OpSet {
     o = Object.assign({}, o, { curveStepCount: 4, hachureAngle: 0 });
-    const lines = hachureLinesForEllipse(cx, cy, width, height, o, this.renderer);
+    const lines = hachureLinesForEllipse(cx, cy, width, height, o);
     return this.dotsOnLines(lines, o);
   }
 
@@ -43,10 +38,10 @@ export class DotFiller implements PatternFiller {
         const dy = l * Math.sin(alpha);
         const dx = l * Math.cos(alpha);
         const c: Point = [line[0][0] - dx, line[0][1] + dy];
-        const cx = this.renderer.getOffset(c[0] - gap / 4, c[0] + gap / 4, o);
-        const cy = this.renderer.getOffset(c[1] - gap / 4, c[1] + gap / 4, o);
-        const ellipse = this.renderer.ellipse(cx, cy, fweight, fweight, o);
-        ops = ops.concat(ellipse.ops);
+        const cx = randOffsetWithRange(c[0] - gap / 4, c[0] + gap / 4, o);
+        const cy = randOffsetWithRange(c[1] - gap / 4, c[1] + gap / 4, o);
+        const el = ellipse(cx, cy, fweight, fweight, o);
+        ops = ops.concat(el.ops);
       }
     }
     return { type: 'fillSketch', ops };

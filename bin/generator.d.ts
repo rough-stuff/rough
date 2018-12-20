@@ -1,6 +1,6 @@
 import { Config, DrawingSurface, Options, Drawable } from './core';
 import { Point } from './geometry.js';
-import { RoughGeneratorBase } from './generator-base';
+import { RoughGeneratorBase } from './generator-base.js';
 export declare class RoughGenerator extends RoughGeneratorBase {
     constructor(config: Config | null, surface: DrawingSurface);
     line(x1: number, y1: number, x2: number, y2: number, options?: Options): Drawable;

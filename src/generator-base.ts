@@ -1,14 +1,12 @@
-import { RoughRenderer } from './renderer.js';
 import { Config, DrawingSurface, Options, ResolvedOptions, Drawable, OpSet, PathInfo, PatternInfo } from './core';
 import { Point } from './geometry.js';
-import { createRenderer } from './renderer-factory.js';
 
 const hasSelf = typeof self !== 'undefined';
 
 export abstract class RoughGeneratorBase {
   protected config: Config;
   protected surface: DrawingSurface;
-  protected renderer: RoughRenderer;
+
   defaultOptions: ResolvedOptions = {
     maxRandomnessOffset: 2,
     roughness: 1,
@@ -26,7 +24,6 @@ export abstract class RoughGeneratorBase {
   constructor(config: Config | null, surface: DrawingSurface) {
     this.config = config || {};
     this.surface = surface;
-    this.renderer = createRenderer(this.config);
     if (this.config.options) {
       this.defaultOptions = this._options(this.config.options);
     }
@@ -38,10 +35,6 @@ export abstract class RoughGeneratorBase {
 
   protected _drawable(shape: string, sets: OpSet[], options: ResolvedOptions): Drawable {
     return { shape, sets: sets || [], options: options || this.defaultOptions };
-  }
-
-  protected get lib(): RoughRenderer {
-    return this.renderer;
   }
 
   private getCanvasSize(): Point {

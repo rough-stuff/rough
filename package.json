@@ -29,15 +29,8 @@
   },
   "homepage": "https://roughjs.com",
   "devDependencies": {
-    "babel-plugin-external-helpers": "^6.22.0",
-    "babel-polyfill": "^6.26.0",
-    "babel-preset-env": "^1.7.0",
-    "babel-preset-es2015": "^6.24.1",
-    "babelrc-rollup": "^3.0.0",
-    "rollup": "^0.60.7",
-    "rollup-plugin-babel": "^3.0.4",
-    "rollup-plugin-babel-minify": "^5.0.0",
-    "tslint": "^5.10.0",
-    "typescript": "^2.9.2"
+    "rollup": "^0.68.1",
+    "tslint": "^5.12.0",
+    "typescript": "^3.2.2"
   }
 }

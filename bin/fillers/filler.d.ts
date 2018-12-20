@@ -1,3 +1,3 @@
 import { ResolvedOptions } from '../core';
-import { PatternFiller, RenderHelper } from './filler-interface';
-export declare function getFiller(renderer: RenderHelper, o: ResolvedOptions): PatternFiller;
+import { PatternFiller } from './filler-interface';
+export declare function getFiller(o: ResolvedOptions): PatternFiller;

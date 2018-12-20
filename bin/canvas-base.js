@@ -1,12 +1,8 @@
-import { RoughRenderer } from './renderer';
 const hasDocument = typeof document !== 'undefined';
 export class RoughCanvasBase {
     constructor(canvas) {
         this.canvas = canvas;
         this.ctx = this.canvas.getContext('2d');
-    }
-    static createRenderer() {
-        return new RoughRenderer();
     }
     draw(drawable) {
         const sets = drawable.sets || [];

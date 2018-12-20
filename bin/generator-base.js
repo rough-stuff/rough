@@ -1,4 +1,3 @@
-import { createRenderer } from './renderer-factory.js';
 const hasSelf = typeof self !== 'undefined';
 export class RoughGeneratorBase {
     constructor(config, surface) {
@@ -17,7 +16,6 @@ export class RoughGeneratorBase {
         };
         this.config = config || {};
         this.surface = surface;
-        this.renderer = createRenderer(this.config);
         if (this.config.options) {
             this.defaultOptions = this._options(this.config.options);
         }
@@ -27,9 +25,6 @@ export class RoughGeneratorBase {
     }
     _drawable(shape, sets, options) {
         return { shape, sets: sets || [], options: options || this.defaultOptions };
-    }
-    get lib() {
-        return this.renderer;
     }
     getCanvasSize() {
         const val = (w) => {

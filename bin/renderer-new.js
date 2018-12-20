@@ -145,15 +145,6 @@ export function patternFillArc(x, y, width, height, start, stop, o) {
     points.push([cx, cy]);
     return patternFillPolygon(points, o);
 }
-export function randOffset(x, o) {
-    return _offsetOpt(x, o);
-}
-export function randOffsetWithRange(min, max, o) {
-    return _offset(min, max, o);
-}
-export function doubleLineOps(x1, y1, x2, y2, o) {
-    return _doubleLine(x1, y1, x2, y2, o);
-}
 // Private helpers
 function _offset(min, max, ops) {
     return ops.roughness * ((Math.random() * (max - min)) + min);

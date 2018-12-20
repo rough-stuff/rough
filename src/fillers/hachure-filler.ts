@@ -1,15 +1,10 @@
-import { PatternFiller, RenderHelper } from './filler-interface';
+import { PatternFiller } from './filler-interface';
 import { ResolvedOptions, OpSet, Op } from '../core';
 import { Point, Line } from '../geometry';
 import { hachureLinesForPolygon, hachureLinesForEllipse } from './filler-utils';
+import { doubleLineOps } from '../renderer';
 
 export class HachureFiller implements PatternFiller {
-  renderer: RenderHelper;
-
-  constructor(renderer: RenderHelper) {
-    this.renderer = renderer;
-  }
-
   fillPolygon(points: Point[], o: ResolvedOptions): OpSet {
     return this._fillPolygon(points, o);
   }
@@ -25,7 +20,7 @@ export class HachureFiller implements PatternFiller {
   }
 
   protected _fillEllipse(cx: number, cy: number, width: number, height: number, o: ResolvedOptions, connectEnds: boolean = false): OpSet {
-    const lines = hachureLinesForEllipse(cx, cy, width, height, o, this.renderer);
+    const lines = hachureLinesForEllipse(cx, cy, width, height, o);
     const ops = this.renderLines(lines, o, connectEnds);
     return { type: 'fillSketch', ops };
   }
@@ -34,9 +29,9 @@ export class HachureFiller implements PatternFiller {
     let ops: Op[] = [];
     let prevPoint: Point | null = null;
     for (const line of lines) {
-      ops = ops.concat(this.renderer.doubleLine(line[0][0], line[0][1], line[1][0], line[1][1], o));
+      ops = ops.concat(doubleLineOps(line[0][0], line[0][1], line[1][0], line[1][1], o));
       if (connectEnds && prevPoint) {
-        ops = ops.concat(this.renderer.doubleLine(prevPoint[0], prevPoint[1], line[0][0], line[0][1], o));
+        ops = ops.concat(doubleLineOps(prevPoint[0], prevPoint[1], line[0][0], line[0][1], o));
       }
       prevPoint = line[1];
     }

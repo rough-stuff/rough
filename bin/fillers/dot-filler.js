@@ -1,8 +1,6 @@
 import { hachureLinesForPolygon, hachureLinesForEllipse, lineLength } from './filler-utils';
+import { randOffsetWithRange, ellipse } from '../renderer';
 export class DotFiller {
-    constructor(renderer) {
-        this.renderer = renderer;
-    }
     fillPolygon(points, o) {
         o = Object.assign({}, o, { curveStepCount: 4, hachureAngle: 0 });
         const lines = hachureLinesForPolygon(points, o);
@@ -10,7 +8,7 @@ export class DotFiller {
     }
     fillEllipse(cx, cy, width, height, o) {
         o = Object.assign({}, o, { curveStepCount: 4, hachureAngle: 0 });
-        const lines = hachureLinesForEllipse(cx, cy, width, height, o, this.renderer);
+        const lines = hachureLinesForEllipse(cx, cy, width, height, o);
         return this.dotsOnLines(lines, o);
     }
     dotsOnLines(lines, o) {
@@ -34,10 +32,10 @@ export class DotFiller {
                 const dy = l * Math.sin(alpha);
                 const dx = l * Math.cos(alpha);
                 const c = [line[0][0] - dx, line[0][1] + dy];
-                const cx = this.renderer.getOffset(c[0] - gap / 4, c[0] + gap / 4, o);
-                const cy = this.renderer.getOffset(c[1] - gap / 4, c[1] + gap / 4, o);
-                const ellipse = this.renderer.ellipse(cx, cy, fweight, fweight, o);
-                ops = ops.concat(ellipse.ops);
+                const cx = randOffsetWithRange(c[0] - gap / 4, c[0] + gap / 4, o);
+                const cy = randOffsetWithRange(c[1] - gap / 4, c[1] + gap / 4, o);
+                const el = ellipse(cx, cy, fweight, fweight, o);
+                ops = ops.concat(el.ops);
             }
         }
         return { type: 'fillSketch', ops };

@@ -1,5 +1,6 @@
 import { Segment } from '../geometry';
 import { HachureIterator } from '../utils/hachure';
+import { randOffset } from '../renderer';
 export function lineLength(line) {
     const p1 = line[0];
     const p2 = line[1];
@@ -67,12 +68,12 @@ export function hachureLinesForPolygon(points, o) {
     }
     return ret;
 }
-export function hachureLinesForEllipse(cx, cy, width, height, o, renderer) {
+export function hachureLinesForEllipse(cx, cy, width, height, o) {
     const ret = [];
     let rx = Math.abs(width / 2);
     let ry = Math.abs(height / 2);
-    rx += renderer.getOffset(-rx * 0.05, rx * 0.05, o);
-    ry += renderer.getOffset(-ry * 0.05, ry * 0.05, o);
+    rx += randOffset(rx * 0.05, o);
+    ry += randOffset(ry * 0.05, o);
     const angle = o.hachureAngle;
     let gap = o.hachureGap;
     if (gap <= 0) {
