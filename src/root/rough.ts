@@ -1,7 +1,7 @@
-import { Config, DrawingSurface } from './core';
-import { RoughCanvas } from './canvas';
-import { RoughGenerator } from './generator';
-import { RoughSVG } from './svg';
+import { Config, DrawingSurface } from '../core';
+import { RoughCanvas } from '../canvas';
+import { RoughGenerator } from '../generator';
+import { RoughSVG } from '../svg';
 
 export default {
   canvas(canvas: HTMLCanvasElement, config?: Config): RoughCanvas {
