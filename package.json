@@ -30,6 +30,8 @@
   "homepage": "https://roughjs.com",
   "devDependencies": {
     "rollup": "^0.68.1",
+    "rollup-plugin-typescript": "^1.0.0",
+    "tslib": "^1.9.3",
     "tslint": "^5.12.0",
     "typescript": "^3.2.2"
   }
