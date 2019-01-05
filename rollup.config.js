@@ -1,79 +1,31 @@
-import minify from 'rollup-plugin-babel-minify';
-import babel from 'rollup-plugin-babel';
-import babelrc from 'babelrc-rollup';
-import 'babel-polyfill/dist/polyfill.js';
-
-const outFolder = 'dist';
+import { terser } from "rollup-plugin-terser";
 
 export default [
   {
-    input: 'bin/rough.js',
+    input: 'bin/root/rough.js',
     output: {
-      file: `${outFolder}/rough.js`,
-      format: 'iife',
-      name: 'rough'
-    }
-  },
-  {
-    input: 'bin/rough.js',
-    output: {
-      file: `${outFolder}/rough.min.js`,
+      file: 'dist/rough.js',
       format: 'iife',
       name: 'rough'
     },
-    plugins: [minify({ comments: false })]
+    plugins: [terser()]
   },
   {
-    input: 'bin/rough.js',
+    input: 'bin/root/rough.js',
     output: {
-      file: `${outFolder}/rough.umd.js`,
-      format: 'umd',
-      name: 'rough'
-    }
-  },
-  {
-    input: 'bin/rough.js',
-    output: {
-      file: `${outFolder}/rough.umd.min.js`,
+      file: 'dist/rough.umd.js',
       format: 'umd',
       name: 'rough'
     },
-    plugins: [minify({ comments: false })]
+    plugins: [terser()]
   },
   {
-    input: 'bin/rough.js',
+    input: 'bin/root/worker.js',
     output: {
-      file: `${outFolder}/rough.es5.js`,
+      file: 'dist/worker.js',
       format: 'iife',
-      name: 'rough'
+      name: 'roughWorker'
     },
-    plugins: [babel(babelrc())]
-  },
-  {
-    input: 'bin/rough.js',
-    output: {
-      file: `${outFolder}/rough.es5.min.js`,
-      format: 'iife',
-      name: 'rough'
-    },
-    plugins: [babel(babelrc()), minify({ comments: false })]
-  },
-  {
-    input: 'bin/rough.js',
-    output: {
-      file: `${outFolder}/rough.umd.es5.js`,
-      format: 'umd',
-      name: 'rough'
-    },
-    plugins: [babel(babelrc())]
-  },
-  {
-    input: 'bin/rough.js',
-    output: {
-      file: `${outFolder}/rough.umd.es5.min.js`,
-      format: 'umd',
-      name: 'rough'
-    },
-    plugins: [babel(babelrc()), minify({ comments: false })]
+    plugins: [terser()]
   }
 ];

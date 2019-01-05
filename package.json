@@ -4,7 +4,7 @@
   "description": "Create graphics using HTML Canvas or SVG with a hand-drawn, sketchy, appearance.",
   "main": "dist/rough.umd.js",
   "module": "bin/rough.js",
-  "jsnext:main": "bin/rough.js",
+  "browser": "dist/rough.js",
   "types": "bin/rough.d.ts",
   "scripts": {
     "build": "tsc && rollup -c",
@@ -29,10 +29,12 @@
   },
   "homepage": "https://roughjs.com",
   "devDependencies": {
-    "rollup": "^0.68.1",
-    "rollup-plugin-typescript": "^1.0.0",
-    "tslib": "^1.9.3",
+    "rollup": "^1.0.1",
+    "rollup-plugin-terser": "^4.0.1",
     "tslint": "^5.12.0",
     "typescript": "^3.2.2"
+  },
+  "dependencies": {
+    "workly": "^1.2.0"
   }
 }
