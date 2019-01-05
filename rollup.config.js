@@ -1,3 +1,4 @@
+import resolve from 'rollup-plugin-node-resolve';
 import { terser } from "rollup-plugin-terser";
 
 export default [
@@ -26,6 +27,6 @@ export default [
       format: 'iife',
       name: 'roughWorker'
     },
-    plugins: [terser()]
+    plugins: [resolve(), terser()]
   }
 ];

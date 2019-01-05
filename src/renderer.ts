@@ -2,6 +2,14 @@ import { ResolvedOptions, Op, OpSet } from './core';
 import { Point } from './geometry';
 import { RoughPath, PathFitter, Segment, RoughArcConverter } from './path.js';
 import { getFiller } from './fillers/filler';
+import { RenderHelper } from './fillers/filler-interface';
+
+const helper: RenderHelper = {
+  randOffset,
+  randOffsetWithRange,
+  ellipse,
+  doubleLineOps
+};
 
 export function line(x1: number, y1: number, x2: number, y2: number, o: ResolvedOptions): OpSet {
   return { type: 'path', ops: _doubleLine(x1, y1, x2, y2, o) };
@@ -125,11 +133,11 @@ export function solidFillPolygon(points: Point[], o: ResolvedOptions): OpSet {
 }
 
 export function patternFillPolygon(points: Point[], o: ResolvedOptions): OpSet {
-  return getFiller(o).fillPolygon(points, o);
+  return getFiller(o, helper).fillPolygon(points, o);
 }
 
 export function patternFillEllipse(cx: number, cy: number, width: number, height: number, o: ResolvedOptions): OpSet {
-  return getFiller(o).fillEllipse(cx, cy, width, height, o);
+  return getFiller(o, helper).fillEllipse(cx, cy, width, height, o);
 }
 
 export function patternFillArc(x: number, y: number, width: number, height: number, start: number, stop: number, o: ResolvedOptions): OpSet {
