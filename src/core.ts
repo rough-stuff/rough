@@ -3,8 +3,7 @@ import { Point } from './geometry';
 export interface Config {
   async?: boolean;
   options?: Options;
-  noWorker?: boolean;
-  worklyURL?: string;
+  workerURL?: string;
 }
 
 export interface DrawingSurface {

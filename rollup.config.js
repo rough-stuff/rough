@@ -3,7 +3,7 @@ import { terser } from "rollup-plugin-terser";
 
 export default [
   {
-    input: 'bin/root/rough.js',
+    input: 'bin/rough.js',
     output: {
       file: 'dist/rough.js',
       format: 'iife',
@@ -12,7 +12,7 @@ export default [
     plugins: [terser()]
   },
   {
-    input: 'bin/root/rough.js',
+    input: 'bin/rough.js',
     output: {
       file: 'dist/rough.umd.js',
       format: 'umd',
@@ -21,7 +21,7 @@ export default [
     plugins: [terser()]
   },
   {
-    input: 'bin/root/worker.js',
+    input: 'bin/worker.js',
     output: {
       file: 'dist/worker.js',
       format: 'iife',

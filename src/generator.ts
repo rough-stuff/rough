@@ -1,13 +1,9 @@
-import { Config, DrawingSurface, Options, Drawable, OpSet } from './core';
+import { Options, Drawable, OpSet } from './core';
 import { Point } from './geometry.js';
 import { RoughGeneratorBase } from './generator-base.js';
 import { line, solidFillPolygon, patternFillPolygon, rectangle, ellipse, patternFillEllipse, linearPath, arc, patternFillArc, curve, svgPath } from './renderer.js';
 
 export class RoughGenerator extends RoughGeneratorBase {
-  constructor(config: Config | null, surface: DrawingSurface) {
-    super(config, surface);
-  }
-
   line(x1: number, y1: number, x2: number, y2: number, options?: Options): Drawable {
     const o = this._options(options);
     return this._drawable('line', [line(x1, y1, x2, y2, o)], o);
