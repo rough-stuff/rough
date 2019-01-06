@@ -1,3 +1,3 @@
-import { RoughGenerator } from './generator';
 import { expose } from 'workly';
-expose(RoughGenerator);
+import * as renderer from './renderer';
+expose(renderer);

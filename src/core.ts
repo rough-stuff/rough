@@ -1,7 +1,6 @@
 import { Point } from './geometry';
 
 export interface Config {
-  async?: boolean;
   options?: Options;
   workerURL?: string;
 }
