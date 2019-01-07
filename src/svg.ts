@@ -23,47 +23,47 @@ export class RoughSVG extends RoughSVGBase {
     return this.gen.opsToPath(drawing);
   }
 
-  line(x1: number, y1: number, x2: number, y2: number, options?: Options) {
+  line(x1: number, y1: number, x2: number, y2: number, options?: Options): SVGGElement {
     const d = this.gen.line(x1, y1, x2, y2, options);
     return this.draw(d);
   }
 
-  rectangle(x: number, y: number, width: number, height: number, options?: Options) {
+  rectangle(x: number, y: number, width: number, height: number, options?: Options): SVGGElement {
     const d = this.gen.rectangle(x, y, width, height, options);
     return this.draw(d);
   }
 
-  ellipse(x: number, y: number, width: number, height: number, options?: Options) {
+  ellipse(x: number, y: number, width: number, height: number, options?: Options): SVGGElement {
     const d = this.gen.ellipse(x, y, width, height, options);
     return this.draw(d);
   }
 
-  circle(x: number, y: number, diameter: number, options?: Options) {
+  circle(x: number, y: number, diameter: number, options?: Options): SVGGElement {
     const d = this.gen.circle(x, y, diameter, options);
     return this.draw(d);
   }
 
-  linearPath(points: Point[], options?: Options) {
+  linearPath(points: Point[], options?: Options): SVGGElement {
     const d = this.gen.linearPath(points, options);
     return this.draw(d);
   }
 
-  polygon(points: Point[], options?: Options) {
+  polygon(points: Point[], options?: Options): SVGGElement {
     const d = this.gen.polygon(points, options);
     return this.draw(d);
   }
 
-  arc(x: number, y: number, width: number, height: number, start: number, stop: number, closed: boolean = false, options?: Options) {
+  arc(x: number, y: number, width: number, height: number, start: number, stop: number, closed: boolean = false, options?: Options): SVGGElement {
     const d = this.gen.arc(x, y, width, height, start, stop, closed, options);
     return this.draw(d);
   }
 
-  curve(points: Point[], options?: Options) {
+  curve(points: Point[], options?: Options): SVGGElement {
     const d = this.gen.curve(points, options);
     return this.draw(d);
   }
 
-  path(d: string, options?: Options) {
+  path(d: string, options?: Options): SVGGElement {
     const drawing = this.gen.path(d, options);
     return this.draw(drawing);
   }

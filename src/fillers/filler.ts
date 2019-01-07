@@ -7,30 +7,30 @@ import { DotFiller } from './dot-filler';
 
 const fillers: { [name: string]: PatternFiller } = {};
 
-export function getFiller(renderer: RenderHelper, o: ResolvedOptions): PatternFiller {
+export function getFiller(o: ResolvedOptions, helper: RenderHelper): PatternFiller {
   let fillerName = o.fillStyle || 'hachure';
   if (!fillers[fillerName]) {
     switch (fillerName) {
       case 'zigzag':
         if (!fillers[fillerName]) {
-          fillers[fillerName] = new ZigZagFiller(renderer);
+          fillers[fillerName] = new ZigZagFiller(helper);
         }
         break;
       case 'cross-hatch':
         if (!fillers[fillerName]) {
-          fillers[fillerName] = new HatchFiller(renderer);
+          fillers[fillerName] = new HatchFiller(helper);
         }
         break;
       case 'dots':
         if (!fillers[fillerName]) {
-          fillers[fillerName] = new DotFiller(renderer);
+          fillers[fillerName] = new DotFiller(helper);
         }
         break;
       case 'hachure':
       default:
         fillerName = 'hachure';
         if (!fillers[fillerName]) {
-          fillers[fillerName] = new HachureFiller(renderer);
+          fillers[fillerName] = new HachureFiller(helper);
         }
         break;
     }

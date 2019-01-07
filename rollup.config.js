@@ -1,79 +1,98 @@
-import minify from 'rollup-plugin-babel-minify';
-import babel from 'rollup-plugin-babel';
-import babelrc from 'babelrc-rollup';
-import 'babel-polyfill/dist/polyfill.js';
-
-const outFolder = 'dist';
+import resolve from 'rollup-plugin-node-resolve';
+import { terser } from "rollup-plugin-terser";
+const typescript = require('rollup-plugin-typescript');
 
 export default [
   {
-    input: 'bin/rough.js',
+    input: 'bin/wrappers/rough.js',
     output: {
-      file: `${outFolder}/rough.js`,
-      format: 'iife',
-      name: 'rough'
-    }
-  },
-  {
-    input: 'bin/rough.js',
-    output: {
-      file: `${outFolder}/rough.min.js`,
+      file: 'dist/rough.js',
       format: 'iife',
       name: 'rough'
     },
-    plugins: [minify({ comments: false })]
+    plugins: [terser()]
   },
   {
-    input: 'bin/rough.js',
+    input: 'bin/wrappers/rough.js',
     output: {
-      file: `${outFolder}/rough.umd.js`,
-      format: 'umd',
-      name: 'rough'
-    }
-  },
-  {
-    input: 'bin/rough.js',
-    output: {
-      file: `${outFolder}/rough.umd.min.js`,
+      file: 'dist/rough.umd.js',
       format: 'umd',
       name: 'rough'
     },
-    plugins: [minify({ comments: false })]
+    plugins: [terser()]
   },
   {
-    input: 'bin/rough.js',
+    input: 'bin/wrappers/rough-async.js',
     output: {
-      file: `${outFolder}/rough.es5.js`,
+      file: 'dist/rough-async.js',
       format: 'iife',
       name: 'rough'
     },
-    plugins: [babel(babelrc())]
+    plugins: [resolve(), terser()]
   },
   {
-    input: 'bin/rough.js',
+    input: 'bin/wrappers/rough-async.js',
     output: {
-      file: `${outFolder}/rough.es5.min.js`,
+      file: 'dist/rough-async.umd.js',
+      format: 'umd',
+      name: 'rough'
+    },
+    plugins: [resolve(), terser()]
+  },
+  {
+    input: 'bin/wrappers/worker.js',
+    output: {
+      file: 'dist/worker.js',
+      format: 'iife',
+      name: 'roughWorker'
+    },
+    plugins: [resolve(), terser()]
+  },
+
+  // es5
+  {
+    input: 'src/wrappers/rough.ts',
+    output: {
+      file: 'dist/rough.es5.js',
       format: 'iife',
       name: 'rough'
     },
-    plugins: [babel(babelrc()), minify({ comments: false })]
+    plugins: [typescript({ target: "es5" }), terser()]
   },
   {
-    input: 'bin/rough.js',
+    input: 'src/wrappers/rough.ts',
     output: {
-      file: `${outFolder}/rough.umd.es5.js`,
+      file: 'dist/rough.es5.umd.js',
       format: 'umd',
       name: 'rough'
     },
-    plugins: [babel(babelrc())]
+    plugins: [typescript({ target: "es5" }), terser()]
   },
   {
-    input: 'bin/rough.js',
+    input: 'src/wrappers/rough-async.ts',
     output: {
-      file: `${outFolder}/rough.umd.es5.min.js`,
+      file: 'dist/rough-async.es5.js',
+      format: 'iife',
+      name: 'rough'
+    },
+    plugins: [typescript({ target: "es5" }), terser()]
+  },
+  {
+    input: 'src/wrappers/rough-async.ts',
+    output: {
+      file: 'dist/rough-async.es5.umd.js',
       format: 'umd',
       name: 'rough'
     },
-    plugins: [babel(babelrc()), minify({ comments: false })]
+    plugins: [typescript({ target: "es5" }), terser()]
+  },
+  {
+    input: 'src/wrappers/worker.ts',
+    output: {
+      file: 'dist/worker.es5.js',
+      format: 'iife',
+      name: 'roughWorker'
+    },
+    plugins: [typescript({ target: "es5" }), terser()]
   }
 ];

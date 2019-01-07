@@ -1,5 +1,4 @@
 import { ResolvedOptions, Drawable, OpSet } from './core';
-import { RoughRenderer } from './renderer';
 
 const hasDocument = typeof document !== 'undefined';
 
@@ -10,10 +9,6 @@ export abstract class RoughCanvasBase {
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.ctx = this.canvas.getContext('2d')!;
-  }
-
-  static createRenderer(): RoughRenderer {
-    return new RoughRenderer();
   }
 
   abstract getDefaultOptions(): ResolvedOptions;
@@ -65,7 +60,7 @@ export abstract class RoughCanvasBase {
             }
             this.fillSketch(hcontext, drawing, o);
             this.ctx.save();
-            this.ctx.fillStyle = this.ctx.createPattern(hcanvas, 'repeat');
+            this.ctx.fillStyle = this.ctx.createPattern(hcanvas, 'repeat')!;
             const p2d = new Path2D(drawing.path);
             this.ctx.fill(p2d);
             this.ctx.restore();
