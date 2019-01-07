@@ -1,6 +1,6 @@
 # Rough.js
 
-<b>Rough.js</b> is a light weight (~9kB gzipped) graphics library that lets you draw in a _sketchy_, _hand-drawn-like_, style.
+<b>Rough.js</b> is a small (~8.5kB gzipped) graphics library that lets you draw in a _sketchy_, _hand-drawn-like_, style.
 The library defines primitives to draw lines, curves, arcs, polygons, circles, and ellipses. It also supports drawing [SVG paths](https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths).
 
 Rough.js works with both [Canvas](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API) and [SVG](https://developer.mozilla.org/en-US/docs/Web/SVG).
@@ -99,12 +99,7 @@ SVG Path with simplification:
 
 ## Using web workers
 
-If you have [Workly](https://github.com/pshihn/workly) imported on your web page (~1k only), RoughJS will automatically offload all processing to a web worker - freeing up your main UI thread. This is great when creating complex drawings using RoughJs like maps. Read more about it [here](https://github.com/pshihn/rough/wiki/RoughJS-in-a-web-worker).
-
-```html
-<script src="https://cdn.jsdelivr.net/gh/pshihn/workly/dist/workly.min.js"></script>
-<script src="../../dist/rough.min.js"></script>
-```
+RoughJS ships with an async version *rough-async.js*. Also in the [dist folder](https://github.com/pshihn/rough/tree/master/dist) is *worker.js* that can be passed in the config. This will offload all processing to a web worker - freeing up your main UI thread. This is great when creating complex drawings using RoughJs like maps. Read more about it [here](https://github.com/pshihn/rough/wiki/RoughJS-in-a-web-worker).
 
 ![Rough.js map](https://roughjs.com/images/main/m6.png)
 
