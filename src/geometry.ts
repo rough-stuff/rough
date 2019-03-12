@@ -126,3 +126,40 @@ export class Segment {
     return true;
   }
 }
+
+export function linerIntersection(l1: Line, l2: Line): Point | null {
+  const a1 = l1[1][1] - l1[0][1];
+  const b1 = l1[0][0] - l1[1][0];
+  const c1 = a1 * l1[0][0] + b1 * l1[0][1];
+
+  const a2 = l2[1][1] - l2[0][1];
+  const b2 = l2[0][0] - l2[1][0];
+  const c2 = a2 * l2[0][0] + b2 * l2[0][1];
+
+  const determinant = a1 * b2 - a2 * b1;
+
+  if (determinant) {
+    return [
+      Math.round((b2 * c1 - b1 * c2) / determinant),
+      Math.round((a1 * c2 - a2 * c1) / determinant)
+    ];
+  }
+  return null;
+}
+
+export function centroid(points: Point[]): Point {
+  let area = 0, cx = 0, cy = 0;
+  for (let i = 0; i < points.length; i++) {
+    const p = points[i];
+    const next = i === (points.length - 1) ? points[0] : points[i + 1];
+    area += p[0] * next[1] - next[0] * p[1];
+  }
+  area = area / 2;
+  for (let i = 0; i < points.length; i++) {
+    const p = points[i];
+    const next = i === (points.length - 1) ? points[0] : points[i + 1];
+    cx += (p[0] + next[0]) * (p[0] * next[1] - next[0] * p[1]);
+    cy += (p[1] + next[1]) * (p[0] * next[1] - next[0] * p[1]);
+  }
+  return [cx / (6 * area), cy / (6 * area)];
+}

@@ -4,6 +4,7 @@ import { HachureFiller } from './hachure-filler';
 import { ZigZagFiller } from './zigzag-filler';
 import { HatchFiller } from './hatch-filler';
 import { DotFiller } from './dot-filler';
+import { RadialFiller } from './radial-filler';
 
 const fillers: { [name: string]: PatternFiller } = {};
 
@@ -24,6 +25,11 @@ export function getFiller(o: ResolvedOptions, helper: RenderHelper): PatternFill
       case 'dots':
         if (!fillers[fillerName]) {
           fillers[fillerName] = new DotFiller(helper);
+        }
+        break;
+      case 'radial':
+        if (!fillers[fillerName]) {
+          fillers[fillerName] = new RadialFiller(helper);
         }
         break;
       case 'hachure':
