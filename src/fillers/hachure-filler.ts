@@ -18,6 +18,10 @@ export class HachureFiller implements PatternFiller {
     return this._fillEllipse(cx, cy, width, height, o);
   }
 
+  fillArc(_x: number, _y: number, _width: number, _height: number, _start: number, _stop: number, _o: ResolvedOptions): OpSet | null {
+    return null;
+  }
+
   protected _fillPolygon(points: Point[], o: ResolvedOptions, connectEnds: boolean = false): OpSet {
     const lines = hachureLinesForPolygon(points, o);
     const ops = this.renderLines(lines, o, connectEnds);
