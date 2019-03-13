@@ -18,7 +18,9 @@ export abstract class RoughGeneratorBase {
     fillStyle: 'hachure',
     fillWeight: -1,
     hachureAngle: -41,
-    hachureGap: -1
+    hachureGap: -1,
+    dashOffset: -1,
+    dashGap: -1
   };
 
   constructor(config: Config | null, surface: DrawingSurface) {
