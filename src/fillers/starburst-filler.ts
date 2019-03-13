@@ -2,7 +2,7 @@ import { PatternFiller, RenderHelper } from './filler-interface';
 import { ResolvedOptions, OpSet, Op } from '../core';
 import { Point, Line, linerIntersection, centroid } from '../geometry';
 
-export class RadialFiller implements PatternFiller {
+export class StarburstFiller implements PatternFiller {
   private helper: RenderHelper;
 
   constructor(helper: RenderHelper) {

@@ -4,7 +4,7 @@ import { HachureFiller } from './hachure-filler';
 import { ZigZagFiller } from './zigzag-filler';
 import { HatchFiller } from './hatch-filler';
 import { DotFiller } from './dot-filler';
-import { RadialFiller } from './radial-filler';
+import { StarburstFiller } from './starburst-filler';
 
 const fillers: { [name: string]: PatternFiller } = {};
 
@@ -27,9 +27,9 @@ export function getFiller(o: ResolvedOptions, helper: RenderHelper): PatternFill
           fillers[fillerName] = new DotFiller(helper);
         }
         break;
-      case 'radial':
+      case 'starburst':
         if (!fillers[fillerName]) {
-          fillers[fillerName] = new RadialFiller(helper);
+          fillers[fillerName] = new StarburstFiller(helper);
         }
         break;
       case 'hachure':
