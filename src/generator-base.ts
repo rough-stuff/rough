@@ -20,7 +20,8 @@ export abstract class RoughGeneratorBase {
     hachureAngle: -41,
     hachureGap: -1,
     dashOffset: -1,
-    dashGap: -1
+    dashGap: -1,
+    zigzagOffset: -1
   };
 
   constructor(config: Config | null, surface: DrawingSurface) {

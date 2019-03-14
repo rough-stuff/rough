@@ -6,6 +6,7 @@ import { HatchFiller } from './hatch-filler';
 import { DotFiller } from './dot-filler';
 import { StarburstFiller } from './starburst-filler';
 import { DashedFiller } from './dashed-filler';
+import { ZigZagLineFiller } from './zigzag-line-filler';
 
 const fillers: { [name: string]: PatternFiller } = {};
 
@@ -36,6 +37,11 @@ export function getFiller(o: ResolvedOptions, helper: RenderHelper): PatternFill
       case 'dashed':
         if (!fillers[fillerName]) {
           fillers[fillerName] = new DashedFiller(helper);
+        }
+        break;
+      case 'zigzag-line':
+        if (!fillers[fillerName]) {
+          fillers[fillerName] = new ZigZagLineFiller(helper);
         }
         break;
       case 'hachure':

@@ -26,6 +26,7 @@ export interface Options {
   simplification?: number;
   dashOffset?: number;
   dashGap?: number;
+  zigzagOffset?: number;
 }
 
 export interface ResolvedOptions extends Options {
@@ -42,6 +43,7 @@ export interface ResolvedOptions extends Options {
   hachureGap: number;
   dashOffset: number;
   dashGap: number;
+  zigzagOffset: number;
 }
 
 export declare type OpType = 'move' | 'bcurveTo' | 'lineTo' | 'qcurveTo';
