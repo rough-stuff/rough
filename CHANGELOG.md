@@ -11,5 +11,6 @@ All notable changes to this project will be documented in this file.
 * zigzagOffset - width of zigzag triangle when using zigzag-lines fill
 
 Sample of all fill types:
+
 ![Rough.js fill examples](https://roughjs.com/images/main/m14.png)
 
