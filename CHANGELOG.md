@@ -6,9 +6,9 @@ All notable changes to this project will be documented in this file.
 
 * Added three new fill styles: **sunburst**, **dashed**, and **zigzag-line**
 * Added three new properties in *Options* to support these fill styles:
-* dashOffset - length of dashes in dashed fill
-* dashGap - length of gap between dashes in dashed fill
-* zigzagOffset - width of zigzag triangle when using zigzag-lines fill
+* **dashOffset** - length of dashes in dashed fill
+* **dashGap** - length of gap between dashes in dashed fill
+* **zigzagOffset** - width of zigzag triangle when using zigzag-lines fill
 
 Sample of all fill types:
 
