@@ -24,6 +24,8 @@ export interface Options {
   hachureAngle?: number;
   hachureGap?: number;
   simplification?: number;
+  dashOffset?: number;
+  dashGap?: number;
 }
 
 export interface ResolvedOptions extends Options {
@@ -38,6 +40,8 @@ export interface ResolvedOptions extends Options {
   fillWeight: number;
   hachureAngle: number;
   hachureGap: number;
+  dashOffset: number;
+  dashGap: number;
 }
 
 export declare type OpType = 'move' | 'bcurveTo' | 'lineTo' | 'qcurveTo';

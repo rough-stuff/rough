@@ -22,6 +22,10 @@ export class DotFiller implements PatternFiller {
     return this.dotsOnLines(lines, o);
   }
 
+  fillArc(_x: number, _y: number, _width: number, _height: number, _start: number, _stop: number, _o: ResolvedOptions): OpSet | null {
+    return null;
+  }
+
   private dotsOnLines(lines: Line[], o: ResolvedOptions): OpSet {
     let ops: Op[] = [];
     let gap = o.hachureGap;

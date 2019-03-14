@@ -141,6 +141,11 @@ export function patternFillEllipse(cx: number, cy: number, width: number, height
 }
 
 export function patternFillArc(x: number, y: number, width: number, height: number, start: number, stop: number, o: ResolvedOptions): OpSet {
+  const arcfill = getFiller(o, helper).fillArc(x, y, width, height, start, stop, o);
+  if (arcfill) {
+    return arcfill;
+  }
+  // fall back to polygon approximation
   const cx = x;
   const cy = y;
   let rx = Math.abs(width / 2);
