@@ -8,6 +8,7 @@ const makeRoughLogo = () => {
     "http://www.w3.org/1999/xlink"
   );
   roughLogo.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+  roughLogo.setAttribute("viewbox", "0 0 200 200");
   document.body.appendChild(roughLogo);
 
   const rc = rough.svg(roughLogo);
