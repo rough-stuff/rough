@@ -1,4 +1,4 @@
-import { Config, Options, ResolvedOptions, Drawable, OpSet } from './core';
+import { Config, Options, ResolvedOptions, Drawable, OpSet, SVGNS } from './core';
 import { RoughGenerator } from './generator';
 import { Point } from './geometry';
 
@@ -78,11 +78,10 @@ export class RoughCanvas {
   private computeBBox(d: string): SVGRect | null {
     if (hasDocument) {
       try {
-        const ns = 'http://www.w3.org/2000/svg';
-        const svg = document.createElementNS(ns, 'svg');
+        const svg = document.createElementNS(SVGNS, 'svg');
         svg.setAttribute('width', '0');
         svg.setAttribute('height', '0');
-        const pathNode = self.document.createElementNS(ns, 'path');
+        const pathNode = self.document.createElementNS(SVGNS, 'path');
         pathNode.setAttribute('d', d);
         svg.appendChild(pathNode);
         document.body.appendChild(svg);

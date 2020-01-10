@@ -1,4 +1,4 @@
-import { Config, DrawingSurface, Options, Drawable, OpSet, ResolvedOptions, PathInfo, PatternInfo } from './core';
+import { Config, DrawingSurface, Options, Drawable, OpSet, ResolvedOptions, PathInfo, PatternInfo, SVGNS } from './core';
 import { Point } from './geometry.js';
 import { line, solidFillPolygon, patternFillPolygon, rectangle, ellipse, patternFillEllipse, linearPath, arc, patternFillArc, curve, svgPath } from './renderer.js';
 
@@ -162,11 +162,10 @@ export class RoughGenerator {
     let size: Point = [0, 0];
     if (hasSelf && self.document) {
       try {
-        const ns = 'http://www.w3.org/2000/svg';
-        const svg = self.document.createElementNS(ns, 'svg');
+        const svg = self.document.createElementNS(SVGNS, 'svg');
         svg.setAttribute('width', '0');
         svg.setAttribute('height', '0');
-        const pathNode = self.document.createElementNS(ns, 'path');
+        const pathNode = self.document.createElementNS(SVGNS, 'path');
         pathNode.setAttribute('d', d);
         svg.appendChild(pathNode);
         self.document.body.appendChild(svg);

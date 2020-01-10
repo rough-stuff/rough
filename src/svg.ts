@@ -1,4 +1,4 @@
-import { Config, Options, OpSet, ResolvedOptions, Drawable } from './core';
+import { Config, Options, OpSet, ResolvedOptions, Drawable, SVGNS } from './core';
 import { RoughGenerator } from './generator';
 import { Point } from './geometry';
 
@@ -18,7 +18,7 @@ export class RoughSVG {
     const doc = this.svg.ownerDocument || (hasDocument && document);
     if (doc) {
       if (!this._defs) {
-        const dnode = doc.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        const dnode = doc.createElementNS(SVGNS, 'defs');
         if (this.svg.firstChild) {
           this.svg.insertBefore(dnode, this.svg.firstChild);
         } else {
@@ -34,12 +34,12 @@ export class RoughSVG {
     const sets = drawable.sets || [];
     const o = drawable.options || this.getDefaultOptions();
     const doc = this.svg.ownerDocument || window.document;
-    const g = doc.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const g = doc.createElementNS(SVGNS, 'g');
     for (const drawing of sets) {
       let path = null;
       switch (drawing.type) {
         case 'path': {
-          path = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
+          path = doc.createElementNS(SVGNS, 'path');
           path.setAttribute('d', this.opsToPath(drawing));
           path.style.stroke = o.stroke;
           path.style.strokeWidth = o.strokeWidth + '';
@@ -47,7 +47,7 @@ export class RoughSVG {
           break;
         }
         case 'fillPath': {
-          path = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
+          path = doc.createElementNS(SVGNS, 'path');
           path.setAttribute('d', this.opsToPath(drawing));
           path.style.stroke = 'none';
           path.style.strokeWidth = '0';
@@ -59,7 +59,7 @@ export class RoughSVG {
           break;
         }
         case 'path2Dfill': {
-          path = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
+          path = doc.createElementNS(SVGNS, 'path');
           path.setAttribute('d', drawing.path || '');
           path.style.stroke = 'none';
           path.style.strokeWidth = '0';
@@ -71,7 +71,7 @@ export class RoughSVG {
             console.error('Cannot render path2Dpattern. No defs/document defined.');
           } else {
             const size = drawing.size!;
-            const pattern = doc.createElementNS('http://www.w3.org/2000/svg', 'pattern');
+            const pattern = doc.createElementNS(SVGNS, 'pattern');
             const id = `rough-${Math.floor(Math.random() * (Number.MAX_SAFE_INTEGER || 999999))}`;
             pattern.setAttribute('id', id);
             pattern.setAttribute('x', '0');
@@ -85,7 +85,7 @@ export class RoughSVG {
             pattern.appendChild(patternPath);
             this.defs!.appendChild(pattern);
 
-            path = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path = doc.createElementNS(SVGNS, 'path');
             path.setAttribute('d', drawing.path || '');
             path.style.stroke = 'none';
             path.style.strokeWidth = '0';
@@ -106,7 +106,7 @@ export class RoughSVG {
     if (fweight < 0) {
       fweight = o.strokeWidth / 2;
     }
-    const path = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
+    const path = doc.createElementNS(SVGNS, 'path');
     path.setAttribute('d', this.opsToPath(drawing));
     path.style.stroke = o.fill || '';
     path.style.strokeWidth = fweight + '';
