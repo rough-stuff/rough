@@ -1,6 +1,6 @@
 {
   "name": "roughjs",
-  "version": "3.1.0",
+  "version": "3.5.0",
   "description": "Create graphics using HTML Canvas or SVG with a hand-drawn, sketchy, appearance.",
   "main": "dist/rough.umd.js",
   "module": "bin/wrappers/rough.js",
