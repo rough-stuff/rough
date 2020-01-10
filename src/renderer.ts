@@ -1,8 +1,9 @@
-import { ResolvedOptions, Op, OpSet } from './core';
-import { Point } from './geometry';
+import { ResolvedOptions, Op, OpSet } from './core.js';
+import { Point } from './geometry.js';
 import { RoughPath, PathFitter, Segment, RoughArcConverter } from './path.js';
-import { getFiller } from './fillers/filler';
-import { RenderHelper } from './fillers/filler-interface';
+import { getFiller } from './fillers/filler.js';
+import { RenderHelper } from './fillers/filler-interface.js';
+import { Random } from './math.js';
 
 const helper: RenderHelper = {
   randOffset,
@@ -186,8 +187,15 @@ export function doubleLineOps(x1: number, y1: number, x2: number, y2: number, o:
 
 // Private helpers
 
+function random(ops: ResolvedOptions): number {
+  if (!ops.randomizer) {
+    ops.randomizer = new Random(ops.seed || 0);
+  }
+  return ops.randomizer.next();
+}
+
 function _offset(min: number, max: number, ops: ResolvedOptions): number {
-  return ops.roughness * ((Math.random() * (max - min)) + min);
+  return ops.roughness * ((random(ops) * (max - min)) + min);
 }
 
 function _offsetOpt(x: number, ops: ResolvedOptions): number {
@@ -207,7 +215,7 @@ function _line(x1: number, y1: number, x2: number, y2: number, o: ResolvedOption
     offset = Math.sqrt(lengthSq) / 10;
   }
   const halfOffset = offset / 2;
-  const divergePoint = 0.2 + Math.random() * 0.2;
+  const divergePoint = 0.2 + random(o) * 0.2;
   let midDispX = o.bowing * o.maxRandomnessOffset * (y2 - y1) / 200;
   let midDispY = o.bowing * o.maxRandomnessOffset * (x1 - x2) / 200;
   midDispX = _offsetOpt(midDispX, o);

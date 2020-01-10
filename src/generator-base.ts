@@ -21,7 +21,8 @@ export abstract class RoughGeneratorBase {
     hachureGap: -1,
     dashOffset: -1,
     dashGap: -1,
-    zigzagOffset: -1
+    zigzagOffset: -1,
+    seed: 0
   };
 
   constructor(config: Config | null, surface: DrawingSurface) {
