@@ -121,18 +121,7 @@ export class RoughGenerator {
       if (o.fillStyle === 'solid') {
         paths.push(solidFillPolygon(points, o));
       } else {
-        const size = this.computePolygonSize(points);
-        const fillPoints: Point[] = [
-          [0, 0],
-          [size[0], 0],
-          [size[0], size[1]],
-          [0, size[1]]
-        ];
-        const shape = patternFillPolygon(fillPoints, o);
-        shape.type = 'path2Dpattern';
-        shape.size = size;
-        shape.path = this.polygonPath(points);
-        paths.push(shape);
+        paths.push(patternFillPolygon(points, o));
       }
     }
     paths.push(outline);
@@ -167,34 +156,6 @@ export class RoughGenerator {
     }
     paths.push(outline);
     return this._drawable('path', paths, o);
-  }
-
-  private computePolygonSize(points: Point[]): Point {
-    if (points.length) {
-      let left = points[0][0];
-      let right = points[0][0];
-      let top = points[0][1];
-      let bottom = points[0][1];
-      for (let i = 1; i < points.length; i++) {
-        left = Math.min(left, points[i][0]);
-        right = Math.max(right, points[i][0]);
-        top = Math.min(top, points[i][1]);
-        bottom = Math.max(bottom, points[i][1]);
-      }
-      return [(right - left), (bottom - top)];
-    }
-    return [0, 0];
-  }
-
-  private polygonPath(points: Point[]): string {
-    let d = '';
-    if (points.length) {
-      d = `M${points[0][0]},${points[0][1]}`;
-      for (let i = 1; i < points.length; i++) {
-        d = `${d} L${points[i][0]},${points[i][1]}`;
-      }
-    }
-    return d;
   }
 
   private computePathSize(d: string): Point {
