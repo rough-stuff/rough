@@ -51,7 +51,7 @@ export abstract class RoughSVGBase {
           path.setAttribute('d', this.opsToPath(drawing));
           path.style.stroke = 'none';
           path.style.strokeWidth = '0';
-          path.style.fill = o.fill || null;
+          path.style.fill = o.fill || '';
           break;
         }
         case 'fillSketch': {
@@ -63,7 +63,7 @@ export abstract class RoughSVGBase {
           path.setAttribute('d', drawing.path || '');
           path.style.stroke = 'none';
           path.style.strokeWidth = '0';
-          path.style.fill = o.fill || null;
+          path.style.fill = o.fill || '';
           break;
         }
         case 'path2Dpattern': {
@@ -108,7 +108,7 @@ export abstract class RoughSVGBase {
     }
     const path = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
     path.setAttribute('d', this.opsToPath(drawing));
-    path.style.stroke = o.fill || null;
+    path.style.stroke = o.fill || '';
     path.style.strokeWidth = fweight + '';
     path.style.fill = 'none';
     return path;
