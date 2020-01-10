@@ -12,7 +12,7 @@ export default {
     return new RoughSVG(svg, config);
   },
 
-  generator(config: Config | null, surface: DrawingSurface): RoughGenerator {
+  generator(config?: Config, surface?: DrawingSurface): RoughGenerator {
     return new RoughGenerator(config, surface);
   }
 };
