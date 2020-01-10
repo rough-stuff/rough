@@ -1,5 +1,6 @@
-import { Point, Line } from '../geometry';
+import { Point, Line, rotatePoints, rotateLines } from '../geometry';
 import { ResolvedOptions } from '../core';
+import { RenderHelper } from './filler-interface';
 
 interface EdgeEntry {
   ymin: number;
@@ -13,7 +14,21 @@ interface ActiveEdgeEntry {
   edge: EdgeEntry;
 }
 
-export function hachureLines(points: Point[], o: ResolvedOptions): Line[] {
+export function polygonHachureLines(points: Point[], o: ResolvedOptions): Line[] {
+  const rotationCenter: Point = [0, 0];
+  const angle = Math.round(o.hachureAngle + 90);
+  if (angle) {
+    rotatePoints(points, rotationCenter, angle);
+  }
+  const lines = straightHachureLines(points, o);
+  if (angle) {
+    rotatePoints(points, rotationCenter, -angle);
+    rotateLines(lines, rotationCenter, -angle);
+  }
+  return lines;
+}
+
+function straightHachureLines(points: Point[], o: ResolvedOptions): Line[] {
   const vertices = [...points];
   if (vertices[0].join(',') !== vertices[vertices.length - 1].join(',')) {
     vertices.push([vertices[0][0], vertices[0][1]]);
@@ -113,4 +128,50 @@ export function hachureLines(points: Point[], o: ResolvedOptions): Line[] {
     }
   }
   return lines;
+}
+
+export function ellipseHachureLines(helper: RenderHelper, cx: number, cy: number, width: number, height: number, o: ResolvedOptions): Line[] {
+  const ret: Line[] = [];
+  let rx = Math.abs(width / 2);
+  let ry = Math.abs(height / 2);
+  rx += helper.randOffset(rx * 0.05, o);
+  ry += helper.randOffset(ry * 0.05, o);
+  const angle = o.hachureAngle;
+  let gap = o.hachureGap;
+  if (gap <= 0) {
+    gap = o.strokeWidth * 4;
+  }
+  let fweight = o.fillWeight;
+  if (fweight < 0) {
+    fweight = o.strokeWidth / 2;
+  }
+  const radPerDeg = Math.PI / 180;
+  const hachureAngle = (angle % 180) * radPerDeg;
+  const tanAngle = Math.tan(hachureAngle);
+  const aspectRatio = ry / rx;
+  const hyp = Math.sqrt(aspectRatio * tanAngle * aspectRatio * tanAngle + 1);
+  const sinAnglePrime = aspectRatio * tanAngle / hyp;
+  const cosAnglePrime = 1 / hyp;
+  const gapPrime = gap / ((rx * ry / Math.sqrt((ry * cosAnglePrime) * (ry * cosAnglePrime) + (rx * sinAnglePrime) * (rx * sinAnglePrime))) / rx);
+  let halfLen = Math.sqrt((rx * rx) - (cx - rx + gapPrime) * (cx - rx + gapPrime));
+  for (let xPos = cx - rx + gapPrime; xPos < cx + rx; xPos += gapPrime) {
+    halfLen = Math.sqrt((rx * rx) - (cx - xPos) * (cx - xPos));
+    const p1 = affine(xPos, cy - halfLen, cx, cy, sinAnglePrime, cosAnglePrime, aspectRatio);
+    const p2 = affine(xPos, cy + halfLen, cx, cy, sinAnglePrime, cosAnglePrime, aspectRatio);
+    ret.push([p1, p2]);
+  }
+  return ret;
+}
+
+function affine(x: number, y: number, cx: number, cy: number, sinAnglePrime: number, cosAnglePrime: number, R: number): Point {
+  const A = -cx * cosAnglePrime - cy * sinAnglePrime + cx;
+  const B = R * (cx * sinAnglePrime - cy * cosAnglePrime) + cy;
+  const C = cosAnglePrime;
+  const D = sinAnglePrime;
+  const E = -R * sinAnglePrime;
+  const F = R * cosAnglePrime;
+  return [
+    A + C * x + D * y,
+    B + E * x + F * y
+  ];
 }

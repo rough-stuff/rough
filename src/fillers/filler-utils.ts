@@ -9,7 +9,7 @@ export function lineLength(line: Line): number {
   return Math.sqrt(Math.pow(p1[0] - p2[0], 2) + Math.pow(p1[1] - p2[1], 2));
 }
 
-export function getIntersectingLines(line: number[], points: Point[]): Point[] {
+function getIntersectingLines(line: number[], points: Point[]): Point[] {
   const intersections: Point[] = [];
   const s1 = new Segment([line[0], line[1]], [line[2], line[3]]);
   for (let i = 0; i < points.length; i++) {
@@ -21,7 +21,7 @@ export function getIntersectingLines(line: number[], points: Point[]): Point[] {
   return intersections;
 }
 
-export function affine(x: number, y: number, cx: number, cy: number, sinAnglePrime: number, cosAnglePrime: number, R: number): Point {
+function affine(x: number, y: number, cx: number, cy: number, sinAnglePrime: number, cosAnglePrime: number, R: number): Point {
   const A = -cx * cosAnglePrime - cy * sinAnglePrime + cx;
   const B = R * (cx * sinAnglePrime - cy * cosAnglePrime) + cy;
   const C = cosAnglePrime;
