@@ -1,7 +1,8 @@
 import { PatternFiller, RenderHelper } from './filler-interface';
 import { ResolvedOptions, OpSet, Op } from '../core';
 import { Point, Line } from '../geometry';
-import { hachureLinesForPolygon, hachureLinesForEllipse } from './filler-utils';
+import { hachureLinesForEllipse } from './filler-utils';
+import { hachureLines } from './scan-line-hachure';
 
 export class HachureFiller implements PatternFiller {
   private helper: RenderHelper;
@@ -23,7 +24,7 @@ export class HachureFiller implements PatternFiller {
   }
 
   protected _fillPolygon(points: Point[], o: ResolvedOptions, connectEnds: boolean = false): OpSet {
-    const lines = hachureLinesForPolygon(points, o);
+    const lines = hachureLines(points, o);
     const ops = this.renderLines(lines, o, connectEnds);
     return { type: 'fillSketch', ops };
   }
