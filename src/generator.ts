@@ -12,6 +12,7 @@ export class RoughGenerator extends RoughGeneratorBase {
   rectangle(x: number, y: number, width: number, height: number, options?: Options): Drawable {
     const o = this._options(options);
     const paths = [];
+    const outline = rectangle(x, y, width, height, o);
     if (o.fill) {
       const points: Point[] = [[x, y], [x + width, y], [x + width, y + height], [x, y + height]];
       if (o.fillStyle === 'solid') {
@@ -20,13 +21,14 @@ export class RoughGenerator extends RoughGeneratorBase {
         paths.push(patternFillPolygon(points, o));
       }
     }
-    paths.push(rectangle(x, y, width, height, o));
+    paths.push(outline);
     return this._drawable('rectangle', paths, o);
   }
 
   ellipse(x: number, y: number, width: number, height: number, options?: Options): Drawable {
     const o = this._options(options);
     const paths = [];
+    const outline = ellipse(x, y, width, height, o);
     if (o.fill) {
       if (o.fillStyle === 'solid') {
         const shape = ellipse(x, y, width, height, o);
@@ -36,7 +38,7 @@ export class RoughGenerator extends RoughGeneratorBase {
         paths.push(patternFillEllipse(x, y, width, height, o));
       }
     }
-    paths.push(ellipse(x, y, width, height, o));
+    paths.push(outline);
     return this._drawable('ellipse', paths, o);
   }
 
@@ -54,6 +56,7 @@ export class RoughGenerator extends RoughGeneratorBase {
   arc(x: number, y: number, width: number, height: number, start: number, stop: number, closed: boolean = false, options?: Options): Drawable {
     const o = this._options(options);
     const paths = [];
+    const outline = arc(x, y, width, height, start, stop, closed, true, o);
     if (closed && o.fill) {
       if (o.fillStyle === 'solid') {
         const shape = arc(x, y, width, height, start, stop, true, false, o);
@@ -63,7 +66,7 @@ export class RoughGenerator extends RoughGeneratorBase {
         paths.push(patternFillArc(x, y, width, height, start, stop, o));
       }
     }
-    paths.push(arc(x, y, width, height, start, stop, closed, true, o));
+    paths.push(outline);
     return this._drawable('arc', paths, o);
   }
 
@@ -75,6 +78,7 @@ export class RoughGenerator extends RoughGeneratorBase {
   polygon(points: Point[], options?: Options): Drawable {
     const o = this._options(options);
     const paths = [];
+    const outline = linearPath(points, true, o);
     if (o.fill) {
       if (o.fillStyle === 'solid') {
         paths.push(solidFillPolygon(points, o));
@@ -93,7 +97,7 @@ export class RoughGenerator extends RoughGeneratorBase {
         paths.push(shape);
       }
     }
-    paths.push(linearPath(points, true, o));
+    paths.push(outline);
     return this._drawable('polygon', paths, o);
   }
 
@@ -103,6 +107,7 @@ export class RoughGenerator extends RoughGeneratorBase {
     if (!d) {
       return this._drawable('path', paths, o);
     }
+    const outline = svgPath(d, o);
     if (o.fill) {
       if (o.fillStyle === 'solid') {
         const shape: OpSet = { type: 'path2Dfill', path: d, ops: [] };
@@ -122,7 +127,7 @@ export class RoughGenerator extends RoughGeneratorBase {
         paths.push(shape);
       }
     }
-    paths.push(svgPath(d, o));
+    paths.push(outline);
     return this._drawable('path', paths, o);
   }
 }
