@@ -3,3 +3,8 @@
 z
 node_modules
 docs
+src
+logo
+tslint.json
+rollup.config.js
+.gitignore
