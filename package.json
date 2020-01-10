@@ -1,6 +1,6 @@
 {
   "name": "roughjs",
-  "version": "3.5.0",
+  "version": "4.0.0",
   "description": "Create graphics using HTML Canvas or SVG with a hand-drawn, sketchy, appearance.",
   "main": "bundled/rough.cjs.js",
   "module": "bin/rough.js",
@@ -29,7 +29,6 @@
   },
   "homepage": "https://roughjs.com",
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^7.0.0",
     "@rollup/plugin-typescript": "^2.1.0",
     "rollup": "^1.29.0",
     "rollup-plugin-terser": "^5.1.3",
