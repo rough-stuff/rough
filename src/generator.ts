@@ -3,6 +3,7 @@ import { Point } from './geometry.js';
 import { line, solidFillPolygon, patternFillPolygon, rectangle, ellipse, patternFillEllipse, linearPath, arc, patternFillArc, curve, svgPath } from './renderer.js';
 
 const hasSelf = typeof self !== 'undefined';
+const NOS = 'none';
 
 export class RoughGenerator {
   private config: Config;
@@ -59,7 +60,9 @@ export class RoughGenerator {
         paths.push(patternFillPolygon(points, o));
       }
     }
-    paths.push(outline);
+    if (o.stroke !== NOS) {
+      paths.push(outline);
+    }
     return this._drawable('rectangle', paths, o);
   }
 
@@ -76,7 +79,9 @@ export class RoughGenerator {
         paths.push(patternFillEllipse(x, y, width, height, o));
       }
     }
-    paths.push(outline);
+    if (o.stroke !== NOS) {
+      paths.push(outline);
+    }
     return this._drawable('ellipse', paths, o);
   }
 
@@ -104,7 +109,9 @@ export class RoughGenerator {
         paths.push(patternFillArc(x, y, width, height, start, stop, o));
       }
     }
-    paths.push(outline);
+    if (o.stroke !== NOS) {
+      paths.push(outline);
+    }
     return this._drawable('arc', paths, o);
   }
 
@@ -124,7 +131,9 @@ export class RoughGenerator {
         paths.push(patternFillPolygon(points, o));
       }
     }
-    paths.push(outline);
+    if (o.stroke !== NOS) {
+      paths.push(outline);
+    }
     return this._drawable('polygon', paths, o);
   }
 
@@ -154,7 +163,9 @@ export class RoughGenerator {
         paths.push(shape);
       }
     }
-    paths.push(outline);
+    if (o.stroke !== NOS) {
+      paths.push(outline);
+    }
     return this._drawable('path', paths, o);
   }
 
@@ -233,15 +244,15 @@ export class RoughGenerator {
             d: this.opsToPath(drawing),
             stroke: o.stroke,
             strokeWidth: o.strokeWidth,
-            fill: 'none'
+            fill: NOS
           };
           break;
         case 'fillPath':
           path = {
             d: this.opsToPath(drawing),
-            stroke: 'none',
+            stroke: NOS,
             strokeWidth: 0,
-            fill: o.fill || 'none'
+            fill: o.fill || NOS
           };
           break;
         case 'fillSketch':
@@ -250,9 +261,9 @@ export class RoughGenerator {
         case 'path2Dfill':
           path = {
             d: drawing.path || '',
-            stroke: 'none',
+            stroke: NOS,
             strokeWidth: 0,
-            fill: o.fill || 'none'
+            fill: o.fill || NOS
           };
           break;
         case 'path2Dpattern': {
@@ -265,7 +276,7 @@ export class RoughGenerator {
           };
           path = {
             d: drawing.path!,
-            stroke: 'none',
+            stroke: NOS,
             strokeWidth: 0,
             pattern: pattern
           };
@@ -286,9 +297,9 @@ export class RoughGenerator {
     }
     return {
       d: this.opsToPath(drawing),
-      stroke: o.fill || 'none',
+      stroke: o.fill || NOS,
       strokeWidth: fweight,
-      fill: 'none'
+      fill: NOS
     };
   }
 }

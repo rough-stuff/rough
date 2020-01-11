@@ -23,7 +23,7 @@ export class RoughCanvas {
       switch (drawing.type) {
         case 'path':
           ctx.save();
-          ctx.strokeStyle = o.stroke;
+          ctx.strokeStyle = o.stroke === 'none' ? 'transparent' : o.stroke;
           ctx.lineWidth = o.strokeWidth;
           this._drawToContext(ctx, drawing);
           ctx.restore();
