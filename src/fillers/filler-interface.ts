@@ -2,7 +2,6 @@ import { ResolvedOptions, OpSet, Op } from '../core';
 import { Point } from '../geometry';
 
 export interface PatternFiller {
-  fillArc(x: number, y: number, width: number, height: number, start: number, stop: number, o: ResolvedOptions): OpSet | null;
   fillPolygon(points: Point[], o: ResolvedOptions): OpSet;
   fillEllipse(cx: number, cy: number, width: number, height: number, o: ResolvedOptions): OpSet;
 }

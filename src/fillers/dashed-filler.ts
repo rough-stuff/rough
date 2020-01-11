@@ -20,10 +20,6 @@ export class DashedFiller implements PatternFiller {
     return { type: 'fillSketch', ops: this.dashedLine(lines, o) };
   }
 
-  fillArc(_x: number, _y: number, _width: number, _height: number, _start: number, _stop: number, _o: ResolvedOptions): OpSet | null {
-    return null;
-  }
-
   private dashedLine(lines: Line[], o: ResolvedOptions): Op[] {
     const offset = o.dashOffset < 0 ? (o.hachureGap < 0 ? (o.strokeWidth * 4) : o.hachureGap) : o.dashOffset;
     const gap = o.dashGap < 0 ? (o.hachureGap < 0 ? (o.strokeWidth * 4) : o.hachureGap) : o.dashGap;

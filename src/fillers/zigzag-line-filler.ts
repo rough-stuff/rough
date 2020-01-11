@@ -26,10 +26,6 @@ export class ZigZagLineFiller implements PatternFiller {
     return { type: 'fillSketch', ops: this.zigzagLines(lines, zo, o) };
   }
 
-  fillArc(_x: number, _y: number, _width: number, _height: number, _start: number, _stop: number, _o: ResolvedOptions): OpSet | null {
-    return null;
-  }
-
   private zigzagLines(lines: Line[], zo: number, o: ResolvedOptions): Op[] {
     let ops: Op[] = [];
     lines.forEach((line) => {
