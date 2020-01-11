@@ -68,7 +68,7 @@ export class RoughSVG {
         }
         case 'path2Dpattern': {
           if (!this.defs) {
-            console.error('Cannot render path2Dpattern. No defs/document defined.');
+            console.error('Pattern fill fail: No defs');
           } else {
             const size = drawing.size!;
             const pattern = doc.createElementNS(SVGNS, 'pattern');

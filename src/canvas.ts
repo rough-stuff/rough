@@ -67,7 +67,7 @@ export class RoughCanvas {
             this.ctx.fill(p2d);
             this.ctx.restore();
           } else {
-            console.error('Cannot render path2Dpattern. No defs/document defined.');
+            console.error('Pattern fill fail: No defs');
           }
           break;
         }

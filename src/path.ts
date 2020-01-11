@@ -62,7 +62,6 @@ class ParsedPath {
         tokens[tokens.length] = { type: this.NUMBER, text: `${parseFloat(RegExp.$1)}` };
         d = d.substr(RegExp.$1.length);
       } else {
-        console.error('Unrecognized segment command: ' + d);
         return [];
       }
     }
@@ -104,7 +103,7 @@ class ParsedPath {
             params[params.length] = +numbeToken.text;
           }
           else {
-            console.error('Parameter type is not a number: ' + mode + ',' + numbeToken.text);
+            console.error('Param not a number: ' + mode + ',' + numbeToken.text);
             return;
           }
         }
@@ -116,11 +115,11 @@ class ParsedPath {
           if (mode === 'M') mode = 'L';
           if (mode === 'm') mode = 'l';
         } else {
-          console.error('Unsupported segment type: ' + mode);
+          console.error('Bad segment: ' + mode);
           return;
         }
       } else {
-        console.error('Path data ended before all parameters were found');
+        console.error('Path data ended short');
       }
     }
   }
