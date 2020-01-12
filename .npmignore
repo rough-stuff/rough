@@ -2,7 +2,6 @@
 .DS_Store
 z
 node_modules
-docs
 src
 tslint.json
 rollup.config.js
