@@ -68,7 +68,7 @@ rc.rectangle(120, 105, 80, 80, {
 });
 ```
 
-Fill styles can be: **hachure**(default), **solid**, **zigzag**, **cross-hatch**, **dots**, **sunburst**, **dashed**, or **zigzag-line**
+Fill styles can be: **hachure**(default), **solid**, **zigzag**, **cross-hatch**, **dots**, **dashed**, or **zigzag-line**
 
 ![Rough.js fill examples](https://roughjs.com/images/main/m14.png)
 
@@ -96,14 +96,6 @@ rc.path('M230 230 A 45 45, 0, 1, 1, 275 275 L 275 230 Z', { fill: 'blue' });
 SVG Path with simplification:
 
 ![Rough.js rectangle](https://roughjs.com/images/main/m9.png) ![Rough.js rectangle](https://roughjs.com/images/main/m10.png)
-
-## Using web workers
-
-RoughJS ships with an async version *rough-async.js*. Also in the [dist folder](https://github.com/pshihn/rough/tree/master/dist) is *worker.js* that can be passed in the config. This will offload all processing to a web worker - freeing up your main UI thread. This is great when creating complex drawings using RoughJs like maps. Read more about it [here](https://github.com/pshihn/rough/wiki/RoughJS-in-a-web-worker).
-
-![Rough.js map](https://roughjs.com/images/main/m6.png)
-
-(source code for this map in examples)
 
 ## Examples
 
