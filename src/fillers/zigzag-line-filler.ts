@@ -1,7 +1,7 @@
 import { PatternFiller, RenderHelper } from './filler-interface';
 import { ResolvedOptions, OpSet, Op } from '../core';
-import { Point, Line } from '../geometry';
-import { hachureLinesForPolygon, hachureLinesForEllipse, lineLength } from './filler-utils';
+import { Point, Line, lineLength } from '../geometry';
+import { polygonHachureLines, ellipseHachureLines } from './scan-line-hachure';
 
 export class ZigZagLineFiller implements PatternFiller {
   private helper: RenderHelper;
@@ -14,7 +14,7 @@ export class ZigZagLineFiller implements PatternFiller {
     const gap = o.hachureGap < 0 ? (o.strokeWidth * 4) : o.hachureGap;
     const zo = o.zigzagOffset < 0 ? gap : o.zigzagOffset;
     o = Object.assign({}, o, { hachureGap: gap + zo });
-    const lines = hachureLinesForPolygon(points, o);
+    const lines = polygonHachureLines(points, o);
     return { type: 'fillSketch', ops: this.zigzagLines(lines, zo, o) };
   }
 
@@ -22,12 +22,8 @@ export class ZigZagLineFiller implements PatternFiller {
     const gap = o.hachureGap < 0 ? (o.strokeWidth * 4) : o.hachureGap;
     const zo = o.zigzagOffset < 0 ? gap : o.zigzagOffset;
     o = Object.assign({}, o, { hachureGap: gap + zo });
-    const lines = hachureLinesForEllipse(this.helper, cx, cy, width, height, o);
+    const lines = ellipseHachureLines(this.helper, cx, cy, width, height, o);
     return { type: 'fillSketch', ops: this.zigzagLines(lines, zo, o) };
-  }
-
-  fillArc(_x: number, _y: number, _width: number, _height: number, _start: number, _stop: number, _o: ResolvedOptions): OpSet | null {
-    return null;
   }
 
   private zigzagLines(lines: Line[], zo: number, o: ResolvedOptions): Op[] {

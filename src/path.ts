@@ -1,4 +1,4 @@
-import { Point } from './geometry';
+import { Point, lineLength } from './geometry';
 
 interface PathToken {
   type: number;
@@ -62,7 +62,6 @@ class ParsedPath {
         tokens[tokens.length] = { type: this.NUMBER, text: `${parseFloat(RegExp.$1)}` };
         d = d.substr(RegExp.$1.length);
       } else {
-        console.error('Unrecognized segment command: ' + d);
         return [];
       }
     }
@@ -104,7 +103,7 @@ class ParsedPath {
             params[params.length] = +numbeToken.text;
           }
           else {
-            console.error('Parameter type is not a number: ' + mode + ',' + numbeToken.text);
+            console.error('Param not a number: ' + mode + ',' + numbeToken.text);
             return;
           }
         }
@@ -116,11 +115,11 @@ class ParsedPath {
           if (mode === 'M') mode = 'L';
           if (mode === 'm') mode = 'l';
         } else {
-          console.error('Unsupported segment type: ' + mode);
+          console.error('Bad segment: ' + mode);
           return;
         }
       } else {
-        console.error('Path data ended before all parameters were found');
+        console.error('Path data ended short');
       }
     }
   }
@@ -434,10 +433,6 @@ export class PathFitter {
     return d;
   }
 
-  distance(p1: Point, p2: Point): number {
-    return Math.sqrt(Math.pow(p1[0] - p2[0], 2) + Math.pow(p1[1] - p2[1], 2));
-  }
-
   reduce(set: Point[], count: number): Point[] {
     if (set.length <= count) {
       return set;
@@ -448,9 +443,9 @@ export class PathFitter {
       let minArea = -1;
       let minIndex = -1;
       for (let i = 1; i < (points.length - 1); i++) {
-        const a = this.distance(points[i - 1], points[i]);
-        const b = this.distance(points[i], points[i + 1]);
-        const c = this.distance(points[i - 1], points[i + 1]);
+        const a = lineLength([points[i - 1], points[i]]);
+        const b = lineLength([points[i], points[i + 1]]);
+        const c = lineLength([points[i - 1], points[i + 1]]);
         const s = (a + b + c) / 2.0;
         const area = Math.sqrt(s * (s - a) * (s - b) * (s - c));
         areas.push(area);

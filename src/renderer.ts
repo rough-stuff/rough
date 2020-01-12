@@ -1,8 +1,9 @@
-import { ResolvedOptions, Op, OpSet } from './core';
-import { Point } from './geometry';
+import { ResolvedOptions, Op, OpSet } from './core.js';
+import { Point } from './geometry.js';
 import { RoughPath, PathFitter, Segment, RoughArcConverter } from './path.js';
-import { getFiller } from './fillers/filler';
-import { RenderHelper } from './fillers/filler-interface';
+import { getFiller } from './fillers/filler.js';
+import { RenderHelper } from './fillers/filler-interface.js';
+import { Random } from './math.js';
 
 const helper: RenderHelper = {
   randOffset,
@@ -50,7 +51,9 @@ export function curve(points: Point[], o: ResolvedOptions): OpSet {
 }
 
 export function ellipse(x: number, y: number, width: number, height: number, o: ResolvedOptions): OpSet {
-  const increment = (Math.PI * 2) / o.curveStepCount;
+  const psq = Math.sqrt(Math.PI * 2 * Math.sqrt((Math.pow(width / 2, 2) + Math.pow(height / 2, 2)) / 2));
+  const stepCount = Math.max(o.curveStepCount, (o.curveStepCount / Math.sqrt(200)) * psq);
+  const increment = (Math.PI * 2) / stepCount;
   let rx = Math.abs(width / 2);
   let ry = Math.abs(height / 2);
   rx += _offsetOpt(rx * 0.05, o);
@@ -141,11 +144,6 @@ export function patternFillEllipse(cx: number, cy: number, width: number, height
 }
 
 export function patternFillArc(x: number, y: number, width: number, height: number, start: number, stop: number, o: ResolvedOptions): OpSet {
-  const arcfill = getFiller(o, helper).fillArc(x, y, width, height, start, stop, o);
-  if (arcfill) {
-    return arcfill;
-  }
-  // fall back to polygon approximation
   const cx = x;
   const cy = y;
   let rx = Math.abs(width / 2);
@@ -186,8 +184,15 @@ export function doubleLineOps(x1: number, y1: number, x2: number, y2: number, o:
 
 // Private helpers
 
+function random(ops: ResolvedOptions): number {
+  if (!ops.randomizer) {
+    ops.randomizer = new Random(ops.seed || 0);
+  }
+  return ops.randomizer.next();
+}
+
 function _offset(min: number, max: number, ops: ResolvedOptions): number {
-  return ops.roughness * ((Math.random() * (max - min)) + min);
+  return ops.roughness * ops.roughnessGain * ((random(ops) * (max - min)) + min);
 }
 
 function _offsetOpt(x: number, ops: ResolvedOptions): number {
@@ -202,12 +207,21 @@ function _doubleLine(x1: number, y1: number, x2: number, y2: number, o: Resolved
 
 function _line(x1: number, y1: number, x2: number, y2: number, o: ResolvedOptions, move: boolean, overlay: boolean): Op[] {
   const lengthSq = Math.pow((x1 - x2), 2) + Math.pow((y1 - y2), 2);
+  const length = Math.sqrt(lengthSq);
+  if (length < 200) {
+    o.roughnessGain = 1;
+  } else if (length > 500) {
+    o.roughnessGain = 0.4;
+  } else {
+    o.roughnessGain = (-0.0016668) * length + 1.233334;
+  }
+
   let offset = o.maxRandomnessOffset || 0;
   if ((offset * offset * 100) > lengthSq) {
-    offset = Math.sqrt(lengthSq) / 10;
+    offset = length / 10;
   }
   const halfOffset = offset / 2;
-  const divergePoint = 0.2 + Math.random() * 0.2;
+  const divergePoint = 0.2 + random(o) * 0.2;
   let midDispX = o.bowing * o.maxRandomnessOffset * (y2 - y1) / 200;
   let midDispY = o.bowing * o.maxRandomnessOffset * (x1 - x2) / 200;
   midDispX = _offsetOpt(midDispX, o);

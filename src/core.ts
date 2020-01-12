@@ -1,4 +1,7 @@
 import { Point } from './geometry';
+import { Random } from './math';
+
+export const SVGNS = 'http://www.w3.org/2000/svg';
 
 export interface Config {
   options?: Options;
@@ -27,6 +30,7 @@ export interface Options {
   dashOffset?: number;
   dashGap?: number;
   zigzagOffset?: number;
+  seed?: number;
 }
 
 export interface ResolvedOptions extends Options {
@@ -44,6 +48,9 @@ export interface ResolvedOptions extends Options {
   dashOffset: number;
   dashGap: number;
   zigzagOffset: number;
+  seed: number;
+  roughnessGain: number;
+  randomizer?: Random;
 }
 
 export declare type OpType = 'move' | 'bcurveTo' | 'lineTo' | 'qcurveTo';
