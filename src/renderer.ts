@@ -190,7 +190,7 @@ function random(ops: ResolvedOptions): number {
 }
 
 function _offset(min: number, max: number, ops: ResolvedOptions): number {
-  return ops.roughness * ((random(ops) * (max - min)) + min);
+  return ops.roughness * ops.roughnessGain * ((random(ops) * (max - min)) + min);
 }
 
 function _offsetOpt(x: number, ops: ResolvedOptions): number {
@@ -205,9 +205,18 @@ function _doubleLine(x1: number, y1: number, x2: number, y2: number, o: Resolved
 
 function _line(x1: number, y1: number, x2: number, y2: number, o: ResolvedOptions, move: boolean, overlay: boolean): Op[] {
   const lengthSq = Math.pow((x1 - x2), 2) + Math.pow((y1 - y2), 2);
+  const length = Math.sqrt(lengthSq);
+  if (length < 200) {
+    o.roughnessGain = 1;
+  } else if (length > 500) {
+    o.roughnessGain = 0.4;
+  } else {
+    o.roughnessGain = (-0.0016668) * length + 1.233334;
+  }
+
   let offset = o.maxRandomnessOffset || 0;
   if ((offset * offset * 100) > lengthSq) {
-    offset = Math.sqrt(lengthSq) / 10;
+    offset = length / 10;
   }
   const halfOffset = offset / 2;
   const divergePoint = 0.2 + random(o) * 0.2;

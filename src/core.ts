@@ -49,6 +49,7 @@ export interface ResolvedOptions extends Options {
   dashGap: number;
   zigzagOffset: number;
   seed: number;
+  roughnessGain: number;
   randomizer?: Random;
 }
 

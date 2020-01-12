@@ -25,7 +25,8 @@ export class RoughGenerator {
     dashOffset: -1,
     dashGap: -1,
     zigzagOffset: -1,
-    seed: 0
+    seed: 0,
+    roughnessGain: 1
   };
 
   constructor(config?: Config, surface?: DrawingSurface) {
