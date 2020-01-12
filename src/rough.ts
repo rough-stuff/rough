@@ -14,5 +14,9 @@ export default {
 
   generator(config?: Config, surface?: DrawingSurface): RoughGenerator {
     return new RoughGenerator(config, surface);
+  },
+
+  newSeed(): number {
+    return RoughGenerator.newSeed();
   }
 };

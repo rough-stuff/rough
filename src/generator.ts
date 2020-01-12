@@ -1,6 +1,7 @@
 import { Config, DrawingSurface, Options, Drawable, OpSet, ResolvedOptions, PathInfo, PatternInfo, SVGNS } from './core';
 import { Point } from './geometry.js';
 import { line, solidFillPolygon, patternFillPolygon, rectangle, ellipse, patternFillEllipse, linearPath, arc, patternFillArc, curve, svgPath } from './renderer.js';
+import { randomSeed } from './math';
 
 const hasSelf = typeof self !== 'undefined';
 const NOS = 'none';
@@ -33,6 +34,10 @@ export class RoughGenerator {
     if (this.config.options) {
       this.defaultOptions = this._options(this.config.options);
     }
+  }
+
+  static newSeed(): number {
+    return randomSeed();
   }
 
   private _options(options?: Options): ResolvedOptions {
