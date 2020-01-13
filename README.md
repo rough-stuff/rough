@@ -21,7 +21,7 @@ npm install --save roughjs
 
 ## Usage
 
-![Rough.js rectangle](https://roughjs.com/images/main/m1.png)
+![Rough.js rectangle](https://roughjs.com/images/m1.png)
 
 ```js
 const rc = rough.canvas(document.getElementById('canvas'));
@@ -38,7 +38,7 @@ svg.appendChild(node);
 
 ### Lines and Ellipses
 
-![Rough.js rectangle](https://roughjs.com/images/main/m2.png)
+![Rough.js rectangle](https://roughjs.com/images/m2.png)
 
 ```js
 rc.circle(80, 120, 50); // centerX, centerY, diameter
@@ -48,7 +48,7 @@ rc.line(80, 120, 300, 100); // x1, y1, x2, y2
 
 ### Filling
 
-![Rough.js rectangle](https://roughjs.com/images/main/m3.png)
+![Rough.js rectangle](https://roughjs.com/images/m3.png)
 
 ```js
 rc.circle(50, 50, 80, { fill: 'red' }); // fill with red hachure
@@ -70,7 +70,7 @@ rc.rectangle(120, 105, 80, 80, {
 
 Fill styles can be: **hachure**(default), **solid**, **zigzag**, **cross-hatch**, **dots**, **dashed**, or **zigzag-line**
 
-![Rough.js fill examples](https://roughjs.com/images/main/m14.png)
+![Rough.js fill examples](https://roughjs.com/images/m14.png)
 
 ### Sketching style
 
@@ -84,7 +84,7 @@ rc.rectangle(220, 15, 80, 80, { bowing: 6, stroke: 'green', strokeWidth: 3 });
 
 ### SVG Paths
 
-![Rough.js rectangle](https://roughjs.com/images/main/m5.png)
+![Rough.js paths](https://roughjs.com/images/m5.png)
 
 ```js
 rc.path('M80 80 A 45 45, 0, 0, 0, 125 125 L 125 80 Z', { fill: 'green' });
@@ -95,9 +95,11 @@ rc.path('M230 230 A 45 45, 0, 1, 1, 275 275 L 275 230 Z', { fill: 'blue' });
 
 SVG Path with simplification:
 
-![Rough.js rectangle](https://roughjs.com/images/main/m9.png) ![Rough.js rectangle](https://roughjs.com/images/main/m10.png)
+![Rough.js texas map](https://roughjs.com/images/m9.png) ![Rough.js texas map](https://roughjs.com/images/m10.png)
 
 ## Examples
+
+![Rough.js US map](https://roughjs.com/images/m6.png)
 
 [View examples here](https://github.com/pshihn/rough/wiki/Examples)
 
