@@ -74,6 +74,9 @@ function straightHachureLines(points: Point[], o: ResolvedOptions): Line[] {
       }
       return (e1.ymax - e2.ymax) / Math.abs((e1.ymax - e2.ymax));
     });
+    if (!edges.length) {
+      return lines;
+    }
 
     // Start scanning
     let activeEdges: ActiveEdgeEntry[] = [];
