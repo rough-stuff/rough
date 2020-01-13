@@ -5,7 +5,7 @@
   "main": "bundled/rough.cjs.js",
   "module": "bin/rough.js",
   "types": "bin/rough.d.ts",
-  "browser": "bundled/rough.cjs.js",
+  "browser": "bundled/rough.js",
   "scripts": {
     "build": "rm -rf bin && tsc && rollup -c",
     "test": "echo \"Error: no test specified\" && exit 1"
