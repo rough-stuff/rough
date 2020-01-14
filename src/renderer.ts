@@ -5,6 +5,12 @@ import { getFiller } from './fillers/filler.js';
 import { RenderHelper } from './fillers/filler-interface.js';
 import { Random } from './math.js';
 
+interface EllipseParams {
+  rx: number;
+  ry: number;
+  increment: number;
+}
+
 const helper: RenderHelper = {
   randOffset,
   randOffsetWithRange,
@@ -50,7 +56,17 @@ export function curve(points: Point[], o: ResolvedOptions): OpSet {
   return { type: 'path', ops: o1.concat(o2) };
 }
 
-export function ellipse(x: number, y: number, width: number, height: number, o: ResolvedOptions, estimatedPoints: Point[] = []): OpSet {
+export interface EllipseResult {
+  opset: OpSet;
+  estimatedPoints: Point[];
+}
+
+export function ellipse(x: number, y: number, width: number, height: number, o: ResolvedOptions): OpSet {
+  const params = generateEllipseParams(width, height, o);
+  return ellipseWithParams(x, y, o, params).opset;
+}
+
+export function generateEllipseParams(width: number, height: number, o: ResolvedOptions): EllipseParams {
   const psq = Math.sqrt(Math.PI * 2 * Math.sqrt((Math.pow(width / 2, 2) + Math.pow(height / 2, 2)) / 2));
   const stepCount = Math.max(o.curveStepCount, (o.curveStepCount / Math.sqrt(200)) * psq);
   const increment = (Math.PI * 2) / stepCount;
@@ -58,15 +74,18 @@ export function ellipse(x: number, y: number, width: number, height: number, o: 
   let ry = Math.abs(height / 2);
   rx += _offsetOpt(rx * 0.05, o);
   ry += _offsetOpt(ry * 0.05, o);
+  return { increment, rx, ry };
+}
 
-  const [ap1, cp1] = _computeEllipsePoints(increment, x, y, rx, ry, 1, increment * _offset(0.1, _offset(0.4, 1, o), o), o);
-  const [ap2] = _computeEllipsePoints(increment, x, y, rx, ry, 1.5, 0, o);
+export function ellipseWithParams(x: number, y: number, o: ResolvedOptions, ellipseParams: EllipseParams): EllipseResult {
+  const [ap1, cp1] = _computeEllipsePoints(ellipseParams.increment, x, y, ellipseParams.rx, ellipseParams.ry, 1, ellipseParams.increment * _offset(0.1, _offset(0.4, 1, o), o), o);
+  const [ap2] = _computeEllipsePoints(ellipseParams.increment, x, y, ellipseParams.rx, ellipseParams.ry, 1.5, 0, o);
   const o1 = _curve(ap1, null, o);
   const o2 = _curve(ap2, null, o);
-  if (estimatedPoints) {
-    estimatedPoints.push(...cp1);
-  }
-  return { type: 'path', ops: o1.concat(o2) };
+  return {
+    estimatedPoints: cp1,
+    opset: { type: 'path', ops: o1.concat(o2) }
+  };
 }
 
 export function arc(x: number, y: number, width: number, height: number, start: number, stop: number, closed: boolean, roughClosure: boolean, o: ResolvedOptions): OpSet {
