@@ -1,7 +1,7 @@
 import { PatternFiller, RenderHelper } from './filler-interface';
 import { ResolvedOptions, OpSet, Op } from '../core';
 import { Point, Line, lineLength } from '../geometry';
-import { polygonHachureLines, ellipseHachureLines } from './scan-line-hachure';
+import { polygonHachureLines } from './scan-line-hachure';
 
 export class DotFiller implements PatternFiller {
   private helper: RenderHelper;
@@ -13,12 +13,6 @@ export class DotFiller implements PatternFiller {
   fillPolygon(points: Point[], o: ResolvedOptions): OpSet {
     o = Object.assign({}, o, { curveStepCount: 4, hachureAngle: 0, roughness: 1 });
     const lines = polygonHachureLines(points, o);
-    return this.dotsOnLines(lines, o);
-  }
-
-  fillEllipse(cx: number, cy: number, width: number, height: number, o: ResolvedOptions): OpSet {
-    o = Object.assign({}, o, { curveStepCount: 4, hachureAngle: 0, roughness: 1 });
-    const lines = ellipseHachureLines(this.helper, cx, cy, width, height, o);
     return this.dotsOnLines(lines, o);
   }
 

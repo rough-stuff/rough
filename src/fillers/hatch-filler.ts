@@ -10,12 +10,4 @@ export class HatchFiller extends HachureFiller {
     set.ops = set.ops.concat(set2.ops);
     return set;
   }
-
-  fillEllipse(cx: number, cy: number, width: number, height: number, o: ResolvedOptions): OpSet {
-    const set = this._fillEllipse(cx, cy, width, height, o);
-    const o2 = Object.assign({}, o, { hachureAngle: o.hachureAngle + 90 });
-    const set2 = this._fillEllipse(cx, cy, width, height, o2);
-    set.ops = set.ops.concat(set2.ops);
-    return set;
-  }
 }

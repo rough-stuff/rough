@@ -1,7 +1,7 @@
 import { PatternFiller, RenderHelper } from './filler-interface';
 import { ResolvedOptions, OpSet, Op } from '../core';
 import { Point, Line, lineLength } from '../geometry';
-import { polygonHachureLines, ellipseHachureLines } from './scan-line-hachure';
+import { polygonHachureLines } from './scan-line-hachure';
 
 export class ZigZagLineFiller implements PatternFiller {
   private helper: RenderHelper;
@@ -15,14 +15,6 @@ export class ZigZagLineFiller implements PatternFiller {
     const zo = o.zigzagOffset < 0 ? gap : o.zigzagOffset;
     o = Object.assign({}, o, { hachureGap: gap + zo });
     const lines = polygonHachureLines(points, o);
-    return { type: 'fillSketch', ops: this.zigzagLines(lines, zo, o) };
-  }
-
-  fillEllipse(cx: number, cy: number, width: number, height: number, o: ResolvedOptions): OpSet {
-    const gap = o.hachureGap < 0 ? (o.strokeWidth * 4) : o.hachureGap;
-    const zo = o.zigzagOffset < 0 ? gap : o.zigzagOffset;
-    o = Object.assign({}, o, { hachureGap: gap + zo });
-    const lines = ellipseHachureLines(this.helper, cx, cy, width, height, o);
     return { type: 'fillSketch', ops: this.zigzagLines(lines, zo, o) };
   }
 

@@ -1,7 +1,7 @@
 import { PatternFiller, RenderHelper } from './filler-interface';
 import { ResolvedOptions, OpSet, Op } from '../core';
 import { Point, Line } from '../geometry';
-import { polygonHachureLines, ellipseHachureLines } from './scan-line-hachure';
+import { polygonHachureLines } from './scan-line-hachure';
 
 export class HachureFiller implements PatternFiller {
   private helper: RenderHelper;
@@ -14,18 +14,8 @@ export class HachureFiller implements PatternFiller {
     return this._fillPolygon(points, o);
   }
 
-  fillEllipse(cx: number, cy: number, width: number, height: number, o: ResolvedOptions): OpSet {
-    return this._fillEllipse(cx, cy, width, height, o);
-  }
-
   protected _fillPolygon(points: Point[], o: ResolvedOptions, connectEnds: boolean = false): OpSet {
     const lines = polygonHachureLines(points, o);
-    const ops = this.renderLines(lines, o, connectEnds);
-    return { type: 'fillSketch', ops };
-  }
-
-  protected _fillEllipse(cx: number, cy: number, width: number, height: number, o: ResolvedOptions, connectEnds: boolean = false): OpSet {
-    const lines = ellipseHachureLines(this.helper, cx, cy, width, height, o);
     const ops = this.renderLines(lines, o, connectEnds);
     return { type: 'fillSketch', ops };
   }

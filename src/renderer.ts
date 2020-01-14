@@ -50,7 +50,7 @@ export function curve(points: Point[], o: ResolvedOptions): OpSet {
   return { type: 'path', ops: o1.concat(o2) };
 }
 
-export function ellipse(x: number, y: number, width: number, height: number, o: ResolvedOptions): OpSet {
+export function ellipse(x: number, y: number, width: number, height: number, o: ResolvedOptions, estimatedPoints: Point[] = []): OpSet {
   const psq = Math.sqrt(Math.PI * 2 * Math.sqrt((Math.pow(width / 2, 2) + Math.pow(height / 2, 2)) / 2));
   const stepCount = Math.max(o.curveStepCount, (o.curveStepCount / Math.sqrt(200)) * psq);
   const increment = (Math.PI * 2) / stepCount;
@@ -58,8 +58,14 @@ export function ellipse(x: number, y: number, width: number, height: number, o: 
   let ry = Math.abs(height / 2);
   rx += _offsetOpt(rx * 0.05, o);
   ry += _offsetOpt(ry * 0.05, o);
-  const o1 = _ellipse(increment, x, y, rx, ry, 1, increment * _offset(0.1, _offset(0.4, 1, o), o), o);
-  const o2 = _ellipse(increment, x, y, rx, ry, 1.5, 0, o);
+
+  const [ap1, cp1] = _computeEllipsePoints(increment, x, y, rx, ry, 1, increment * _offset(0.1, _offset(0.4, 1, o), o), o);
+  const [ap2] = _computeEllipsePoints(increment, x, y, rx, ry, 1.5, 0, o);
+  const o1 = _curve(ap1, null, o);
+  const o2 = _curve(ap2, null, o);
+  if (estimatedPoints) {
+    estimatedPoints.push(...cp1);
+  }
   return { type: 'path', ops: o1.concat(o2) };
 }
 
@@ -137,10 +143,6 @@ export function solidFillPolygon(points: Point[], o: ResolvedOptions): OpSet {
 
 export function patternFillPolygon(points: Point[], o: ResolvedOptions): OpSet {
   return getFiller(o, helper).fillPolygon(points, o);
-}
-
-export function patternFillEllipse(cx: number, cy: number, width: number, height: number, o: ResolvedOptions): OpSet {
-  return getFiller(o, helper).fillEllipse(cx, cy, width, height, o);
 }
 
 export function patternFillArc(x: number, y: number, width: number, height: number, start: number, stop: number, o: ResolvedOptions): OpSet {
@@ -330,32 +332,37 @@ function _curve(points: Point[], closePoint: Point | null, o: ResolvedOptions): 
   return ops;
 }
 
-function _ellipse(increment: number, cx: number, cy: number, rx: number, ry: number, offset: number, overlap: number, o: ResolvedOptions): Op[] {
+function _computeEllipsePoints(increment: number, cx: number, cy: number, rx: number, ry: number, offset: number, overlap: number, o: ResolvedOptions): Point[][] {
+  const corePoints: Point[] = [];
+  const allPoints: Point[] = [];
   const radOffset = _offsetOpt(0.5, o) - (Math.PI / 2);
-  const points: Point[] = [];
-  points.push([
+
+  allPoints.push([
     _offsetOpt(offset, o) + cx + 0.9 * rx * Math.cos(radOffset - increment),
     _offsetOpt(offset, o) + cy + 0.9 * ry * Math.sin(radOffset - increment)
   ]);
   for (let angle = radOffset; angle < (Math.PI * 2 + radOffset - 0.01); angle = angle + increment) {
-    points.push([
+    const p: Point = [
       _offsetOpt(offset, o) + cx + rx * Math.cos(angle),
       _offsetOpt(offset, o) + cy + ry * Math.sin(angle)
-    ]);
+    ];
+    corePoints.push(p);
+    allPoints.push(p);
   }
-  points.push([
+  allPoints.push([
     _offsetOpt(offset, o) + cx + rx * Math.cos(radOffset + Math.PI * 2 + overlap * 0.5),
     _offsetOpt(offset, o) + cy + ry * Math.sin(radOffset + Math.PI * 2 + overlap * 0.5)
   ]);
-  points.push([
+  allPoints.push([
     _offsetOpt(offset, o) + cx + 0.98 * rx * Math.cos(radOffset + overlap),
     _offsetOpt(offset, o) + cy + 0.98 * ry * Math.sin(radOffset + overlap)
   ]);
-  points.push([
+  allPoints.push([
     _offsetOpt(offset, o) + cx + 0.9 * rx * Math.cos(radOffset + overlap * 0.5),
     _offsetOpt(offset, o) + cy + 0.9 * ry * Math.sin(radOffset + overlap * 0.5)
   ]);
-  return _curve(points, null, o);
+
+  return [allPoints, corePoints];
 }
 
 function _arc(increment: number, cx: number, cy: number, rx: number, ry: number, strt: number, stp: number, offset: number, o: ResolvedOptions) {
