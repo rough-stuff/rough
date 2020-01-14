@@ -72,8 +72,9 @@ export function generateEllipseParams(width: number, height: number, o: Resolved
   const increment = (Math.PI * 2) / stepCount;
   let rx = Math.abs(width / 2);
   let ry = Math.abs(height / 2);
-  rx += _offsetOpt(rx * 0.05, o);
-  ry += _offsetOpt(ry * 0.05, o);
+  const curveFirtRandomness = 1 - o.curveFitting;
+  rx += _offsetOpt(rx * curveFirtRandomness, o);
+  ry += _offsetOpt(ry * curveFirtRandomness, o);
   return { increment, rx, ry };
 }
 

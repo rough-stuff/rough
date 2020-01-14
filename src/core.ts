@@ -18,6 +18,7 @@ export interface Options {
   bowing?: number;
   stroke?: string;
   strokeWidth?: number;
+  curveFitting?: number;
   curveTightness?: number;
   curveStepCount?: number;
   fill?: string;
@@ -38,6 +39,7 @@ export interface ResolvedOptions extends Options {
   bowing: number;
   stroke: string;
   strokeWidth: number;
+  curveFitting: number;
   curveTightness: number;
   curveStepCount: number;
   fillStyle: string;

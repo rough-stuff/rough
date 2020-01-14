@@ -17,6 +17,7 @@ export class RoughGenerator {
     stroke: '#000',
     strokeWidth: 1,
     curveTightness: 0,
+    curveFitting: 0.95,
     curveStepCount: 9,
     fillStyle: 'hachure',
     fillWeight: -1,
