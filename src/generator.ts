@@ -1,6 +1,6 @@
 import { Config, DrawingSurface, Options, Drawable, OpSet, ResolvedOptions, PathInfo, PatternInfo, SVGNS } from './core';
 import { Point } from './geometry.js';
-import { line, solidFillPolygon, patternFillPolygon, rectangle, ellipse, patternFillEllipse, linearPath, arc, patternFillArc, curve, svgPath } from './renderer.js';
+import { line, solidFillPolygon, patternFillPolygon, rectangle, ellipse, linearPath, arc, patternFillArc, curve, svgPath } from './renderer.js';
 import { randomSeed } from './math';
 
 const hasSelf = typeof self !== 'undefined';
@@ -74,15 +74,16 @@ export class RoughGenerator {
 
   ellipse(x: number, y: number, width: number, height: number, options?: Options): Drawable {
     const o = this._options(options);
-    const paths = [];
-    const outline = ellipse(x, y, width, height, o);
+    const paths: OpSet[] = [];
+    const computedPoints: Point[] = [];
+    const outline = ellipse(x, y, width, height, o, computedPoints);
     if (o.fill) {
       if (o.fillStyle === 'solid') {
         const shape = ellipse(x, y, width, height, o);
         shape.type = 'fillPath';
         paths.push(shape);
       } else {
-        paths.push(patternFillEllipse(x, y, width, height, o));
+        paths.push(patternFillPolygon(computedPoints, o));
       }
     }
     if (o.stroke !== NOS) {
