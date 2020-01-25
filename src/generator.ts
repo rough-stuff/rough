@@ -43,7 +43,7 @@ export class RoughGenerator {
   }
 
   private _options(options?: Options): ResolvedOptions {
-    return options ? Object.assign({}, this.defaultOptions, options) : this.defaultOptions;
+    return Object.assign({}, this.defaultOptions, options || {});
   }
 
   private _drawable(shape: string, sets: OpSet[], options: ResolvedOptions): Drawable {
