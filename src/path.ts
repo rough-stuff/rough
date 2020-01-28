@@ -30,7 +30,7 @@ const PARAMS: { [key: string]: number } = {
   q: 4,
   S: 4,
   s: 4,
-  T: 4,
+  T: 2,
   t: 2,
   V: 1,
   v: 1,
