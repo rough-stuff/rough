@@ -21,6 +21,7 @@ export interface Options {
   curveFitting?: number;
   curveTightness?: number;
   curveStepCount?: number;
+  curveBackAndForth?: number;
   fill?: string;
   fillStyle?: string;
   fillWeight?: number;
@@ -42,6 +43,7 @@ export interface ResolvedOptions extends Options {
   curveFitting: number;
   curveTightness: number;
   curveStepCount: number;
+  curveBackAndForth: number;
   fillStyle: string;
   fillWeight: number;
   hachureAngle: number;

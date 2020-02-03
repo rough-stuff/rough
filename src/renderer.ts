@@ -51,9 +51,23 @@ export function rectangle(x: number, y: number, width: number, height: number, o
 }
 
 export function curve(points: Point[], o: ResolvedOptions): OpSet {
-  const o1 = _curveWithOffset(points, 1 * (1 + o.roughness * 0.2), o);
+  
+  let offsetCurve = _curveWithOffset(points, 1 * (1 + o.roughness * 0.2), o);
+
+  let f1 = 1;
+  let f2 = .2;
+  for (let i = 1; i < o.curveBackAndForth; i++) {
+    f1 *= 1.5;
+    f2 *= 1.1;
+    const o2 = _curveWithOffset(points, f1 * (1 + o.roughness * f2), o);
+    offsetCurve = offsetCurve.concat(o2);
+  }
+
+  return { type: 'path', ops: offsetCurve };
+  /*
   const o2 = _curveWithOffset(points, 1.5 * (1 + o.roughness * 0.22), o);
   return { type: 'path', ops: o1.concat(o2) };
+  */
 }
 
 export interface EllipseResult {
