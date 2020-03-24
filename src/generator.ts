@@ -1,7 +1,7 @@
 import { Config, DrawingSurface, Options, Drawable, OpSet, ResolvedOptions, PathInfo, PatternInfo, SVGNS } from './core';
 import { Point } from './geometry.js';
 import { line, solidFillPolygon, patternFillPolygon, rectangle, ellipseWithParams, generateEllipseParams, linearPath, arc, patternFillArc, curve, svgPath } from './renderer.js';
-import { randomSeed } from './math';
+import { randomSeed } from './random';
 
 const hasSelf = typeof self !== 'undefined';
 const NOS = 'none';

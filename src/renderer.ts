@@ -3,7 +3,7 @@ import { Point } from './geometry.js';
 import { RoughPath, PathFitter, Segment, RoughArcConverter } from './path.js';
 import { getFiller } from './fillers/filler.js';
 import { RenderHelper } from './fillers/filler-interface.js';
-import { Random } from './math.js';
+import { Random } from './random.js';
 
 interface EllipseParams {
   rx: number;

@@ -8,6 +8,7 @@
   "browser": "bundled/rough.js",
   "scripts": {
     "build": "rm -rf bin && tsc && rollup -c",
+    "lint": "tslint -p tsconfig.json",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -30,9 +31,9 @@
   "homepage": "https://roughjs.com",
   "devDependencies": {
     "@rollup/plugin-typescript": "^2.1.0",
-    "rollup": "^1.29.0",
-    "rollup-plugin-terser": "^5.2.0",
+    "rollup": "^1.32.1",
+    "rollup-plugin-terser": "^5.3.0",
     "tslint": "^5.20.1",
-    "typescript": "^3.7.4"
+    "typescript": "^3.8.3"
   }
 }
