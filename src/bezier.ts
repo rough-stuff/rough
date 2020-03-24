@@ -12,8 +12,8 @@ export function getPointsOnBezierCurves(points: Point[], tolerance: number): Poi
 
 // Uses the Ramer–Douglas–Peucker algorithm
 // https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm
-export function simplifyPoints(points: Point[], start: number, end: number, epsilon: number, newPoints?: Point[]): Point[] {
-  const outPoints: Point[] = newPoints || [];
+export function simplifyPoints(points: Point[], start: number, end: number, epsilon: number, newPoints?: number[]): number[] {
+  const outPoints: number[] = newPoints || [];
 
   // find the most distant point from the line formed by the endpoints
   const s = points[start];
@@ -35,7 +35,7 @@ export function simplifyPoints(points: Point[], start: number, end: number, epsi
     simplifyPoints(points, maxNdx, end, epsilon, outPoints);
   } else {
     // add the 2 end points
-    outPoints.push(s, e);
+    outPoints.push(...s, ...e);
   }
 
   return outPoints;

@@ -6,29 +6,31 @@ import { randomSeed } from './random';
 const hasSelf = typeof self !== 'undefined';
 const NOS = 'none';
 
+export const DEFAULT_OPTIONS: ResolvedOptions = {
+  maxRandomnessOffset: 2,
+  roughness: 1,
+  bowing: 1,
+  stroke: '#000',
+  strokeWidth: 1,
+  curveTightness: 0,
+  curveFitting: 0.95,
+  curveStepCount: 9,
+  fillStyle: 'hachure',
+  fillWeight: -1,
+  hachureAngle: -41,
+  hachureGap: -1,
+  dashOffset: -1,
+  dashGap: -1,
+  zigzagOffset: -1,
+  seed: 0,
+  roughnessGain: 1
+};
+
 export class RoughGenerator {
   private config: Config;
   private surface?: DrawingSurface;
 
-  defaultOptions: ResolvedOptions = {
-    maxRandomnessOffset: 2,
-    roughness: 1,
-    bowing: 1,
-    stroke: '#000',
-    strokeWidth: 1,
-    curveTightness: 0,
-    curveFitting: 0.95,
-    curveStepCount: 9,
-    fillStyle: 'hachure',
-    fillWeight: -1,
-    hachureAngle: -41,
-    hachureGap: -1,
-    dashOffset: -1,
-    dashGap: -1,
-    zigzagOffset: -1,
-    seed: 0,
-    roughnessGain: 1
-  };
+  defaultOptions: ResolvedOptions = JSON.parse(JSON.stringify(DEFAULT_OPTIONS));
 
   constructor(config?: Config, surface?: DrawingSurface) {
     this.config = config || {};
