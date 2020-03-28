@@ -1,65 +1,28 @@
-import { ProgramInfo, createProgramInfo, createBufferInfoFromArrays, resizeCanvasToDisplaySize, setAttributes, setUniforms } from './webgl-utils';
+import { ProgramInfo, createProgramInfo, resizeCanvasToDisplaySize, setUniforms, AttributeValues, setAttributes } from './webgl-utils';
 import { Point, BezCurve, estBezLength } from './geometry';
 import { Drawable, Op } from './core';
 import { DEFAULT_OPTIONS } from './generator';
 import { parseColor } from './colors';
+import { vsSource, fsSource } from './webgl-shaders';
 
-//Defines shaders
-const vsSource = `
-attribute vec2 a_vertexId;
-uniform float u_numVerts;
-uniform vec2 u_resolution;
-uniform vec2 u_p1;
-uniform vec2 u_p2;
-uniform vec2 u_cp1;
-uniform vec2 u_cp2;
-uniform float u_thickness;
-
-vec2 bezier(in vec2 p0, in vec2 p1, in vec2 p2, in vec2 p3, in float t) {
-  float tt = (1.0 - t) * (1.0 - t);
-  return  tt * (1.0 - t) * p0 +
-          3.0 * t * tt * p1 +
-          3.0 * t * t * (1.0 - t) * p2 +
-          t * t * t * p3;
+interface AttributeInfo {
+  name: string;
+  numComponents: number;
+  offset: number;
 }
+const FRAME_SIZE = 16;
+const STRIDE = FRAME_SIZE * 4;
 
-void main() {
-  // calculate current, prev, next points
-  vec2 current = bezier(u_p1, u_cp1, u_cp2, u_p2, a_vertexId.x / u_numVerts);
-  vec2 prev = bezier(u_p1, u_cp1, u_cp2, u_p2, (a_vertexId.x - 1.0) / u_numVerts);
-  vec2 next = bezier(u_p1, u_cp1, u_cp2, u_p2, (a_vertexId.x + 1.0) / u_numVerts);
-  float directionOffset = a_vertexId.y;
-
-  // Calculate tangent
-  vec2 AB = normalize(current - prev);
-  vec2 BC = normalize(next - current);
-  vec2 tangent = normalize(AB + BC);
-
-  // Normals - Orthogonal to tangents
-  vec2 perp = vec2(-tangent.y, tangent.x);
-  vec2 perpAB = vec2(-AB.y, AB.x);
-
-  // miiter size
-  float miterLength = u_thickness / dot(perp, perpAB);
-
-  // compute position
-  vec2 position = current + (directionOffset * perp * miterLength);
-
-  vec2 zeroToOne = position / u_resolution;
-  vec2 zeroToTwo = zeroToOne * 2.0;
-  vec2 clipSpace = zeroToTwo - 1.0;
-  gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
-}
-`;
-
-const fsSource = `
-precision mediump float;
-uniform vec4 u_color;
-
-void main() {
-  gl_FragColor = u_color;
-}
-`;
+const ATTRIBUTES: AttributeInfo[] = [
+  { name: 'a_p1', numComponents: 2, offset: 0 },
+  { name: 'a_cp1', numComponents: 2, offset: 2 },
+  { name: 'a_cp2', numComponents: 2, offset: 4 },
+  { name: 'a_p2', numComponents: 2, offset: 6 },
+  { name: 'a_color', numComponents: 4, offset: 8 },
+  { name: 'a_thickness', numComponents: 1, offset: 12 },
+  { name: 'a_numVerts', numComponents: 1, offset: 13 },
+  { name: 'a_vertexId', numComponents: 2, offset: 14 }
+];
 
 export class RoughWebGL {
   private canvas: HTMLCanvasElement;
@@ -89,8 +52,42 @@ export class RoughWebGL {
       for (const drawing of sets) {
         switch (drawing.type) {
           case 'path':
-            const curvePoints = this.extractCurvePoints(drawing.ops);
-            this.drawCurves(curvePoints, o.strokeWidth, o.stroke === 'none' ? 'transparent' : o.stroke);
+            const aa = performance.now();
+            // const curvePoints = this.extractCurvePoints(drawing.ops);
+            let curves: BezCurve[] = [
+              [
+                [10, 30],
+                [120, 160],
+                [180, 10],
+                [220, 140]
+              ],
+              [
+                [10, 80],
+                [120, 210],
+                [180, 60],
+                [220, 190]
+              ],
+              [
+                [10, 110],
+                [120, 240],
+                [180, 90],
+                [220, 220]
+              ]
+            ];
+            curves = [...curves, ...curves];
+            curves = [...curves, ...curves];
+            curves = [...curves, ...curves];
+            curves = [...curves, ...curves];
+            curves = [...curves, ...curves];
+            curves = [...curves, ...curves];
+            curves = [...curves, ...curves];
+            curves = [...curves, ...curves];
+            const aa2 = performance.now();
+
+            this.drawCurves(curves, o.strokeWidth, o.stroke === 'none' ? 'transparent' : o.stroke);
+
+            const aa3 = performance.now();
+            console.log(aa2 - aa, aa3 - aa2, aa3 - aa);
             break;
           case 'fillSketch': {
             let fweight = o.fillWeight;
@@ -142,45 +139,66 @@ export class RoughWebGL {
 
   private drawCurves(curves: BezCurve[], lineWidth: number, color: string) {
     console.log('curve count', curves.length);
+
+    // Initialize buffer data
+    const parsedColor = parseColor(color);
+    const thickness = lineWidth / (window.devicePixelRatio || 1);
+    const data: number[] = [];
+    let curveIndex = 0;
     for (const curve of curves) {
-      // Initialize sample size
+      // validate curve
       const numVerts = Math.ceil(estBezLength(curve) / 2);
       if (numVerts < 3) {
         continue;
       }
-      const data: number[] = [];
       for (let i = 0; i < numVerts; i++) {
+        curve.forEach((p) => data.push(...p)); // 8
         data.push(
-          i, -1,
-          i, 1
+          ...parsedColor, // 4
+          thickness,      // 1
+          numVerts,       // 1
+          i, -1           // 2
+        );
+        curve.forEach((p) => data.push(...p)); // 8
+        data.push(
+          ...parsedColor, // 4
+          thickness,      // 1
+          numVerts,       // 1
+          i, 1           // 2
         );
       }
-
-      // Load Ids to buffer
-      const bufferInfo = createBufferInfoFromArrays(this.gl, {
-        vertexId: { numComponents: 2, data }
-      });
-
-      // use program
-      this.gl.useProgram(this.pi.program);
-
-      // set attributes
-      setAttributes(this.pi.attribSetters, bufferInfo.attribs);
-
-      // set uniform
-      setUniforms(this.pi.uniformSetters, {
-        u_numVerts: numVerts - 1,
-        u_resolution: [this.gl.canvas.width, this.gl.canvas.height],
-        u_p1: curve[0],
-        u_cp1: curve[1],
-        u_cp2: curve[2],
-        u_p2: curve[3],
-        u_thickness: lineWidth / (window.devicePixelRatio || 1),
-        u_color: parseColor(color),
-      });
-
-      // Draw
-      this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, bufferInfo.numElements);
+      curveIndex++;
     }
+
+    // Initialize buffer
+    const attributeBuffer = this.gl.createBuffer()!;
+    const bufferType = this.gl.ARRAY_BUFFER;
+    this.gl.bindBuffer(bufferType, attributeBuffer);
+    this.gl.bufferData(bufferType, new Float32Array(data), this.gl.STATIC_DRAW);
+
+    // use program
+    this.gl.useProgram(this.pi.program);
+
+    // set attributes
+    const attrValues: AttributeValues = {};
+    ATTRIBUTES.forEach((attr) => {
+      attrValues[attr.name] = {
+        buffer: attributeBuffer,
+        numComponents: attr.numComponents,
+        offset: attr.offset * 4,
+        stride: STRIDE
+      };
+    });
+    setAttributes(this.pi.attribSetters, attrValues);
+
+    // set uniforms
+    setUniforms(this.pi.uniformSetters, {
+      u_resolution: [this.gl.canvas.width, this.gl.canvas.height]
+    });
+
+    console.log('data', data.length, data.length / FRAME_SIZE);
+
+    // Draw
+    this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, data.length / FRAME_SIZE);
   }
 }
