@@ -89,8 +89,37 @@ export class RoughWebGL {
       for (const drawing of sets) {
         switch (drawing.type) {
           case 'path':
-            const curvePoints = this.extractCurvePoints(drawing.ops);
-            this.drawCurves(curvePoints, o.strokeWidth, o.stroke === 'none' ? 'transparent' : o.stroke);
+            // const curvePoints = this.extractCurvePoints(drawing.ops);
+            let curves: BezCurve[] = [
+              [
+                [10, 30],
+                [120, 160],
+                [180, 10],
+                [220, 140]
+              ],
+              [
+                [10, 80],
+                [120, 210],
+                [180, 60],
+                [220, 190]
+              ],
+              [
+                [10, 110],
+                [120, 240],
+                [180, 90],
+                [220, 220]
+              ]
+            ];
+            curves = [...curves, ...curves];
+            curves = [...curves, ...curves];
+            curves = [...curves, ...curves];
+            curves = [...curves, ...curves];
+            curves = [...curves, ...curves];
+            curves = [...curves, ...curves];
+            curves = [...curves, ...curves];
+            curves = [...curves, ...curves];
+
+            this.drawCurves(curves, o.strokeWidth, o.stroke === 'none' ? 'transparent' : o.stroke);
             break;
           case 'fillSketch': {
             let fweight = o.fillWeight;
