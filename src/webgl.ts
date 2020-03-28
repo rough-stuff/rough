@@ -52,7 +52,6 @@ export class RoughWebGL {
       for (const drawing of sets) {
         switch (drawing.type) {
           case 'path':
-            const aa = performance.now();
             // const curvePoints = this.extractCurvePoints(drawing.ops);
             let curves: BezCurve[] = [
               [
@@ -82,12 +81,10 @@ export class RoughWebGL {
             curves = [...curves, ...curves];
             curves = [...curves, ...curves];
             curves = [...curves, ...curves];
-            const aa2 = performance.now();
 
+            const aa1 = performance.now();
             this.drawCurves(curves, o.strokeWidth, o.stroke === 'none' ? 'transparent' : o.stroke);
-
-            const aa3 = performance.now();
-            console.log(aa2 - aa, aa3 - aa2, aa3 - aa);
+            console.log('draw curves', performance.now() - aa1);
             break;
           case 'fillSketch': {
             let fweight = o.fillWeight;
@@ -141,6 +138,7 @@ export class RoughWebGL {
     console.log('curve count', curves.length);
 
     // Initialize buffer data
+    const tt1 = performance.now();
     const parsedColor = parseColor(color);
     const thickness = lineWidth / (window.devicePixelRatio || 1);
     const data: number[] = [];
@@ -169,12 +167,15 @@ export class RoughWebGL {
       }
       curveIndex++;
     }
+    const tt2 = performance.now();
 
     // Initialize buffer
     const attributeBuffer = this.gl.createBuffer()!;
     const bufferType = this.gl.ARRAY_BUFFER;
     this.gl.bindBuffer(bufferType, attributeBuffer);
     this.gl.bufferData(bufferType, new Float32Array(data), this.gl.STATIC_DRAW);
+
+    const tt3 = performance.now();
 
     // use program
     this.gl.useProgram(this.pi.program);
@@ -191,14 +192,24 @@ export class RoughWebGL {
     });
     setAttributes(this.pi.attribSetters, attrValues);
 
+    const tt4 = performance.now();
+
     // set uniforms
     setUniforms(this.pi.uniformSetters, {
       u_resolution: [this.gl.canvas.width, this.gl.canvas.height]
     });
 
-    console.log('data', data.length, data.length / FRAME_SIZE);
+    // console.log('data', data.length, data.length / FRAME_SIZE);
 
     // Draw
+    const tt5 = performance.now();
     this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, data.length / FRAME_SIZE);
+    const tt6 = performance.now();
+
+    console.log('init data', tt2 - tt1);
+    console.log('init buffer', tt3 - tt2);
+    console.log('set attributes', tt4 - tt3);
+    console.log('set uniform', tt5 - tt4);
+    console.log('draw', tt6 - tt5);
   }
 }
