@@ -173,7 +173,7 @@ export class RoughWebGL {
     const attributeBuffer = this.gl.createBuffer()!;
     const bufferType = this.gl.ARRAY_BUFFER;
     this.gl.bindBuffer(bufferType, attributeBuffer);
-    this.gl.bufferData(bufferType, new Float32Array(data), this.gl.STATIC_DRAW);
+    this.gl.bufferData(bufferType, new Float32Array(data), this.gl.DYNAMIC_DRAW);
 
     const tt3 = performance.now();
 
@@ -199,8 +199,6 @@ export class RoughWebGL {
       u_resolution: [this.gl.canvas.width, this.gl.canvas.height]
     });
 
-    // console.log('data', data.length, data.length / FRAME_SIZE);
-
     // Draw
     const tt5 = performance.now();
     this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, data.length / FRAME_SIZE);
@@ -211,5 +209,6 @@ export class RoughWebGL {
     console.log('set attributes', tt4 - tt3);
     console.log('set uniform', tt5 - tt4);
     console.log('draw', tt6 - tt5);
+    console.log('data lengths', data.length, data.length / FRAME_SIZE);
   }
 }
