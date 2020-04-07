@@ -22,3 +22,7 @@ Sample of all fill types:
 * Removed async/worker builds - can be achieved in the app level, so no need to be in the lib
 * Support no-stroke sketching. `stroke: "none"` will not generate outline vectors anymore
 * Removed `sunburst` fill style - it had a lot of corner cases where it did not work, and not very popular.
+
+## [4.1.0] - 2020-01-13
+
+* Added ability to **fill** non-svg curves
