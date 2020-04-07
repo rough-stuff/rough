@@ -74,7 +74,7 @@ Fill styles can be: **hachure**(default), **solid**, **zigzag**, **cross-hatch**
 
 ### Sketching style
 
-![Rough.js rectangle](https://roughjs.com/images/main/m4.png)
+![Rough.js rectangle](https://roughjs.com/images/m4.png)
 
 ```js
 rc.rectangle(15, 15, 80, 80, { roughness: 0.5, fill: 'red' });
