@@ -8,6 +8,7 @@
   "browser": "bundled/rough.js",
   "scripts": {
     "build": "rm -rf bin && tsc && rollup -c",
+    "lint": "tslint -p tsconfig.json",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
