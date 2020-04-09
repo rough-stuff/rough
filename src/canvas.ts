@@ -41,7 +41,7 @@ export class RoughCanvas {
           this.ctx.save();
           this.ctx.fillStyle = o.fill || '';
           const p2d = new Path2D(drawing.path);
-          this.ctx.fill(p2d);
+          this.ctx.fill(p2d, 'evenodd');
           this.ctx.restore();
           break;
         }
@@ -64,7 +64,7 @@ export class RoughCanvas {
             this.ctx.save();
             this.ctx.fillStyle = this.ctx.createPattern(hcanvas, 'repeat')!;
             const p2d = new Path2D(drawing.path);
-            this.ctx.fill(p2d);
+            this.ctx.fill(p2d, 'evenodd');
             this.ctx.restore();
           } else {
             console.error('Pattern fill fail: No defs');
@@ -125,7 +125,7 @@ export class RoughCanvas {
       }
     }
     if (drawing.type === 'fillPath') {
-      ctx.fill();
+      ctx.fill('evenodd');
     } else {
       ctx.stroke();
     }
