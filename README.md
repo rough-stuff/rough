@@ -20,6 +20,15 @@ npm install --save roughjs
 Or get the latest using unpkg: https://unpkg.com/roughjs@latest/bundled/rough.js
 
 
+If you are looking for bundled version in different formats, the npm package will have these in the following locations:
+
+CommonJS: `roughjs/bundled/rough.cjs.js`
+
+ESM: `roughjs/bundled/rough.esm.js`
+
+Browser IIFE: `roughjs/bundled/rough.js`
+
+
 ## Usage
 
 ![Rough.js rectangle](https://roughjs.com/images/m1.png)
