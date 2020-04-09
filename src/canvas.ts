@@ -31,7 +31,8 @@ export class RoughCanvas {
         case 'fillPath':
           ctx.save();
           ctx.fillStyle = o.fill || '';
-          this._drawToContext(ctx, drawing);
+          const fillRule: CanvasFillRule = (drawable.shape === 'curve' || drawable.shape === 'polygon') ? 'evenodd' : 'nonzero';
+          this._drawToContext(ctx, drawing, fillRule);
           ctx.restore();
           break;
         case 'fillSketch':
@@ -105,7 +106,7 @@ export class RoughCanvas {
     ctx.restore();
   }
 
-  private _drawToContext(ctx: CanvasRenderingContext2D, drawing: OpSet) {
+  private _drawToContext(ctx: CanvasRenderingContext2D, drawing: OpSet, rule: CanvasFillRule = 'nonzero') {
     ctx.beginPath();
     for (const item of drawing.ops) {
       const data = item.data;
@@ -125,7 +126,7 @@ export class RoughCanvas {
       }
     }
     if (drawing.type === 'fillPath') {
-      ctx.fill('evenodd');
+      ctx.fill(rule);
     } else {
       ctx.stroke();
     }
