@@ -11,13 +11,14 @@ Rough.js works with both [Canvas](https://developer.mozilla.org/en-US/docs/Web/A
 
 ## Install
 
-The latest Rough.js can be downloaded from the [dist folder](https://github.com/pshihn/rough/tree/master/dist).
-
-or from npm:
+from npm:
 
 ```
 npm install --save roughjs
 ```
+
+Or get the latest using unpkg: https://unpkg.com/roughjs@latest/bundled/rough.js
+
 
 ## Usage
 
