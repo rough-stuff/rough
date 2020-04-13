@@ -233,12 +233,12 @@ function random(ops: ResolvedOptions): number {
   return ops.randomizer.next();
 }
 
-function _offset(min: number, max: number, ops: ResolvedOptions): number {
-  return ops.roughness * ops.roughnessGain * ((random(ops) * (max - min)) + min);
+function _offset(min: number, max: number, ops: ResolvedOptions, roughnessGain = 1): number {
+  return ops.roughness * roughnessGain * ((random(ops) * (max - min)) + min);
 }
 
-function _offsetOpt(x: number, ops: ResolvedOptions): number {
-  return _offset(-x, x, ops);
+function _offsetOpt(x: number, ops: ResolvedOptions, roughnessGain = 1): number {
+  return _offset(-x, x, ops, roughnessGain);
 }
 
 function _doubleLine(x1: number, y1: number, x2: number, y2: number, o: ResolvedOptions): Op[] {
@@ -250,12 +250,13 @@ function _doubleLine(x1: number, y1: number, x2: number, y2: number, o: Resolved
 function _line(x1: number, y1: number, x2: number, y2: number, o: ResolvedOptions, move: boolean, overlay: boolean): Op[] {
   const lengthSq = Math.pow((x1 - x2), 2) + Math.pow((y1 - y2), 2);
   const length = Math.sqrt(lengthSq);
+  let roughnessGain = 1;
   if (length < 200) {
-    o.roughnessGain = 1;
+    roughnessGain = 1;
   } else if (length > 500) {
-    o.roughnessGain = 0.4;
+    roughnessGain = 0.4;
   } else {
-    o.roughnessGain = (-0.0016668) * length + 1.233334;
+    roughnessGain = (-0.0016668) * length + 1.233334;
   }
 
   let offset = o.maxRandomnessOffset || 0;
@@ -266,11 +267,11 @@ function _line(x1: number, y1: number, x2: number, y2: number, o: ResolvedOption
   const divergePoint = 0.2 + random(o) * 0.2;
   let midDispX = o.bowing * o.maxRandomnessOffset * (y2 - y1) / 200;
   let midDispY = o.bowing * o.maxRandomnessOffset * (x1 - x2) / 200;
-  midDispX = _offsetOpt(midDispX, o);
-  midDispY = _offsetOpt(midDispY, o);
+  midDispX = _offsetOpt(midDispX, o, roughnessGain);
+  midDispY = _offsetOpt(midDispY, o, roughnessGain);
   const ops: Op[] = [];
-  const randomHalf = () => _offsetOpt(halfOffset, o);
-  const randomFull = () => _offsetOpt(offset, o);
+  const randomHalf = () => _offsetOpt(halfOffset, o, roughnessGain);
+  const randomFull = () => _offsetOpt(offset, o, roughnessGain);
   if (move) {
     if (overlay) {
       ops.push({
@@ -282,8 +283,8 @@ function _line(x1: number, y1: number, x2: number, y2: number, o: ResolvedOption
     } else {
       ops.push({
         op: 'move', data: [
-          x1 + _offsetOpt(offset, o),
-          y1 + _offsetOpt(offset, o)
+          x1 + _offsetOpt(offset, o, roughnessGain),
+          y1 + _offsetOpt(offset, o, roughnessGain)
         ]
       });
     }

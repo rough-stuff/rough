@@ -27,18 +27,19 @@ export class DotFiller implements PatternFiller {
     if (fweight < 0) {
       fweight = o.strokeWidth / 2;
     }
+    const ro = gap / 4;
     for (const line of lines) {
       const length = lineLength(line);
       const dl = length / gap;
       const count = Math.ceil(dl) - 1;
-      const alpha = Math.atan((line[1][1] - line[0][1]) / (line[1][0] - line[0][0]));
+      const offset = length - (count * gap);
+      const x = ((line[0][0] + line[1][0]) / 2) - (gap / 4);
+      const minY = Math.min(line[0][1], line[1][1]);
+
       for (let i = 0; i < count; i++) {
-        const l = gap * (i + 1);
-        const dy = l * Math.sin(alpha);
-        const dx = l * Math.cos(alpha);
-        const c: Point = [line[0][0] - dx, line[0][1] + dy];
-        const cx = this.helper.randOffsetWithRange(c[0] - gap / 4, c[0] + gap / 4, o);
-        const cy = this.helper.randOffsetWithRange(c[1] - gap / 4, c[1] + gap / 4, o);
+        const y = minY + offset + (i * gap);
+        const cx = this.helper.randOffsetWithRange(x - ro, x + ro, o);
+        const cy = this.helper.randOffsetWithRange(y - ro, y + ro, o);
         const el = this.helper.ellipse(cx, cy, fweight, fweight, o);
         ops.push(...el.ops);
       }
