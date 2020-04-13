@@ -25,12 +25,12 @@ export function line(x1: number, y1: number, x2: number, y2: number, o: Resolved
 export function linearPath(points: Point[], close: boolean, o: ResolvedOptions): OpSet {
   const len = (points || []).length;
   if (len > 2) {
-    let ops: Op[] = [];
+    const ops: Op[] = [];
     for (let i = 0; i < (len - 1); i++) {
-      ops = ops.concat(_doubleLine(points[i][0], points[i][1], points[i + 1][0], points[i + 1][1], o));
+      ops.push(..._doubleLine(points[i][0], points[i][1], points[i + 1][0], points[i + 1][1], o));
     }
     if (close) {
-      ops = ops.concat(_doubleLine(points[len - 1][0], points[len - 1][1], points[0][0], points[0][1], o));
+      ops.push(..._doubleLine(points[len - 1][0], points[len - 1][1], points[0][0], points[0][1], o));
     }
     return { type: 'path', ops };
   } else if (len === 2) {
@@ -45,7 +45,10 @@ export function polygon(points: Point[], o: ResolvedOptions): OpSet {
 
 export function rectangle(x: number, y: number, width: number, height: number, o: ResolvedOptions): OpSet {
   const points: Point[] = [
-    [x, y], [x + width, y], [x + width, y + height], [x, y + height]
+    [x, y],
+    [x + width, y],
+    [x + width, y + height],
+    [x, y + height]
   ];
   return polygon(points, o);
 }
@@ -110,14 +113,18 @@ export function arc(x: number, y: number, width: number, height: number, start: 
   const arcInc = Math.min(ellipseInc / 2, (stp - strt) / 2);
   const o1 = _arc(arcInc, cx, cy, rx, ry, strt, stp, 1, o);
   const o2 = _arc(arcInc, cx, cy, rx, ry, strt, stp, 1.5, o);
-  let ops = o1.concat(o2);
+  const ops = o1.concat(o2);
   if (closed) {
     if (roughClosure) {
-      ops = ops.concat(_doubleLine(cx, cy, cx + rx * Math.cos(strt), cy + ry * Math.sin(strt), o));
-      ops = ops.concat(_doubleLine(cx, cy, cx + rx * Math.cos(stp), cy + ry * Math.sin(stp), o));
+      ops.push(
+        ..._doubleLine(cx, cy, cx + rx * Math.cos(strt), cy + ry * Math.sin(strt), o),
+        ..._doubleLine(cx, cy, cx + rx * Math.cos(stp), cy + ry * Math.sin(stp), o)
+      );
     } else {
-      ops.push({ op: 'lineTo', data: [cx, cy] });
-      ops.push({ op: 'lineTo', data: [cx + rx * Math.cos(strt), cy + ry * Math.sin(strt)] });
+      ops.push(
+        { op: 'lineTo', data: [cx, cy] },
+        { op: 'lineTo', data: [cx + rx * Math.cos(strt), cy + ry * Math.sin(strt)] }
+      );
     }
   }
   return { type: 'path', ops };
@@ -334,7 +341,7 @@ function _curveWithOffset(points: Point[], offset: number, o: ResolvedOptions): 
 
 function _curve(points: Point[], closePoint: Point | null, o: ResolvedOptions): Op[] {
   const len = points.length;
-  let ops: Op[] = [];
+  const ops: Op[] = [];
   if (len > 3) {
     const b = [];
     const s = 1 - o.curveTightness;
@@ -360,7 +367,7 @@ function _curve(points: Point[], closePoint: Point | null, o: ResolvedOptions): 
         points[2][0], points[2][1]]
     });
   } else if (len === 2) {
-    ops = ops.concat(_doubleLine(points[0][0], points[0][1], points[1][0], points[1][1], o));
+    ops.push(..._doubleLine(points[0][0], points[0][1], points[1][0], points[1][1], o));
   }
   return ops;
 }

@@ -21,12 +21,12 @@ export class HachureFiller implements PatternFiller {
   }
 
   private renderLines(lines: Line[], o: ResolvedOptions, connectEnds: boolean): Op[] {
-    let ops: Op[] = [];
+    const ops: Op[] = [];
     let prevPoint: Point | null = null;
     for (const line of lines) {
-      ops = ops.concat(this.helper.doubleLineOps(line[0][0], line[0][1], line[1][0], line[1][1], o));
+      ops.push(...this.helper.doubleLineOps(line[0][0], line[0][1], line[1][0], line[1][1], o));
       if (connectEnds && prevPoint) {
-        ops = ops.concat(this.helper.doubleLineOps(prevPoint[0], prevPoint[1], line[0][0], line[0][1], o));
+        ops.push(...this.helper.doubleLineOps(prevPoint[0], prevPoint[1], line[0][0], line[0][1], o));
       }
       prevPoint = line[1];
     }

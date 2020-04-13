@@ -17,7 +17,7 @@ export class DotFiller implements PatternFiller {
   }
 
   private dotsOnLines(lines: Line[], o: ResolvedOptions): OpSet {
-    let ops: Op[] = [];
+    const ops: Op[] = [];
     let gap = o.hachureGap;
     if (gap < 0) {
       gap = o.strokeWidth * 4;
@@ -40,7 +40,7 @@ export class DotFiller implements PatternFiller {
         const cx = this.helper.randOffsetWithRange(c[0] - gap / 4, c[0] + gap / 4, o);
         const cy = this.helper.randOffsetWithRange(c[1] - gap / 4, c[1] + gap / 4, o);
         const el = this.helper.ellipse(cx, cy, fweight, fweight, o);
-        ops = ops.concat(el.ops);
+        ops.push(...el.ops);
       }
     }
     return { type: 'fillSketch', ops };
