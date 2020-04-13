@@ -55,7 +55,7 @@ export interface ResolvedOptions extends Options {
 }
 
 export declare type OpType = 'move' | 'bcurveTo' | 'lineTo' | 'qcurveTo';
-export declare type OpSetType = 'path' | 'fillPath' | 'fillSketch' | 'path2Dfill' | 'path2Dpattern';
+export declare type OpSetType = 'path' | 'fillPath' | 'fillSketch';
 
 export interface Op {
   op: OpType;
@@ -80,15 +80,4 @@ export interface PathInfo {
   stroke: string;
   strokeWidth: number;
   fill?: string;
-  pattern?: PatternInfo;
-}
-
-export interface PatternInfo {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  viewBox: string;
-  patternUnits: string;
-  path: PathInfo;
 }

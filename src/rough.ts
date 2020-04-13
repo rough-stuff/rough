@@ -1,4 +1,4 @@
-import { Config, DrawingSurface } from './core';
+import { Config } from './core';
 import { RoughCanvas } from './canvas';
 import { RoughGenerator } from './generator';
 import { RoughSVG } from './svg';
@@ -12,8 +12,8 @@ export default {
     return new RoughSVG(svg, config);
   },
 
-  generator(config?: Config, surface?: DrawingSurface): RoughGenerator {
-    return new RoughGenerator(config, surface);
+  generator(config?: Config): RoughGenerator {
+    return new RoughGenerator(config);
   },
 
   newSeed(): number {

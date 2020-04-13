@@ -1,16 +1,15 @@
-import { Config, DrawingSurface, Options, Drawable, OpSet, ResolvedOptions, PathInfo, PatternInfo, SVGNS } from './core.js';
+import { Config, Options, Drawable, OpSet, ResolvedOptions, PathInfo } from './core.js';
 import { Point } from './geometry.js';
 import { line, solidFillPolygon, patternFillPolygon, rectangle, ellipseWithParams, generateEllipseParams, linearPath, arc, patternFillArc, curve, svgPath } from './renderer.js';
 import { randomSeed } from './math.js';
 import { curveToBezier } from 'points-on-curve/lib/curve-to-bezier.js';
 import { pointsOnBezierCurves } from 'points-on-curve';
+import { pointsOnPath } from 'points-on-path';
 
-const hasSelf = typeof self !== 'undefined';
 const NOS = 'none';
 
 export class RoughGenerator {
   private config: Config;
-  private surface?: DrawingSurface;
 
   defaultOptions: ResolvedOptions = {
     maxRandomnessOffset: 2,
@@ -32,9 +31,8 @@ export class RoughGenerator {
     roughnessGain: 1
   };
 
-  constructor(config?: Config, surface?: DrawingSurface) {
+  constructor(config?: Config) {
     this.config = config || {};
-    this.surface = surface;
     if (this.config.options) {
       this.defaultOptions = this._options(this.config.options);
     }
@@ -169,69 +167,17 @@ export class RoughGenerator {
     }
     const outline = svgPath(d, o);
     if (o.fill) {
+      const polyPoints = (pointsOnPath(d, 1, (1 + o.roughness) / 2)).points;
       if (o.fillStyle === 'solid') {
-        const shape: OpSet = { type: 'path2Dfill', path: d, ops: [] };
-        paths.push(shape);
+        paths.push(solidFillPolygon(polyPoints, o));
       } else {
-        const size = this.computePathSize(d);
-        const points: Point[] = [
-          [0, 0],
-          [size[0], 0],
-          [size[0], size[1]],
-          [0, size[1]]
-        ];
-        const shape = patternFillPolygon(points, o);
-        shape.type = 'path2Dpattern';
-        shape.size = size;
-        shape.path = d;
-        paths.push(shape);
+        paths.push(patternFillPolygon(polyPoints, o));
       }
     }
     if (o.stroke !== NOS) {
       paths.push(outline);
     }
     return this._drawable('path', paths, o);
-  }
-
-  private computePathSize(d: string): Point {
-    let size: Point = [0, 0];
-    if (hasSelf && self.document) {
-      try {
-        const svg = self.document.createElementNS(SVGNS, 'svg');
-        svg.setAttribute('width', '0');
-        svg.setAttribute('height', '0');
-        const pathNode = self.document.createElementNS(SVGNS, 'path');
-        pathNode.setAttribute('d', d);
-        svg.appendChild(pathNode);
-        self.document.body.appendChild(svg);
-        const bb = pathNode.getBBox();
-        if (bb) {
-          size[0] = bb.width || 0;
-          size[1] = bb.height || 0;
-        }
-        self.document.body.removeChild(svg);
-      } catch (err) { }
-    }
-    const canvasSize = this.getCanvasSize();
-    if (!(size[0] * size[1])) {
-      size = canvasSize;
-    }
-    return size;
-  }
-
-  private getCanvasSize(): Point {
-    const val = (w: any): number => {
-      if (w && typeof w === 'object') {
-        if (w.baseVal && w.baseVal.value) {
-          return w.baseVal.value;
-        }
-      }
-      return w || 100;
-    };
-    if (this.surface) {
-      return [val(this.surface.width), val(this.surface.height)];
-    }
-    return [100, 100];
   }
 
   opsToPath(drawing: OpSet): string {
@@ -282,30 +228,6 @@ export class RoughGenerator {
         case 'fillSketch':
           path = this.fillSketch(drawing, o);
           break;
-        case 'path2Dfill':
-          path = {
-            d: drawing.path || '',
-            stroke: NOS,
-            strokeWidth: 0,
-            fill: o.fill || NOS
-          };
-          break;
-        case 'path2Dpattern': {
-          const size = drawing.size!;
-          const pattern: PatternInfo = {
-            x: 0, y: 0, width: 1, height: 1,
-            viewBox: `0 0 ${Math.round(size[0])} ${Math.round(size[1])}`,
-            patternUnits: 'objectBoundingBox',
-            path: this.fillSketch(drawing, o)
-          };
-          path = {
-            d: drawing.path!,
-            stroke: NOS,
-            strokeWidth: 0,
-            pattern: pattern
-          };
-          break;
-        }
       }
       if (path) {
         paths.push(path);

@@ -2,32 +2,13 @@ import { Config, Options, OpSet, ResolvedOptions, Drawable, SVGNS } from './core
 import { RoughGenerator } from './generator';
 import { Point } from './geometry';
 
-const hasDocument = typeof document !== 'undefined';
-
 export class RoughSVG {
   private gen: RoughGenerator;
   private svg: SVGSVGElement;
-  private _defs?: SVGDefsElement;
 
   constructor(svg: SVGSVGElement, config?: Config) {
     this.svg = svg;
-    this.gen = new RoughGenerator(config, this.svg);
-  }
-
-  private get defs(): SVGDefsElement | null {
-    const doc = this.svg.ownerDocument || (hasDocument && document);
-    if (doc) {
-      if (!this._defs) {
-        const dnode = doc.createElementNS(SVGNS, 'defs');
-        if (this.svg.firstChild) {
-          this.svg.insertBefore(dnode, this.svg.firstChild);
-        } else {
-          this.svg.appendChild(dnode);
-        }
-        this._defs = dnode;
-      }
-    }
-    return this._defs || null;
+    this.gen = new RoughGenerator(config);
   }
 
   draw(drawable: Drawable): SVGGElement {
@@ -56,41 +37,6 @@ export class RoughSVG {
         }
         case 'fillSketch': {
           path = this.fillSketch(doc, drawing, o);
-          break;
-        }
-        case 'path2Dfill': {
-          path = doc.createElementNS(SVGNS, 'path');
-          path.setAttribute('d', drawing.path || '');
-          path.style.stroke = 'none';
-          path.style.strokeWidth = '0';
-          path.style.fill = o.fill || '';
-          break;
-        }
-        case 'path2Dpattern': {
-          if (!this.defs) {
-            console.error('Pattern fill fail: No defs');
-          } else {
-            const size = drawing.size!;
-            const pattern = doc.createElementNS(SVGNS, 'pattern');
-            const id = `rough-${Math.floor(Math.random() * (Number.MAX_SAFE_INTEGER || 999999))}`;
-            pattern.setAttribute('id', id);
-            pattern.setAttribute('x', '0');
-            pattern.setAttribute('y', '0');
-            pattern.setAttribute('width', '1');
-            pattern.setAttribute('height', '1');
-            pattern.setAttribute('height', '1');
-            pattern.setAttribute('viewBox', `0 0 ${Math.round(size[0])} ${Math.round(size[1])}`);
-            pattern.setAttribute('patternUnits', 'objectBoundingBox');
-            const patternPath = this.fillSketch(doc, drawing, o);
-            pattern.appendChild(patternPath);
-            this.defs!.appendChild(pattern);
-
-            path = doc.createElementNS(SVGNS, 'path');
-            path.setAttribute('d', drawing.path || '');
-            path.style.stroke = 'none';
-            path.style.strokeWidth = '0';
-            path.style.fill = `url(#${id})`;
-          }
           break;
         }
       }
