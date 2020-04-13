@@ -1,7 +1,9 @@
-import { Config, DrawingSurface, Options, Drawable, OpSet, ResolvedOptions, PathInfo, PatternInfo, SVGNS } from './core';
-import { Point, getPointsOnBezierCurves } from './geometry.js';
-import { line, solidFillPolygon, patternFillPolygon, rectangle, ellipseWithParams, generateEllipseParams, linearPath, arc, patternFillArc, curve, svgPath, curveAsBezierPoints } from './renderer.js';
-import { randomSeed } from './math';
+import { Config, DrawingSurface, Options, Drawable, OpSet, ResolvedOptions, PathInfo, PatternInfo, SVGNS } from './core.js';
+import { Point } from './geometry.js';
+import { line, solidFillPolygon, patternFillPolygon, rectangle, ellipseWithParams, generateEllipseParams, linearPath, arc, patternFillArc, curve, svgPath } from './renderer.js';
+import { randomSeed } from './math.js';
+import { curveToBezier } from 'points-on-curve/lib/curve-to-bezier.js';
+import { pointsOnBezierCurves } from 'points-on-curve';
 
 const hasSelf = typeof self !== 'undefined';
 const NOS = 'none';
@@ -127,15 +129,13 @@ export class RoughGenerator {
     const o = this._options(options);
     const paths: OpSet[] = [];
     const outline = curve(points, o);
-    if (o.fill && o.fill !== NOS) {
-      const bezPoints = curveAsBezierPoints(points, o);
-      if (bezPoints.length >= 4) {
-        const polyPoints = getPointsOnBezierCurves(bezPoints, Math.max(50, 50 * o.roughness));
-        if (o.fillStyle === 'solid') {
-          paths.push(solidFillPolygon(polyPoints, o));
-        } else {
-          paths.push(patternFillPolygon(polyPoints, o));
-        }
+    if (o.fill && o.fill !== NOS && points.length >= 3) {
+      const bcurve = curveToBezier(points);
+      const polyPoints = pointsOnBezierCurves(bcurve, 1, (1 + o.roughness) / 2);
+      if (o.fillStyle === 'solid') {
+        paths.push(solidFillPolygon(polyPoints, o));
+      } else {
+        paths.push(patternFillPolygon(polyPoints, o));
       }
     }
     if (o.stroke !== NOS) {

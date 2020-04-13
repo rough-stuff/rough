@@ -35,5 +35,9 @@
     "rollup-plugin-terser": "^5.2.0",
     "tslint": "^5.20.1",
     "typescript": "^3.7.4"
+  },
+  "dependencies": {
+    "path-data-parser": "^0.1.0",
+    "points-on-curve": "^0.1.0"
   }
 }
