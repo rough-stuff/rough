@@ -53,7 +53,7 @@ export interface ResolvedOptions extends Options {
   randomizer?: Random;
 }
 
-export declare type OpType = 'move' | 'bcurveTo' | 'lineTo' | 'qcurveTo';
+export declare type OpType = 'move' | 'bcurveTo' | 'lineTo';
 export declare type OpSetType = 'path' | 'fillPath' | 'fillSketch';
 
 export interface Op {

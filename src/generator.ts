@@ -190,9 +190,6 @@ export class RoughGenerator {
         case 'bcurveTo':
           path += `C${data[0]} ${data[1]}, ${data[2]} ${data[3]}, ${data[4]} ${data[5]} `;
           break;
-        case 'qcurveTo':
-          path += `Q${data[0]} ${data[1]}, ${data[2]} ${data[3]} `;
-          break;
         case 'lineTo':
           path += `L${data[0]} ${data[1]} `;
           break;
