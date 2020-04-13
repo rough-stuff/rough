@@ -33,7 +33,7 @@ export class RoughGenerator {
   constructor(config?: Config) {
     this.config = config || {};
     if (this.config.options) {
-      this.defaultOptions = this._options(this.config.options);
+      this.defaultOptions = this._o(this.config.options);
     }
   }
 
@@ -41,21 +41,21 @@ export class RoughGenerator {
     return randomSeed();
   }
 
-  private _options(options?: Options): ResolvedOptions {
+  private _o(options?: Options): ResolvedOptions {
     return options ? Object.assign({}, this.defaultOptions, options) : this.defaultOptions;
   }
 
-  private _drawable(shape: string, sets: OpSet[], options: ResolvedOptions): Drawable {
+  private _d(shape: string, sets: OpSet[], options: ResolvedOptions): Drawable {
     return { shape, sets: sets || [], options: options || this.defaultOptions };
   }
 
   line(x1: number, y1: number, x2: number, y2: number, options?: Options): Drawable {
-    const o = this._options(options);
-    return this._drawable('line', [line(x1, y1, x2, y2, o)], o);
+    const o = this._o(options);
+    return this._d('line', [line(x1, y1, x2, y2, o)], o);
   }
 
   rectangle(x: number, y: number, width: number, height: number, options?: Options): Drawable {
-    const o = this._options(options);
+    const o = this._o(options);
     const paths = [];
     const outline = rectangle(x, y, width, height, o);
     if (o.fill) {
@@ -69,11 +69,11 @@ export class RoughGenerator {
     if (o.stroke !== NOS) {
       paths.push(outline);
     }
-    return this._drawable('rectangle', paths, o);
+    return this._d('rectangle', paths, o);
   }
 
   ellipse(x: number, y: number, width: number, height: number, options?: Options): Drawable {
-    const o = this._options(options);
+    const o = this._o(options);
     const paths: OpSet[] = [];
     const ellipseParams = generateEllipseParams(width, height, o);
     const ellipseResponse = ellipseWithParams(x, y, o, ellipseParams);
@@ -89,7 +89,7 @@ export class RoughGenerator {
     if (o.stroke !== NOS) {
       paths.push(ellipseResponse.opset);
     }
-    return this._drawable('ellipse', paths, o);
+    return this._d('ellipse', paths, o);
   }
 
   circle(x: number, y: number, diameter: number, options?: Options): Drawable {
@@ -99,12 +99,12 @@ export class RoughGenerator {
   }
 
   linearPath(points: Point[], options?: Options): Drawable {
-    const o = this._options(options);
-    return this._drawable('linearPath', [linearPath(points, false, o)], o);
+    const o = this._o(options);
+    return this._d('linearPath', [linearPath(points, false, o)], o);
   }
 
   arc(x: number, y: number, width: number, height: number, start: number, stop: number, closed: boolean = false, options?: Options): Drawable {
-    const o = this._options(options);
+    const o = this._o(options);
     const paths = [];
     const outline = arc(x, y, width, height, start, stop, closed, true, o);
     if (closed && o.fill) {
@@ -119,11 +119,11 @@ export class RoughGenerator {
     if (o.stroke !== NOS) {
       paths.push(outline);
     }
-    return this._drawable('arc', paths, o);
+    return this._d('arc', paths, o);
   }
 
   curve(points: Point[], options?: Options): Drawable {
-    const o = this._options(options);
+    const o = this._o(options);
     const paths: OpSet[] = [];
     const outline = curve(points, o);
     if (o.fill && o.fill !== NOS && points.length >= 3) {
@@ -138,11 +138,11 @@ export class RoughGenerator {
     if (o.stroke !== NOS) {
       paths.push(outline);
     }
-    return this._drawable('curve', paths, o);
+    return this._d('curve', paths, o);
   }
 
   polygon(points: Point[], options?: Options): Drawable {
-    const o = this._options(options);
+    const o = this._o(options);
     const paths: OpSet[] = [];
     const outline = linearPath(points, true, o);
     if (o.fill) {
@@ -155,14 +155,14 @@ export class RoughGenerator {
     if (o.stroke !== NOS) {
       paths.push(outline);
     }
-    return this._drawable('polygon', paths, o);
+    return this._d('polygon', paths, o);
   }
 
   path(d: string, options?: Options): Drawable {
-    const o = this._options(options);
+    const o = this._o(options);
     const paths: OpSet[] = [];
     if (!d) {
-      return this._drawable('path', paths, o);
+      return this._d('path', paths, o);
     }
     const outline = svgPath(d, o);
     if (o.fill) {
@@ -176,7 +176,7 @@ export class RoughGenerator {
     if (o.stroke !== NOS) {
       paths.push(outline);
     }
-    return this._drawable('path', paths, o);
+    return this._d('path', paths, o);
   }
 
   opsToPath(drawing: OpSet): string {
