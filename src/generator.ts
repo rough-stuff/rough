@@ -128,7 +128,7 @@ export class RoughGenerator {
     const outline = curve(points, o);
     if (o.fill && o.fill !== NOS && points.length >= 3) {
       const bcurve = curveToBezier(points);
-      const polyPoints = pointsOnBezierCurves(bcurve, 1, (1 + o.roughness) / 2);
+      const polyPoints = pointsOnBezierCurves(bcurve, 10, (1 + o.roughness) / 2);
       if (o.fillStyle === 'solid') {
         paths.push(solidFillPolygon(polyPoints, o));
       } else {

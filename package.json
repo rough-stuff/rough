@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "path-data-parser": "^0.1.0",
-    "points-on-curve": "^0.1.0",
+    "points-on-curve": "^0.1.1",
     "points-on-path": "^0.1.0"
   }
 }
