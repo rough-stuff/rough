@@ -3,15 +3,22 @@ import { Point, lineLength } from './geometry';
 
 export function simplify(segments: Segment[], simplification: number): Segment[] {
   const sets: Point[][] = [];
+  const setClosed: boolean[] = [];
   let points: Point[] = [];
   let start: Point = [0, 0];
+  let closed = false;
   const pushPoints = () => {
     if (points.length) {
       sets.push(points);
+      setClosed.push(closed);
     }
+    closed = false;
     points = [];
   };
   for (const { key, data } of segments) {
+    if (sets.length > 0) {
+      break;
+    }
     switch (key) {
       case 'M':
         pushPoints();
@@ -22,14 +29,16 @@ export function simplify(segments: Segment[], simplification: number): Segment[]
         points.push([data[0], data[1]]);
         break;
       case 'Z':
-        points.push(start);
+        closed = true;
+        pushPoints();
         break;
     }
   }
   pushPoints();
 
   const out: Segment[] = [];
-  for (const set of sets) {
+  for (let si = 0; si < sets.length; si++) {
+    const set = sets[si];
     let estLength = Math.floor(simplification * set.length);
     if (estLength < 5) {
       if (length <= 5) {
@@ -44,6 +53,9 @@ export function simplify(segments: Segment[], simplification: number): Segment[]
         data: d
       });
     });
+    if (setClosed[si]) {
+      out.push({ key: 'Z', data: [] });
+    }
   }
   return out;
 }

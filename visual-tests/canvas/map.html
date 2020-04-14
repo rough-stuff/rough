@@ -18,7 +18,7 @@
     const canvas = document.querySelector('canvas');
     const rc = rough.canvas(canvas, {
       options: {
-        simplification: 0.4,
+        simplification: 0.1,
         roughness: 0.65
       }
     });
@@ -34,13 +34,15 @@
       if (error) throw error;
       let topo = topojson.feature(us, us.objects.states).features;
       for (let feature of topo) {
-        console.log(feature);
-        // rc.path(path(feature));
-        rc.path(path(feature), {
-          fill: randomColor(),
-          fillStyle: randomStyle(),
-          hachureAngle: randomAngle()
-        });
+        if (feature.id === 48) {
+          console.log(feature);
+          rc.path(path(feature), {
+            fill: randomColor(),
+            fillStyle: randomStyle(),
+            hachureAngle: randomAngle()
+          });
+          break;
+        }
       }
     });
 
