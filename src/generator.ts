@@ -1,10 +1,11 @@
 import { Config, Options, Drawable, OpSet, ResolvedOptions, PathInfo } from './core.js';
 import { Point } from './geometry.js';
-import { line, solidFillPolygon, patternFillPolygon, rectangle, ellipseWithParams, generateEllipseParams, linearPath, arc, patternFillArc, curve, svgPath } from './renderer.js';
+import { line, solidFillPolygon, patternFillPolygon, rectangle, ellipseWithParams, generateEllipseParams, linearPath, arc, patternFillArc, curve, svgPathSegments, segmentizePath } from './renderer.js';
 import { randomSeed } from './math.js';
 import { curveToBezier } from 'points-on-curve/lib/curve-to-bezier.js';
 import { pointsOnBezierCurves } from 'points-on-curve';
 import { pointsOnPath } from 'points-on-path';
+import { serialize } from 'path-data-parser';
 
 const NOS = 'none';
 
@@ -164,17 +165,21 @@ export class RoughGenerator {
     if (!d) {
       return this._d('path', paths, o);
     }
-    const outline = svgPath(d, o);
-    if (o.fill) {
-      const polyPoints = (pointsOnPath(d, 1, (1 + o.roughness) / 2)).points;
-      if (o.fillStyle === 'solid') {
-        paths.push(solidFillPolygon(polyPoints, o));
-      } else {
-        paths.push(patternFillPolygon(polyPoints, o));
+    const segments = segmentizePath(d, o);
+    if (segments.length) {
+      const outline = svgPathSegments(segments, o);
+      if (o.fill) {
+        const fillPathString = o.simplification ? serialize(segments) : d;
+        const polyPoints = (pointsOnPath(fillPathString, 1, (1 + o.roughness) / 2)).points;
+        if (o.fillStyle === 'solid') {
+          paths.push(solidFillPolygon(polyPoints, o));
+        } else {
+          paths.push(patternFillPolygon(polyPoints, o));
+        }
       }
-    }
-    if (o.stroke !== NOS) {
-      paths.push(outline);
+      if (o.stroke !== NOS) {
+        paths.push(outline);
+      }
     }
     return this._d('path', paths, o);
   }

@@ -5,6 +5,7 @@ import { RenderHelper } from './fillers/filler-interface.js';
 import { Random } from './math.js';
 import { parsePath, normalize, absolutize } from 'path-data-parser';
 import { simplify } from './path-fitter.js';
+import { Segment } from 'path-data-parser/lib/parser';
 
 interface EllipseParams {
   rx: number;
@@ -132,11 +133,19 @@ export function arc(x: number, y: number, width: number, height: number, start: 
 }
 
 export function svgPath(path: string, o: ResolvedOptions): OpSet {
+  return svgPathSegments(segmentizePath(path, o), o);
+}
+
+export function segmentizePath(path: string, o: ResolvedOptions): Segment[] {
   path = (path || '').replace(/\n/g, ' ').replace(/(-\s)/g, '-').replace('/(\s\s)/g', ' ');
   let segments = normalize(absolutize(parsePath(path)));
   if (o.simplification) {
     segments = simplify(segments, o.simplification);
   }
+  return segments;
+}
+
+export function svgPathSegments(segments: Segment[], o: ResolvedOptions): OpSet {
   const ops: Op[] = [];
   let first: Point = [0, 0];
   let current: Point = [0, 0];
