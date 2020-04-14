@@ -165,7 +165,7 @@ export class RoughGenerator {
     if (!d) {
       return this._d('path', paths, o);
     }
-    const segments = segmentizePath(d, o);
+    const segments = segmentizePath(d);
     if (segments.length) {
       const outline = svgPathSegments(segments, o);
       if (o.fill) {
