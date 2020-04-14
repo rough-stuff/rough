@@ -37,8 +37,22 @@ export function simplify(segments: Segment[], simplification: number): Segment[]
   pushPoints();
 
   const out: Segment[] = [];
+
+  const addSegment = (pointsIn: Point[], closed: boolean) => {
+    pointsIn.forEach((d, i) => {
+      out.push({
+        key: i === 0 ? 'M' : 'L',
+        data: d
+      });
+    });
+    if (closed) {
+      out.push({ key: 'Z', data: [] });
+    }
+  };
+
   for (let si = 0; si < sets.length; si++) {
     const set = sets[si];
+    const isClosed = setClosed[si];
     let estLength = Math.floor(simplification * set.length);
     if (estLength < 5) {
       if (length <= 5) {
@@ -47,15 +61,7 @@ export function simplify(segments: Segment[], simplification: number): Segment[]
       estLength = 5;
     }
     const reduced = reduce(set, estLength);
-    reduced.forEach((d, i) => {
-      out.push({
-        key: i === 0 ? 'M' : 'L',
-        data: d
-      });
-    });
-    if (setClosed[si]) {
-      out.push({ key: 'Z', data: [] });
-    }
+    addSegment(reduced, isClosed);
   }
   return out;
 }
