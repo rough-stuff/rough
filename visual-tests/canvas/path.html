@@ -13,7 +13,12 @@
   <script type="module">
     import rough from '../../bin/rough.js';
     const canvas = document.querySelector('canvas');
-    const rc = rough.canvas(canvas);
+    const rc = rough.canvas(canvas, {
+      options: {
+        simplification: undefined,
+        combineNestedSvgPaths: true
+      }
+    });
 
     rc.path('M400 100 h 90 v 90 h -90z', {
       stroke: 'red',

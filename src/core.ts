@@ -31,6 +31,7 @@ export interface Options {
   dashGap?: number;
   zigzagOffset?: number;
   seed?: number;
+  combineNestedSvgPaths?: boolean;
 }
 
 export interface ResolvedOptions extends Options {
@@ -50,6 +51,7 @@ export interface ResolvedOptions extends Options {
   dashGap: number;
   zigzagOffset: number;
   seed: number;
+  combineNestedSvgPaths: boolean;
   randomizer?: Random;
 }
 

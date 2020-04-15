@@ -1,11 +1,10 @@
 import { Config, Options, Drawable, OpSet, ResolvedOptions, PathInfo } from './core.js';
 import { Point } from './geometry.js';
-import { line, solidFillPolygon, patternFillPolygon, rectangle, ellipseWithParams, generateEllipseParams, linearPath, arc, patternFillArc, curve, svgPathSegments, segmentizePath } from './renderer.js';
+import { line, solidFillPolygon, patternFillPolygon, rectangle, ellipseWithParams, generateEllipseParams, linearPath, arc, patternFillArc, curve, svgPath } from './renderer.js';
 import { randomSeed } from './math.js';
 import { curveToBezier } from 'points-on-curve/lib/curve-to-bezier.js';
 import { pointsOnBezierCurves } from 'points-on-curve';
 import { pointsOnPath } from 'points-on-path';
-import { serialize } from 'path-data-parser';
 
 const NOS = 'none';
 
@@ -28,7 +27,8 @@ export class RoughGenerator {
     dashOffset: -1,
     dashGap: -1,
     zigzagOffset: -1,
-    seed: 0
+    seed: 0,
+    combineNestedSvgPaths: false
   };
 
   constructor(config?: Config) {
@@ -165,22 +165,43 @@ export class RoughGenerator {
     if (!d) {
       return this._d('path', paths, o);
     }
-    const segments = segmentizePath(d);
-    if (segments.length) {
-      const outline = svgPathSegments(segments, o);
-      if (o.fill) {
-        const fillPathString = o.simplification ? serialize(segments) : d;
-        const polyPoints = (pointsOnPath(fillPathString, 1, (1 + o.roughness) / 2)).points;
+    d = (d || '').replace(/\n/g, ' ').replace(/(-\s)/g, '-').replace('/(\s\s)/g', ' ');
+
+    const hasFill = o.fill && o.fill !== 'transparent' && o.fill !== NOS;
+    const hasStroke = o.stroke !== NOS;
+    const simplified = !!(o.simplification && (o.simplification < 1));
+    const distance = simplified ? (4 - 4 * (o.simplification!)) : ((1 + o.roughness) / 2);
+    const sets = pointsOnPath(d, 1, distance);
+
+    if (hasFill) {
+      if (o.combineNestedSvgPaths) {
+        const combined: Point[] = [];
+        sets.forEach((set) => combined.push(...set));
         if (o.fillStyle === 'solid') {
-          paths.push(solidFillPolygon(polyPoints, o));
+          paths.push(solidFillPolygon(combined, o));
         } else {
-          paths.push(patternFillPolygon(polyPoints, o));
+          paths.push(patternFillPolygon(combined, o));
         }
-      }
-      if (o.stroke !== NOS) {
-        paths.push(outline);
+      } else {
+        sets.forEach((polyPoints) => {
+          if (o.fillStyle === 'solid') {
+            paths.push(solidFillPolygon(polyPoints, o));
+          } else {
+            paths.push(patternFillPolygon(polyPoints, o));
+          }
+        });
       }
     }
+    if (hasStroke) {
+      if (simplified) {
+        sets.forEach((set) => {
+          paths.push(linearPath(set, false, o));
+        });
+      } else {
+        paths.push(svgPath(d, o));
+      }
+    }
+
     return this._d('path', paths, o);
   }
 
