@@ -1,3 +1,4 @@
+import resolve from 'rollup-plugin-node-resolve';
 import { terser } from "rollup-plugin-terser";
 import typescript from '@rollup/plugin-typescript';
 
@@ -11,7 +12,7 @@ export default [
       format: 'iife',
       name: 'rough'
     },
-    plugins: [terser()]
+    plugins: [resolve(), terser()]
   },
   {
     input,
@@ -19,7 +20,7 @@ export default [
       file: 'bundled/rough.esm.js',
       format: 'esm'
     },
-    plugins: [terser()]
+    plugins: [resolve(), terser()]
   },
   {
     input: 'src/rough.ts',
@@ -27,6 +28,6 @@ export default [
       file: 'bundled/rough.cjs.js',
       format: 'cjs'
     },
-    plugins: [typescript({ target: "es5" }), terser()]
+    plugins: [resolve(), typescript({ target: "es5" }), terser()]
   }
 ];

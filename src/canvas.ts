@@ -1,8 +1,6 @@
-import { Config, Options, ResolvedOptions, Drawable, OpSet, SVGNS } from './core';
+import { Config, Options, ResolvedOptions, Drawable, OpSet } from './core';
 import { RoughGenerator } from './generator';
 import { Point } from './geometry';
-
-const hasDocument = typeof document !== 'undefined';
 
 export class RoughCanvas {
   private gen: RoughGenerator;
@@ -12,7 +10,7 @@ export class RoughCanvas {
   constructor(canvas: HTMLCanvasElement, config?: Config) {
     this.canvas = canvas;
     this.ctx = this.canvas.getContext('2d')!;
-    this.gen = new RoughGenerator(config, this.canvas);
+    this.gen = new RoughGenerator(config);
   }
 
   draw(drawable: Drawable) {
@@ -38,60 +36,8 @@ export class RoughCanvas {
         case 'fillSketch':
           this.fillSketch(ctx, drawing, o);
           break;
-        case 'path2Dfill': {
-          this.ctx.save();
-          this.ctx.fillStyle = o.fill || '';
-          const p2d = new Path2D(drawing.path);
-          this.ctx.fill(p2d, 'evenodd');
-          this.ctx.restore();
-          break;
-        }
-        case 'path2Dpattern': {
-          const doc = this.canvas.ownerDocument || (hasDocument && document);
-          if (doc) {
-            const size = drawing.size!;
-            const hcanvas = doc.createElement('canvas');
-            const hcontext = hcanvas.getContext('2d')!;
-            const bbox = this.computeBBox(drawing.path!);
-            if (bbox && (bbox.width || bbox.height)) {
-              hcanvas.width = this.canvas.width;
-              hcanvas.height = this.canvas.height;
-              hcontext.translate(bbox.x || 0, bbox.y || 0);
-            } else {
-              hcanvas.width = size[0];
-              hcanvas.height = size[1];
-            }
-            this.fillSketch(hcontext, drawing, o);
-            this.ctx.save();
-            this.ctx.fillStyle = this.ctx.createPattern(hcanvas, 'repeat')!;
-            const p2d = new Path2D(drawing.path);
-            this.ctx.fill(p2d, 'evenodd');
-            this.ctx.restore();
-          } else {
-            console.error('Pattern fill fail: No defs');
-          }
-          break;
-        }
       }
     }
-  }
-
-  private computeBBox(d: string): SVGRect | null {
-    if (hasDocument) {
-      try {
-        const svg = document.createElementNS(SVGNS, 'svg');
-        svg.setAttribute('width', '0');
-        svg.setAttribute('height', '0');
-        const pathNode = self.document.createElementNS(SVGNS, 'path');
-        pathNode.setAttribute('d', d);
-        svg.appendChild(pathNode);
-        document.body.appendChild(svg);
-        const bbox = pathNode.getBBox();
-        document.body.removeChild(svg);
-        return bbox;
-      } catch (err) { }
-    }
-    return null;
   }
 
   private fillSketch(ctx: CanvasRenderingContext2D, drawing: OpSet, o: ResolvedOptions) {
@@ -116,9 +62,6 @@ export class RoughCanvas {
           break;
         case 'bcurveTo':
           ctx.bezierCurveTo(data[0], data[1], data[2], data[3], data[4], data[5]);
-          break;
-        case 'qcurveTo':
-          ctx.quadraticCurveTo(data[0], data[1], data[2], data[3]);
           break;
         case 'lineTo':
           ctx.lineTo(data[0], data[1]);

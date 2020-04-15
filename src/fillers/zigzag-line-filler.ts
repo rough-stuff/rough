@@ -19,7 +19,7 @@ export class ZigZagLineFiller implements PatternFiller {
   }
 
   private zigzagLines(lines: Line[], zo: number, o: ResolvedOptions): Op[] {
-    let ops: Op[] = [];
+    const ops: Op[] = [];
     lines.forEach((line) => {
       const length = lineLength(line);
       const count = Math.round(length / (2 * zo));
@@ -37,8 +37,10 @@ export class ZigZagLineFiller implements PatternFiller {
         const start: Point = [p1[0] + (lstart * Math.cos(alpha)), p1[1] + lstart * Math.sin(alpha)];
         const end: Point = [p1[0] + (lend * Math.cos(alpha)), p1[1] + (lend * Math.sin(alpha))];
         const middle: Point = [start[0] + dz * Math.cos(alpha + Math.PI / 4), start[1] + dz * Math.sin(alpha + Math.PI / 4)];
-        ops = ops.concat(this.helper.doubleLineOps(start[0], start[1], middle[0], middle[1], o));
-        ops = ops.concat(this.helper.doubleLineOps(middle[0], middle[1], end[0], end[1], o));
+        ops.push(
+          ...this.helper.doubleLineOps(start[0], start[1], middle[0], middle[1], o),
+          ...this.helper.doubleLineOps(middle[0], middle[1], end[0], end[1], o)
+        );
       }
     });
     return ops;
