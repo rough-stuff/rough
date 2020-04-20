@@ -23,8 +23,6 @@ export class HachureFiller implements PatternFiller {
     let lines = polygonHachureLines(points, o);
     if (connectEnds) {
       const connectingLines = this.connectingLines(points, lines);
-      // console.log(lines);
-      // console.log(connectingLines);
       lines = lines.concat(connectingLines);
     }
     const ops = this.renderLines(lines, o);
