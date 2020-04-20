@@ -85,7 +85,11 @@ export class HachureFiller implements PatternFiller {
         ips.pop();
       }
       if (ips.length <= 1) {
-        return [segment];
+        if (isPointInPolygon(polygon, (segment[0][0] + segment[1][0]) / 2, (segment[0][1] + segment[1][1]) / 2)) {
+          return [segment];
+        } else {
+          return [];
+        }
       }
       const spoints = [segment[0], ...ips, segment[1]];
       const slines: Line[] = [];
@@ -93,8 +97,10 @@ export class HachureFiller implements PatternFiller {
         slines.push([spoints[i], spoints[i + 1]]);
       }
       return slines;
-    } else {
+    } else if (isPointInPolygon(polygon, (segment[0][0] + segment[1][0]) / 2, (segment[0][1] + segment[1][1]) / 2)) {
       return [segment];
+    } else {
+      return [];
     }
   }
 }
