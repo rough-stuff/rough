@@ -56,6 +56,10 @@ export class HachureFiller implements PatternFiller {
     return result;
   }
 
+  private midPointInPolygon(polygon: Point[], segment: Line): boolean {
+    return isPointInPolygon(polygon, (segment[0][0] + segment[1][0]) / 2, (segment[0][1] + segment[1][1]) / 2);
+  }
+
   private splitOnIntersections(polygon: Point[], segment: Line): Line[] {
     const error = Math.max(5, lineLength(segment) * 0.1);
     const intersections: IntersectionInfo[] = [];
@@ -85,7 +89,7 @@ export class HachureFiller implements PatternFiller {
         ips.pop();
       }
       if (ips.length <= 1) {
-        if (isPointInPolygon(polygon, (segment[0][0] + segment[1][0]) / 2, (segment[0][1] + segment[1][1]) / 2)) {
+        if (this.midPointInPolygon(polygon, segment)) {
           return [segment];
         } else {
           return [];
@@ -94,10 +98,13 @@ export class HachureFiller implements PatternFiller {
       const spoints = [segment[0], ...ips, segment[1]];
       const slines: Line[] = [];
       for (let i = 0; i < (spoints.length - 1); i += 2) {
-        slines.push([spoints[i], spoints[i + 1]]);
+        const subSegment: Line = [spoints[i], spoints[i + 1]];
+        if (this.midPointInPolygon(polygon, subSegment)) {
+          slines.push(subSegment);
+        }
       }
       return slines;
-    } else if (isPointInPolygon(polygon, (segment[0][0] + segment[1][0]) / 2, (segment[0][1] + segment[1][1]) / 2)) {
+    } else if (this.midPointInPolygon(polygon, segment)) {
       return [segment];
     } else {
       return [];
