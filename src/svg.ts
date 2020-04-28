@@ -22,17 +22,17 @@ export class RoughSVG {
         case 'path': {
           path = doc.createElementNS(SVGNS, 'path');
           path.setAttribute('d', this.opsToPath(drawing));
-          path.style.stroke = o.stroke;
-          path.style.strokeWidth = o.strokeWidth + '';
-          path.style.fill = 'none';
+          path.setAttribute('stroke', o.stroke);
+          path.setAttribute('stroke-width', o.strokeWidth + '');
+          path.setAttribute('fill', 'none');
           break;
         }
         case 'fillPath': {
           path = doc.createElementNS(SVGNS, 'path');
           path.setAttribute('d', this.opsToPath(drawing));
-          path.style.stroke = 'none';
-          path.style.strokeWidth = '0';
-          path.style.fill = o.fill || '';
+          path.setAttribute('stroke', 'none');
+          path.setAttribute('stroke-width', '0');
+          path.setAttribute('fill', o.fill || '');
           break;
         }
         case 'fillSketch': {
@@ -54,9 +54,9 @@ export class RoughSVG {
     }
     const path = doc.createElementNS(SVGNS, 'path');
     path.setAttribute('d', this.opsToPath(drawing));
-    path.style.stroke = o.fill || '';
-    path.style.strokeWidth = fweight + '';
-    path.style.fill = 'none';
+    path.setAttribute('stroke', o.fill || '');
+    path.setAttribute('stroke-width', fweight + '');
+    path.setAttribute('fill', 'none');
     return path;
   }
 
