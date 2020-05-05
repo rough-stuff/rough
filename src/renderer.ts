@@ -201,7 +201,7 @@ export function patternFillArc(x: number, y: number, width: number, height: numb
     strt = 0;
     stp = Math.PI * 2;
   }
-  const increment = (stp - strt) / o.curveStepCount;
+  const increment = Math.min(Math.PI  / o.curveStepCount, (stp - strt) / 2);
   const points: Point[] = [];
   for (let angle = strt; angle <= stp; angle = angle + increment) {
     points.push([cx + rx * Math.cos(angle), cy + ry * Math.sin(angle)]);
