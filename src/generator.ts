@@ -28,7 +28,9 @@ export class RoughGenerator {
     dashGap: -1,
     zigzagOffset: -1,
     seed: 0,
-    combineNestedSvgPaths: false
+    combineNestedSvgPaths: false,
+    disableMultiStroke: false,
+    disableMultiStrokeFill: false
   };
 
   constructor(config?: Config) {
