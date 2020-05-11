@@ -56,7 +56,7 @@ export function rectangle(x: number, y: number, width: number, height: number, o
 export function curve(points: Point[], o: ResolvedOptions): OpSet {
   let o1 = _curveWithOffset(points, 1 * (1 + o.roughness * 0.2), o);
   if (!o.disableMultiStroke) {
-    const o2 = _curveWithOffset(points, 1.5 * (1 + o.roughness * 0.22), o);
+    const o2 = _curveWithOffset(points, 1.5 * (1 + o.roughness * 0.22), cloneOptionsAlterSeed(o));
     o1 = o1.concat(o2);
   }
   return { type: 'path', ops: o1 };
@@ -232,6 +232,15 @@ export function doubleLineFillOps(x1: number, y1: number, x2: number, y2: number
 }
 
 // Private helpers
+
+function cloneOptionsAlterSeed(ops: ResolvedOptions): ResolvedOptions {
+  const result: ResolvedOptions = { ...ops };
+  result.randomizer = undefined;
+  if (ops.seed) {
+    result.seed = ops.seed + 1;
+  }
+  return result;
+}
 
 function random(ops: ResolvedOptions): number {
   if (!ops.randomizer) {
