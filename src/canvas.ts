@@ -52,6 +52,12 @@ export class RoughCanvas {
       fweight = o.strokeWidth / 2;
     }
     ctx.save();
+    if (o.fillLineDash) {
+      ctx.setLineDash(o.fillLineDash);
+    }
+    if (o.fillLineDashOffset) {
+      ctx.lineDashOffset = o.fillLineDashOffset;
+    }
     ctx.strokeStyle = o.fill || '';
     ctx.lineWidth = fweight;
     this._drawToContext(ctx, drawing);

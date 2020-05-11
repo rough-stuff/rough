@@ -28,8 +28,8 @@
     rc.rectangle(510, 10, 80, 80, { fill: 'red', fillStyle: 'dots' });
 
     rc.rectangle(10, 110, 80, 80, { roughness: 2 });
-    rc.rectangle(110, 110, 80, 80, { fill: 'red', stroke: 'blue', hachureAngle: 0, strokeWidth: 3 });
-    rc.rectangle(210, 110, 80, 80, { fill: 'pink', fillWeight: 5, hachureGap: 10, hachureAngle: 90 });
+    rc.rectangle(110, 110, 80, 80, { fill: 'red', stroke: 'blue', hachureAngle: 0, strokeWidth: 3, fillLineDash: [15, 5], fillLineDashOffset: 10 });
+    rc.rectangle(210, 110, 80, 80, { fill: 'pink', fillWeight: 5, hachureGap: 10, hachureAngle: 90, fillLineDash: [15, 5], fillLineDashOffset: 10 });
 
     rc.rectangle(10, 210, 480, 280, { fill: 'red', fillStyle: 'dots', hachureGap: 20, fillWeight: 2 });
 

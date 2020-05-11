@@ -29,7 +29,8 @@
     });
     rc.arc(350, 300, 200, 180, Math.PI / 2, Math.PI, true, {
       stroke: 'blue', strokeWidth: 2,
-      fill: 'rgba(255,0,255,0.4)'
+      fill: 'rgba(255,0,255,0.4)',
+      fillLineDash: [15, 5], fillLineDashOffset: 10
     });
 
     canvas.getContext('2d').translate(-210, 0);
