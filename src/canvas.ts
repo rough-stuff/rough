@@ -23,6 +23,12 @@ export class RoughCanvas {
           ctx.save();
           ctx.strokeStyle = o.stroke === 'none' ? 'transparent' : o.stroke;
           ctx.lineWidth = o.strokeWidth;
+          if (o.strokeLineDash) {
+            ctx.setLineDash(o.strokeLineDash);
+          }
+          if (o.strokeLineDashOffset) {
+            ctx.lineDashOffset = o.strokeLineDashOffset;
+          }
           this._drawToContext(ctx, drawing);
           ctx.restore();
           break;

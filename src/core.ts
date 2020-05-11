@@ -32,6 +32,10 @@ export interface Options {
   zigzagOffset?: number;
   seed?: number;
   combineNestedSvgPaths?: boolean;
+  strokeLineDash?: number[];
+  strokeLineDashOffset?: number;
+  fillLineDash?: number[];
+  fillLineDashOffset?: number;
 }
 
 export interface ResolvedOptions extends Options {
