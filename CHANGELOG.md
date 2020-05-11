@@ -2,17 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
-## [3.1.0] - 2019-03-14
+## [4.3.0] - 2020-05-11
 
-* Added three new fill styles: **sunburst**, **dashed**, and **zigzag-line**
-* Added three new properties in *Options* to support these fill styles:
-* **dashOffset** - length of dashes in dashed fill
-* **dashGap** - length of gap between dashes in dashed fill
-* **zigzagOffset** - width of zigzag triangle when using zigzag-lines fill
+* Added options to draw dashed lines - *strokeLineDash, strokeLineDashOffset, fillLineDash, fillLineDashOffset*
+* Added option to disable double stroking effect - *disableMultiStroke, disableMultiStrokeFill*.
+* Bug fixes to solid fill in SVG which was not obeying evenodd rules by default
 
-Sample of all fill types:
+## [4.1.0] - 2020-01-13
 
-![Rough.js fill examples](https://roughjs.com/images/main/m14.png)
+* Added ability to **fill** non-svg curves
 
 ## [4.0.0] - 2020-01-13
 
@@ -23,11 +21,13 @@ Sample of all fill types:
 * Support no-stroke sketching. `stroke: "none"` will not generate outline vectors anymore
 * Removed `sunburst` fill style - it had a lot of corner cases where it did not work, and not very popular.
 
-## [4.1.0] - 2020-01-13
+## [3.1.0] - 2019-03-14
 
-* Added ability to **fill** non-svg curves
+* Added three new fill styles: **sunburst**, **dashed**, and **zigzag-line**
+* Added three new properties in *Options* to support these fill styles:
+* **dashOffset** - length of dashes in dashed fill
+* **dashGap** - length of gap between dashes in dashed fill
+* **zigzagOffset** - width of zigzag triangle when using zigzag-lines fill
 
-## [4.3.0] - 2020-05-11
 
-* Added options to draw dashed lines - *strokeLineDash, strokeLineDashOffset, fillLineDash, fillLineDashOffset*
-* Added option to disable double stroking effect - *disableMultiStroke, disableMultiStrokeFill*.
+
