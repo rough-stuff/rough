@@ -15,7 +15,7 @@ const helper: RenderHelper = {
   randOffset,
   randOffsetWithRange,
   ellipse,
-  doubleLineOps
+  doubleLineOps: doubleLineFillOps
 };
 
 export function line(x1: number, y1: number, x2: number, y2: number, o: ResolvedOptions): OpSet {
@@ -54,9 +54,12 @@ export function rectangle(x: number, y: number, width: number, height: number, o
 }
 
 export function curve(points: Point[], o: ResolvedOptions): OpSet {
-  const o1 = _curveWithOffset(points, 1 * (1 + o.roughness * 0.2), o);
-  const o2 = _curveWithOffset(points, 1.5 * (1 + o.roughness * 0.22), o);
-  return { type: 'path', ops: o1.concat(o2) };
+  let o1 = _curveWithOffset(points, 1 * (1 + o.roughness * 0.2), o);
+  if (!o.disableMultiStroke) {
+    const o2 = _curveWithOffset(points, 1.5 * (1 + o.roughness * 0.22), o);
+    o1 = o1.concat(o2);
+  }
+  return { type: 'path', ops: o1 };
 }
 
 export interface EllipseResult {
@@ -83,12 +86,15 @@ export function generateEllipseParams(width: number, height: number, o: Resolved
 
 export function ellipseWithParams(x: number, y: number, o: ResolvedOptions, ellipseParams: EllipseParams): EllipseResult {
   const [ap1, cp1] = _computeEllipsePoints(ellipseParams.increment, x, y, ellipseParams.rx, ellipseParams.ry, 1, ellipseParams.increment * _offset(0.1, _offset(0.4, 1, o), o), o);
-  const [ap2] = _computeEllipsePoints(ellipseParams.increment, x, y, ellipseParams.rx, ellipseParams.ry, 1.5, 0, o);
-  const o1 = _curve(ap1, null, o);
-  const o2 = _curve(ap2, null, o);
+  let o1 = _curve(ap1, null, o);
+  if (!o.disableMultiStroke) {
+    const [ap2] = _computeEllipsePoints(ellipseParams.increment, x, y, ellipseParams.rx, ellipseParams.ry, 1.5, 0, o);
+    const o2 = _curve(ap2, null, o);
+    o1 = o1.concat(o2);
+  }
   return {
     estimatedPoints: cp1,
-    opset: { type: 'path', ops: o1.concat(o2) }
+    opset: { type: 'path', ops: o1 }
   };
 }
 
@@ -111,9 +117,11 @@ export function arc(x: number, y: number, width: number, height: number, start: 
   }
   const ellipseInc = (Math.PI * 2) / o.curveStepCount;
   const arcInc = Math.min(ellipseInc / 2, (stp - strt) / 2);
-  const o1 = _arc(arcInc, cx, cy, rx, ry, strt, stp, 1, o);
-  const o2 = _arc(arcInc, cx, cy, rx, ry, strt, stp, 1.5, o);
-  const ops = o1.concat(o2);
+  const ops = _arc(arcInc, cx, cy, rx, ry, strt, stp, 1, o);
+  if (!o.disableMultiStroke) {
+    const o2 = _arc(arcInc, cx, cy, rx, ry, strt, stp, 1.5, o);
+    ops.push(...o2);
+  }
   if (closed) {
     if (roughClosure) {
       ops.push(
@@ -219,8 +227,8 @@ export function randOffsetWithRange(min: number, max: number, o: ResolvedOptions
   return _offset(min, max, o);
 }
 
-export function doubleLineOps(x1: number, y1: number, x2: number, y2: number, o: ResolvedOptions): Op[] {
-  return _doubleLine(x1, y1, x2, y2, o);
+export function doubleLineFillOps(x1: number, y1: number, x2: number, y2: number, o: ResolvedOptions): Op[] {
+  return _doubleLine(x1, y1, x2, y2, o, true);
 }
 
 // Private helpers
@@ -240,8 +248,12 @@ function _offsetOpt(x: number, ops: ResolvedOptions, roughnessGain = 1): number 
   return _offset(-x, x, ops, roughnessGain);
 }
 
-function _doubleLine(x1: number, y1: number, x2: number, y2: number, o: ResolvedOptions): Op[] {
+function _doubleLine(x1: number, y1: number, x2: number, y2: number, o: ResolvedOptions, filling = false): Op[] {
+  const singleStroke = filling ? o.disableMultiStrokeFill : o.disableMultiStroke;
   const o1 = _line(x1, y1, x2, y2, o, true, false);
+  if (singleStroke) {
+    return o1;
+  }
   const o2 = _line(x1, y1, x2, y2, o, true, true);
   return o1.concat(o2);
 }
@@ -433,7 +445,8 @@ function _bezierTo(x1: number, y1: number, x2: number, y2: number, x: number, y:
   const ops: Op[] = [];
   const ros = [o.maxRandomnessOffset || 1, (o.maxRandomnessOffset || 1) + 0.3];
   let f: Point = [0, 0];
-  for (let i = 0; i < 2; i++) {
+  const iterations = o.disableMultiStroke ? 1 : 2;
+  for (let i = 0; i < iterations; i++) {
     if (i === 0) {
       ops.push({ op: 'move', data: [current[0], current[1]] });
     } else {

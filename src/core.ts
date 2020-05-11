@@ -36,6 +36,8 @@ export interface Options {
   strokeLineDashOffset?: number;
   fillLineDash?: number[];
   fillLineDashOffset?: number;
+  disableMultiStroke?: boolean;
+  disableMultiStrokeFill?: boolean;
 }
 
 export interface ResolvedOptions extends Options {
@@ -57,6 +59,8 @@ export interface ResolvedOptions extends Options {
   seed: number;
   combineNestedSvgPaths: boolean;
   randomizer?: Random;
+  disableMultiStroke: boolean;
+  disableMultiStrokeFill: boolean;
 }
 
 export declare type OpType = 'move' | 'bcurveTo' | 'lineTo';
