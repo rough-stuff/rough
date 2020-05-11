@@ -26,3 +26,8 @@ Sample of all fill types:
 ## [4.1.0] - 2020-01-13
 
 * Added ability to **fill** non-svg curves
+
+## [4.3.0] - 2020-05-11
+
+* Added options to draw dashed lines - *strokeLineDash, strokeLineDashOffset, fillLineDash, fillLineDashOffset*
+* Added option to disable double stroking effect - *disableMultiStroke, disableMultiStrokeFill*.
