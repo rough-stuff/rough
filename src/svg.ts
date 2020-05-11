@@ -25,6 +25,12 @@ export class RoughSVG {
           path.setAttribute('stroke', o.stroke);
           path.setAttribute('stroke-width', o.strokeWidth + '');
           path.setAttribute('fill', 'none');
+          if (o.strokeLineDash) {
+            path.setAttribute('stroke-dasharray', o.strokeLineDash.join(' ').trim());
+          }
+          if (o.strokeLineDashOffset) {
+            path.setAttribute('stroke-dashoffset', `${o.strokeLineDashOffset}`);
+          }
           break;
         }
         case 'fillPath': {
@@ -33,6 +39,9 @@ export class RoughSVG {
           path.setAttribute('stroke', 'none');
           path.setAttribute('stroke-width', '0');
           path.setAttribute('fill', o.fill || '');
+          if (drawable.shape === 'curve' || drawable.shape === 'polygon') {
+            path.setAttribute('fill-rule', 'evenodd');
+          }
           break;
         }
         case 'fillSketch': {
@@ -57,6 +66,12 @@ export class RoughSVG {
     path.setAttribute('stroke', o.fill || '');
     path.setAttribute('stroke-width', fweight + '');
     path.setAttribute('fill', 'none');
+    if (o.fillLineDash) {
+      path.setAttribute('stroke-dasharray', o.fillLineDash.join(' ').trim());
+    }
+    if (o.fillLineDashOffset) {
+      path.setAttribute('stroke-dashoffset', `${o.fillLineDashOffset}`);
+    }
     return path;
   }
 
