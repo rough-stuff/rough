@@ -125,11 +125,6 @@ Algorithm to convert SVG arcs to Canvas [described here](https://www.w3.org/TR/S
 
 ## Contributors
 
-### Code Contributors
-
-This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
-<a href="https://github.com/undefined/undefined/graphs/contributors"><img src="https://opencollective.com/rough/contributors.svg?width=890&button=false" /></a>
-
 ### Financial Contributors
 
 Become a financial contributor and help us sustain our community. [[Contribute](https://opencollective.com/rough/contribute)]
