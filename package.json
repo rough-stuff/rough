@@ -8,7 +8,7 @@
   "types": "bin/rough.d.ts",
   "scripts": {
     "build": "rm -rf bin && tsc && rollup -c",
-    "lint": "tslint -p tsconfig.json",
+    "lint": "eslint --ext ts src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -32,10 +32,12 @@
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^13.0.0",
     "@rollup/plugin-typescript": "^8.2.1",
+    "@typescript-eslint/eslint-plugin": "^4.15.1",
+    "@typescript-eslint/parser": "^4.15.1",
+    "eslint": "^7.20.0",
     "rollup": "^2.47.0",
     "rollup-plugin-terser": "^7.0.2",
     "tslib": "^2.2.0",
-    "tslint": "^5.20.1",
     "typescript": "^4.2.4"
   },
   "dependencies": {
