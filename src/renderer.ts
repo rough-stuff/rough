@@ -15,7 +15,7 @@ const helper: RenderHelper = {
   randOffset,
   randOffsetWithRange,
   ellipse,
-  doubleLineOps: doubleLineFillOps
+  doubleLineOps: doubleLineFillOps,
 };
 
 export function line(x1: number, y1: number, x2: number, y2: number, o: ResolvedOptions): OpSet {
@@ -48,7 +48,7 @@ export function rectangle(x: number, y: number, width: number, height: number, o
     [x, y],
     [x + width, y],
     [x + width, y + height],
-    [x, y + height]
+    [x, y + height],
   ];
   return polygon(points, o);
 }
@@ -94,7 +94,7 @@ export function ellipseWithParams(x: number, y: number, o: ResolvedOptions, elli
   }
   return {
     estimatedPoints: cp1,
-    opset: { type: 'path', ops: o1 }
+    opset: { type: 'path', ops: o1 },
   };
 }
 
@@ -299,39 +299,41 @@ function _line(x1: number, y1: number, x2: number, y2: number, o: ResolvedOption
       ops.push({
         op: 'move', data: [
           x1 + (preserveVertices ? 0 : randomHalf()),
-          y1 + (preserveVertices ? 0 : randomHalf())
-        ]
+          y1 + (preserveVertices ? 0 : randomHalf()),
+        ],
       });
     } else {
       ops.push({
         op: 'move', data: [
           x1 + (preserveVertices ? 0 : _offsetOpt(offset, o, roughnessGain)),
-          y1 + (preserveVertices ? 0 : _offsetOpt(offset, o, roughnessGain))
-        ]
+          y1 + (preserveVertices ? 0 : _offsetOpt(offset, o, roughnessGain)),
+        ],
       });
     }
   }
   if (overlay) {
     ops.push({
-      op: 'bcurveTo', data: [
+      op: 'bcurveTo',
+      data: [
         midDispX + x1 + (x2 - x1) * divergePoint + randomHalf(),
         midDispY + y1 + (y2 - y1) * divergePoint + randomHalf(),
         midDispX + x1 + 2 * (x2 - x1) * divergePoint + randomHalf(),
         midDispY + y1 + 2 * (y2 - y1) * divergePoint + randomHalf(),
         x2 + (preserveVertices ? 0 : randomHalf()),
-        y2 + (preserveVertices ? 0 : randomHalf())
-      ]
+        y2 + (preserveVertices ? 0 : randomHalf()),
+      ],
     });
   } else {
     ops.push({
-      op: 'bcurveTo', data: [
+      op: 'bcurveTo',
+      data: [
         midDispX + x1 + (x2 - x1) * divergePoint + randomFull(),
         midDispY + y1 + (y2 - y1) * divergePoint + randomFull(),
         midDispX + x1 + 2 * (x2 - x1) * divergePoint + randomFull(),
         midDispY + y1 + 2 * (y2 - y1) * divergePoint + randomFull(),
         x2 + (preserveVertices ? 0 : randomFull()),
-        y2 + (preserveVertices ? 0 : randomFull())
-      ]
+        y2 + (preserveVertices ? 0 : randomFull()),
+      ],
     });
   }
   return ops;
@@ -384,10 +386,12 @@ function _curve(points: Point[], closePoint: Point | null, o: ResolvedOptions): 
   } else if (len === 3) {
     ops.push({ op: 'move', data: [points[1][0], points[1][1]] });
     ops.push({
-      op: 'bcurveTo', data: [
+      op: 'bcurveTo',
+      data: [
         points[1][0], points[1][1],
         points[2][0], points[2][1],
-        points[2][0], points[2][1]]
+        points[2][0], points[2][1],
+      ],
     });
   } else if (len === 2) {
     ops.push(..._doubleLine(points[0][0], points[0][1], points[1][0], points[1][1], o));
@@ -402,27 +406,27 @@ function _computeEllipsePoints(increment: number, cx: number, cy: number, rx: nu
 
   allPoints.push([
     _offsetOpt(offset, o) + cx + 0.9 * rx * Math.cos(radOffset - increment),
-    _offsetOpt(offset, o) + cy + 0.9 * ry * Math.sin(radOffset - increment)
+    _offsetOpt(offset, o) + cy + 0.9 * ry * Math.sin(radOffset - increment),
   ]);
   for (let angle = radOffset; angle < (Math.PI * 2 + radOffset - 0.01); angle = angle + increment) {
     const p: Point = [
       _offsetOpt(offset, o) + cx + rx * Math.cos(angle),
-      _offsetOpt(offset, o) + cy + ry * Math.sin(angle)
+      _offsetOpt(offset, o) + cy + ry * Math.sin(angle),
     ];
     corePoints.push(p);
     allPoints.push(p);
   }
   allPoints.push([
     _offsetOpt(offset, o) + cx + rx * Math.cos(radOffset + Math.PI * 2 + overlap * 0.5),
-    _offsetOpt(offset, o) + cy + ry * Math.sin(radOffset + Math.PI * 2 + overlap * 0.5)
+    _offsetOpt(offset, o) + cy + ry * Math.sin(radOffset + Math.PI * 2 + overlap * 0.5),
   ]);
   allPoints.push([
     _offsetOpt(offset, o) + cx + 0.98 * rx * Math.cos(radOffset + overlap),
-    _offsetOpt(offset, o) + cy + 0.98 * ry * Math.sin(radOffset + overlap)
+    _offsetOpt(offset, o) + cy + 0.98 * ry * Math.sin(radOffset + overlap),
   ]);
   allPoints.push([
     _offsetOpt(offset, o) + cx + 0.9 * rx * Math.cos(radOffset + overlap * 0.5),
-    _offsetOpt(offset, o) + cy + 0.9 * ry * Math.sin(radOffset + overlap * 0.5)
+    _offsetOpt(offset, o) + cy + 0.9 * ry * Math.sin(radOffset + overlap * 0.5),
   ]);
 
   return [allPoints, corePoints];
@@ -433,21 +437,21 @@ function _arc(increment: number, cx: number, cy: number, rx: number, ry: number,
   const points: Point[] = [];
   points.push([
     _offsetOpt(offset, o) + cx + 0.9 * rx * Math.cos(radOffset - increment),
-    _offsetOpt(offset, o) + cy + 0.9 * ry * Math.sin(radOffset - increment)
+    _offsetOpt(offset, o) + cy + 0.9 * ry * Math.sin(radOffset - increment),
   ]);
   for (let angle = radOffset; angle <= stp; angle = angle + increment) {
     points.push([
       _offsetOpt(offset, o) + cx + rx * Math.cos(angle),
-      _offsetOpt(offset, o) + cy + ry * Math.sin(angle)
+      _offsetOpt(offset, o) + cy + ry * Math.sin(angle),
     ]);
   }
   points.push([
     cx + rx * Math.cos(stp),
-    cy + ry * Math.sin(stp)
+    cy + ry * Math.sin(stp),
   ]);
   points.push([
     cx + rx * Math.cos(stp),
-    cy + ry * Math.sin(stp)
+    cy + ry * Math.sin(stp),
   ]);
   return _curve(points, null, o);
 }
@@ -466,11 +470,12 @@ function _bezierTo(x1: number, y1: number, x2: number, y2: number, x: number, y:
     }
     f = preserveVertices ? [x, y] : [x + _offsetOpt(ros[i], o), y + _offsetOpt(ros[i], o)];
     ops.push({
-      op: 'bcurveTo', data: [
+      op: 'bcurveTo',
+      data: [
         x1 + _offsetOpt(ros[i], o), y1 + _offsetOpt(ros[i], o),
         x2 + _offsetOpt(ros[i], o), y2 + _offsetOpt(ros[i], o),
-        f[0], f[1]
-      ]
+        f[0], f[1],
+      ],
     });
   }
   return ops;

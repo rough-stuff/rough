@@ -51,7 +51,7 @@ function straightHachureLines(points: Point[], o: ResolvedOptions): Line[] {
           ymin,
           ymax: Math.max(p1[1], p2[1]),
           x: ymin === p1[1] ? p1[0] : p2[0],
-          islope: (p2[0] - p1[0]) / (p2[1] - p1[1])
+          islope: (p2[0] - p1[0]) / (p2[1] - p1[1]),
         });
       }
     }
@@ -118,7 +118,7 @@ function straightHachureLines(points: Point[], o: ResolvedOptions): Line[] {
           const ne = activeEdges[nexti].edge;
           lines.push([
             [Math.round(ce.x), y],
-            [Math.round(ne.x), y]
+            [Math.round(ne.x), y],
           ]);
         }
       }

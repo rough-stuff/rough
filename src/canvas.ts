@@ -13,7 +13,7 @@ export class RoughCanvas {
     this.gen = new RoughGenerator(config);
   }
 
-  draw(drawable: Drawable) {
+  draw(drawable: Drawable): void {
     const sets = drawable.sets || [];
     const o = drawable.options || this.getDefaultOptions();
     const ctx = this.ctx;
@@ -33,12 +33,14 @@ export class RoughCanvas {
           ctx.restore();
           break;
         case 'fillPath':
+        {
           ctx.save();
           ctx.fillStyle = o.fill || '';
           const fillRule: CanvasFillRule = (drawable.shape === 'curve' || drawable.shape === 'polygon') ? 'evenodd' : 'nonzero';
           this._drawToContext(ctx, drawing, fillRule);
           ctx.restore();
           break;
+        }
         case 'fillSketch':
           this.fillSketch(ctx, drawing, o);
           break;
