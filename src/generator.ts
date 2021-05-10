@@ -30,7 +30,8 @@ export class RoughGenerator {
     seed: 0,
     combineNestedSvgPaths: false,
     disableMultiStroke: false,
-    disableMultiStrokeFill: false
+    disableMultiStrokeFill: false,
+    preserveVertices: false
   };
 
   constructor(config?: Config) {

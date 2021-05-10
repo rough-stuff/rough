@@ -38,6 +38,7 @@ export interface Options {
   fillLineDashOffset?: number;
   disableMultiStroke?: boolean;
   disableMultiStrokeFill?: boolean;
+  preserveVertices?: boolean;
 }
 
 export interface ResolvedOptions extends Options {
@@ -61,6 +62,7 @@ export interface ResolvedOptions extends Options {
   randomizer?: Random;
   disableMultiStroke: boolean;
   disableMultiStrokeFill: boolean;
+  preserveVertices: boolean;
 }
 
 export declare type OpType = 'move' | 'bcurveTo' | 'lineTo';

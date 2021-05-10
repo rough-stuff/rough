@@ -147,7 +147,8 @@ export function svgPath(path: string, o: ResolvedOptions): OpSet {
     switch (key) {
       case 'M': {
         const ro = 1 * (o.maxRandomnessOffset || 0);
-        ops.push({ op: 'move', data: data.map((d) => d + _offsetOpt(ro, o)) });
+        const pv = o.preserveVertices;
+        ops.push({ op: 'move', data: data.map((d) => d + (pv ? 0 : _offsetOpt(ro, o))) });
         current = [data[0], data[1]];
         first = [data[0], data[1]];
         break;
@@ -292,19 +293,20 @@ function _line(x1: number, y1: number, x2: number, y2: number, o: ResolvedOption
   const ops: Op[] = [];
   const randomHalf = () => _offsetOpt(halfOffset, o, roughnessGain);
   const randomFull = () => _offsetOpt(offset, o, roughnessGain);
+  const preserveVertices = o.preserveVertices;
   if (move) {
     if (overlay) {
       ops.push({
         op: 'move', data: [
-          x1 + randomHalf(),
-          y1 + randomHalf()
+          x1 + (preserveVertices ? 0 : randomHalf()),
+          y1 + (preserveVertices ? 0 : randomHalf())
         ]
       });
     } else {
       ops.push({
         op: 'move', data: [
-          x1 + _offsetOpt(offset, o, roughnessGain),
-          y1 + _offsetOpt(offset, o, roughnessGain)
+          x1 + (preserveVertices ? 0 : _offsetOpt(offset, o, roughnessGain)),
+          y1 + (preserveVertices ? 0 : _offsetOpt(offset, o, roughnessGain))
         ]
       });
     }
@@ -316,8 +318,8 @@ function _line(x1: number, y1: number, x2: number, y2: number, o: ResolvedOption
         midDispY + y1 + (y2 - y1) * divergePoint + randomHalf(),
         midDispX + x1 + 2 * (x2 - x1) * divergePoint + randomHalf(),
         midDispY + y1 + 2 * (y2 - y1) * divergePoint + randomHalf(),
-        x2 + randomHalf(),
-        y2 + randomHalf()
+        x2 + (preserveVertices ? 0 : randomHalf()),
+        y2 + (preserveVertices ? 0 : randomHalf())
       ]
     });
   } else {
@@ -327,8 +329,8 @@ function _line(x1: number, y1: number, x2: number, y2: number, o: ResolvedOption
         midDispY + y1 + (y2 - y1) * divergePoint + randomFull(),
         midDispX + x1 + 2 * (x2 - x1) * divergePoint + randomFull(),
         midDispY + y1 + 2 * (y2 - y1) * divergePoint + randomFull(),
-        x2 + randomFull(),
-        y2 + randomFull()
+        x2 + (preserveVertices ? 0 : randomFull()),
+        y2 + (preserveVertices ? 0 : randomFull())
       ]
     });
   }
@@ -455,13 +457,14 @@ function _bezierTo(x1: number, y1: number, x2: number, y2: number, x: number, y:
   const ros = [o.maxRandomnessOffset || 1, (o.maxRandomnessOffset || 1) + 0.3];
   let f: Point = [0, 0];
   const iterations = o.disableMultiStroke ? 1 : 2;
+  const preserveVertices = o.preserveVertices;
   for (let i = 0; i < iterations; i++) {
     if (i === 0) {
       ops.push({ op: 'move', data: [current[0], current[1]] });
     } else {
-      ops.push({ op: 'move', data: [current[0] + _offsetOpt(ros[0], o), current[1] + _offsetOpt(ros[0], o)] });
+      ops.push({ op: 'move', data: [current[0] + (preserveVertices ? 0 : _offsetOpt(ros[0], o)), current[1] + (preserveVertices ? 0 : _offsetOpt(ros[0], o))] });
     }
-    f = [x + _offsetOpt(ros[i], o), y + _offsetOpt(ros[i], o)];
+    f = preserveVertices ? [x, y] : [x + _offsetOpt(ros[i], o), y + _offsetOpt(ros[i], o)];
     ops.push({
       op: 'bcurveTo', data: [
         x1 + _offsetOpt(ros[i], o), y1 + _offsetOpt(ros[i], o),
