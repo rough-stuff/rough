@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+# [4.4.0] - 2021-05-09
+
+* Added `preserveVertices` option when drawing shapes. Especially useful in paths. When rendering a shape, the vertices or the end points of the shape are not randomized if this is set to TRUE. This allows connected segments to always be connected. 
+
 ## [4.3.0] - 2020-05-11
 
 * Added options to draw dashed lines - *strokeLineDash, strokeLineDashOffset, fillLineDash, fillLineDashOffset*
