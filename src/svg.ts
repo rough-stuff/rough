@@ -16,12 +16,13 @@ export class RoughSVG {
     const o = drawable.options || this.getDefaultOptions();
     const doc = this.svg.ownerDocument || window.document;
     const g = doc.createElementNS(SVGNS, 'g');
+    const precision = drawable.options.fixedDecimalPlaceDigits;
     for (const drawing of sets) {
       let path = null;
       switch (drawing.type) {
         case 'path': {
           path = doc.createElementNS(SVGNS, 'path');
-          path.setAttribute('d', this.opsToPath(drawing));
+          path.setAttribute('d', this.opsToPath(drawing, precision));
           path.setAttribute('stroke', o.stroke);
           path.setAttribute('stroke-width', o.strokeWidth + '');
           path.setAttribute('fill', 'none');
@@ -35,7 +36,7 @@ export class RoughSVG {
         }
         case 'fillPath': {
           path = doc.createElementNS(SVGNS, 'path');
-          path.setAttribute('d', this.opsToPath(drawing));
+          path.setAttribute('d', this.opsToPath(drawing, precision));
           path.setAttribute('stroke', 'none');
           path.setAttribute('stroke-width', '0');
           path.setAttribute('fill', o.fill || '');
@@ -62,7 +63,7 @@ export class RoughSVG {
       fweight = o.strokeWidth / 2;
     }
     const path = doc.createElementNS(SVGNS, 'path');
-    path.setAttribute('d', this.opsToPath(drawing));
+    path.setAttribute('d', this.opsToPath(drawing, o.fixedDecimalPlaceDigits));
     path.setAttribute('stroke', o.fill || '');
     path.setAttribute('stroke-width', fweight + '');
     path.setAttribute('fill', 'none');
@@ -83,8 +84,8 @@ export class RoughSVG {
     return this.gen.defaultOptions;
   }
 
-  opsToPath(drawing: OpSet): string {
-    return this.gen.opsToPath(drawing);
+  opsToPath(drawing: OpSet, fixedDecimalPlaceDigits?: number): string {
+    return this.gen.opsToPath(drawing, fixedDecimalPlaceDigits);
   }
 
   line(x1: number, y1: number, x2: number, y2: number, options?: Options): SVGGElement {

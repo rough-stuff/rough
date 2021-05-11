@@ -208,10 +208,10 @@ export class RoughGenerator {
     return this._d('path', paths, o);
   }
 
-  opsToPath(drawing: OpSet): string {
+  opsToPath(drawing: OpSet, fixedDecimals?: number): string {
     let path = '';
     for (const item of drawing.ops) {
-      const data = item.data;
+      const data = ((typeof fixedDecimals === 'number') && fixedDecimals >= 0) ? (item.data.map((d) => +d.toFixed(fixedDecimals))) : item.data;
       switch (item.op) {
         case 'move':
           path += `M${data[0]} ${data[1]} `;

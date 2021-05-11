@@ -39,6 +39,7 @@ export interface Options {
   disableMultiStroke?: boolean;
   disableMultiStrokeFill?: boolean;
   preserveVertices?: boolean;
+  fixedDecimalPlaceDigits?: number;
 }
 
 export interface ResolvedOptions extends Options {
