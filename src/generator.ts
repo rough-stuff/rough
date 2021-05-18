@@ -31,7 +31,7 @@ export class RoughGenerator {
     combineNestedSvgPaths: false,
     disableMultiStroke: false,
     disableMultiStrokeFill: false,
-    preserveVertices: false
+    preserveVertices: false,
   };
 
   constructor(config?: Config) {
@@ -239,7 +239,7 @@ export class RoughGenerator {
             d: this.opsToPath(drawing),
             stroke: o.stroke,
             strokeWidth: o.strokeWidth,
-            fill: NOS
+            fill: NOS,
           };
           break;
         case 'fillPath':
@@ -247,7 +247,7 @@ export class RoughGenerator {
             d: this.opsToPath(drawing),
             stroke: NOS,
             strokeWidth: 0,
-            fill: o.fill || NOS
+            fill: o.fill || NOS,
           };
           break;
         case 'fillSketch':
@@ -270,7 +270,7 @@ export class RoughGenerator {
       d: this.opsToPath(drawing),
       stroke: o.fill || NOS,
       strokeWidth: fweight,
-      fill: NOS
+      fill: NOS,
     };
   }
 }

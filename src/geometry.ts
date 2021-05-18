@@ -92,7 +92,7 @@ function orientation(p: Point, q: Point, r: Point) {
 }
 
 // Check is p1q1 intersects with p2q2
-export function doIntersect(p1: Point, q1: Point, p2: Point, q2: Point) {
+export function doIntersect(p1: Point, q1: Point, p2: Point, q2: Point): boolean {
   const o1 = orientation(p1, q1, p2);
   const o2 = orientation(p1, q1, q2);
   const o3 = orientation(p2, q2, p1);

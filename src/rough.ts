@@ -18,5 +18,5 @@ export default {
 
   newSeed(): number {
     return RoughGenerator.newSeed();
-  }
+  },
 };

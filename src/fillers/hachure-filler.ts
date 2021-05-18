@@ -74,7 +74,7 @@ export class HachureFiller implements PatternFiller {
           if (d0 > error && d1 > error) {
             intersections.push({
               point: ip,
-              distance: d0
+              distance: d0,
             });
           }
         }
