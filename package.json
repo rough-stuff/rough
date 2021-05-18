@@ -32,9 +32,9 @@
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^13.0.0",
     "@rollup/plugin-typescript": "^8.2.1",
-    "@typescript-eslint/eslint-plugin": "^4.15.1",
-    "@typescript-eslint/parser": "^4.15.1",
-    "eslint": "^7.20.0",
+    "@typescript-eslint/eslint-plugin": "^4.24.0",
+    "@typescript-eslint/parser": "^4.24.0",
+    "eslint": "^7.26.0",
     "rollup": "^2.47.0",
     "rollup-plugin-terser": "^7.0.2",
     "tslib": "^2.2.0",

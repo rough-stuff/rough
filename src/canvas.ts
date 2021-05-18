@@ -32,8 +32,7 @@ export class RoughCanvas {
           this._drawToContext(ctx, drawing);
           ctx.restore();
           break;
-        case 'fillPath':
-        {
+        case 'fillPath': {
           ctx.save();
           ctx.fillStyle = o.fill || '';
           const fillRule: CanvasFillRule = (drawable.shape === 'curve' || drawable.shape === 'polygon') ? 'evenodd' : 'nonzero';
