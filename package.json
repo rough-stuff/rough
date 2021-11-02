@@ -30,15 +30,15 @@
   },
   "homepage": "https://roughjs.com",
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^13.0.0",
-    "@rollup/plugin-typescript": "^8.2.1",
-    "@typescript-eslint/eslint-plugin": "^4.24.0",
-    "@typescript-eslint/parser": "^4.24.0",
-    "eslint": "^7.26.0",
-    "rollup": "^2.47.0",
+    "@rollup/plugin-node-resolve": "^13.0.6",
+    "@rollup/plugin-typescript": "^8.3.0",
+    "@typescript-eslint/eslint-plugin": "^4.33.0",
+    "@typescript-eslint/parser": "^4.33.0",
+    "eslint": "^7.32.0",
+    "rollup": "^2.59.0",
     "rollup-plugin-terser": "^7.0.2",
-    "tslib": "^2.2.0",
-    "typescript": "^4.2.4"
+    "tslib": "^2.3.1",
+    "typescript": "^4.4.4"
   },
   "dependencies": {
     "path-data-parser": "^0.1.0",
