@@ -87,7 +87,7 @@ export function generateEllipseParams(width: number, height: number, o: Resolved
 export function ellipseWithParams(x: number, y: number, o: ResolvedOptions, ellipseParams: EllipseParams): EllipseResult {
   const [ap1, cp1] = _computeEllipsePoints(ellipseParams.increment, x, y, ellipseParams.rx, ellipseParams.ry, 1, ellipseParams.increment * _offset(0.1, _offset(0.4, 1, o), o), o);
   let o1 = _curve(ap1, null, o);
-  if (!o.disableMultiStroke) {
+  if ((!o.disableMultiStroke) && (o.roughness !== 0)) {
     const [ap2] = _computeEllipsePoints(ellipseParams.increment, x, y, ellipseParams.rx, ellipseParams.ry, 1.5, 0, o);
     const o2 = _curve(ap2, null, o);
     o1 = o1.concat(o2);
@@ -403,12 +403,16 @@ function _computeEllipsePoints(increment: number, cx: number, cy: number, rx: nu
   const corePoints: Point[] = [];
   const allPoints: Point[] = [];
   const radOffset = _offsetOpt(0.5, o) - (Math.PI / 2);
+  const coreOnly = o.roughness === 0;
 
-  allPoints.push([
-    _offsetOpt(offset, o) + cx + 0.9 * rx * Math.cos(radOffset - increment),
-    _offsetOpt(offset, o) + cy + 0.9 * ry * Math.sin(radOffset - increment),
-  ]);
-  for (let angle = radOffset; angle < (Math.PI * 2 + radOffset - 0.01); angle = angle + increment) {
+  if (!coreOnly) {
+    allPoints.push([
+      _offsetOpt(offset, o) + cx + 0.9 * rx * Math.cos(radOffset - increment),
+      _offsetOpt(offset, o) + cy + 0.9 * ry * Math.sin(radOffset - increment),
+    ]);
+  }
+  const endAngle = Math.PI * 2 + (coreOnly ? 0 : (radOffset - 0.01));
+  for (let angle = radOffset; angle < endAngle; angle = angle + increment) {
     const p: Point = [
       _offsetOpt(offset, o) + cx + rx * Math.cos(angle),
       _offsetOpt(offset, o) + cy + ry * Math.sin(angle),
@@ -416,18 +420,20 @@ function _computeEllipsePoints(increment: number, cx: number, cy: number, rx: nu
     corePoints.push(p);
     allPoints.push(p);
   }
-  allPoints.push([
-    _offsetOpt(offset, o) + cx + rx * Math.cos(radOffset + Math.PI * 2 + overlap * 0.5),
-    _offsetOpt(offset, o) + cy + ry * Math.sin(radOffset + Math.PI * 2 + overlap * 0.5),
-  ]);
-  allPoints.push([
-    _offsetOpt(offset, o) + cx + 0.98 * rx * Math.cos(radOffset + overlap),
-    _offsetOpt(offset, o) + cy + 0.98 * ry * Math.sin(radOffset + overlap),
-  ]);
-  allPoints.push([
-    _offsetOpt(offset, o) + cx + 0.9 * rx * Math.cos(radOffset + overlap * 0.5),
-    _offsetOpt(offset, o) + cy + 0.9 * ry * Math.sin(radOffset + overlap * 0.5),
-  ]);
+  if (!coreOnly) {
+    allPoints.push([
+      _offsetOpt(offset, o) + cx + rx * Math.cos(radOffset + Math.PI * 2 + overlap * 0.5),
+      _offsetOpt(offset, o) + cy + ry * Math.sin(radOffset + Math.PI * 2 + overlap * 0.5),
+    ]);
+    allPoints.push([
+      _offsetOpt(offset, o) + cx + 0.98 * rx * Math.cos(radOffset + overlap),
+      _offsetOpt(offset, o) + cy + 0.98 * ry * Math.sin(radOffset + overlap),
+    ]);
+    allPoints.push([
+      _offsetOpt(offset, o) + cx + 0.9 * rx * Math.cos(radOffset + overlap * 0.5),
+      _offsetOpt(offset, o) + cy + 0.9 * ry * Math.sin(radOffset + overlap * 0.5),
+    ]);
+  }
 
   return [allPoints, corePoints];
 }
