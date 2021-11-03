@@ -17,6 +17,7 @@ export class RoughCanvas {
     const sets = drawable.sets || [];
     const o = drawable.options || this.getDefaultOptions();
     const ctx = this.ctx;
+    const precision = drawable.options.fixedDecimalPlaceDigits;
     for (const drawing of sets) {
       switch (drawing.type) {
         case 'path':
@@ -29,14 +30,14 @@ export class RoughCanvas {
           if (o.strokeLineDashOffset) {
             ctx.lineDashOffset = o.strokeLineDashOffset;
           }
-          this._drawToContext(ctx, drawing);
+          this._drawToContext(ctx, drawing, precision);
           ctx.restore();
           break;
         case 'fillPath': {
           ctx.save();
           ctx.fillStyle = o.fill || '';
           const fillRule: CanvasFillRule = (drawable.shape === 'curve' || drawable.shape === 'polygon') ? 'evenodd' : 'nonzero';
-          this._drawToContext(ctx, drawing, fillRule);
+          this._drawToContext(ctx, drawing, precision, fillRule);
           ctx.restore();
           break;
         }
@@ -61,14 +62,14 @@ export class RoughCanvas {
     }
     ctx.strokeStyle = o.fill || '';
     ctx.lineWidth = fweight;
-    this._drawToContext(ctx, drawing);
+    this._drawToContext(ctx, drawing, o.fixedDecimalPlaceDigits);
     ctx.restore();
   }
 
-  private _drawToContext(ctx: CanvasRenderingContext2D, drawing: OpSet, rule: CanvasFillRule = 'nonzero') {
+  private _drawToContext(ctx: CanvasRenderingContext2D, drawing: OpSet, fixedDecimals?: number, rule: CanvasFillRule = 'nonzero') {
     ctx.beginPath();
     for (const item of drawing.ops) {
-      const data = item.data;
+      const data = ((typeof fixedDecimals === 'number') && fixedDecimals >= 0) ? (item.data.map((d) => +d.toFixed(fixedDecimals))) : item.data;
       switch (item.op) {
         case 'move':
           ctx.moveTo(data[0], data[1]);
