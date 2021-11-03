@@ -113,7 +113,9 @@ export class RoughGenerator {
     const outline = arc(x, y, width, height, start, stop, closed, true, o);
     if (closed && o.fill) {
       if (o.fillStyle === 'solid') {
-        const shape = arc(x, y, width, height, start, stop, true, false, o);
+        const fillOptions: ResolvedOptions = { ...o };
+        fillOptions.disableMultiStroke = true;
+        const shape = arc(x, y, width, height, start, stop, true, false, fillOptions);
         shape.type = 'fillPath';
         paths.push(shape);
       } else {
