@@ -11,7 +11,7 @@ export class DotFiller implements PatternFiller {
   }
 
   fillPolygon(points: Point[], o: ResolvedOptions): OpSet {
-    o = Object.assign({}, o, { curveStepCount: 4, hachureAngle: 0, roughness: 1 });
+    o = Object.assign({}, o, { hachureAngle: 0 });
     const lines = polygonHachureLines(points, o);
     return this.dotsOnLines(lines, o);
   }
@@ -38,8 +38,8 @@ export class DotFiller implements PatternFiller {
 
       for (let i = 0; i < count; i++) {
         const y = minY + offset + (i * gap);
-        const cx = this.helper.randOffsetWithRange(x - ro, x + ro, o);
-        const cy = this.helper.randOffsetWithRange(y - ro, y + ro, o);
+        const cx = (x - ro) + Math.random() * 2 * ro;
+        const cy = (y - ro) + Math.random() * 2 * ro;
         const el = this.helper.ellipse(cx, cy, fweight, fweight, o);
         ops.push(...el.ops);
       }
