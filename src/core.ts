@@ -31,7 +31,6 @@ export interface Options {
   dashGap?: number;
   zigzagOffset?: number;
   seed?: number;
-  combineNestedSvgPaths?: boolean;
   strokeLineDash?: number[];
   strokeLineDashOffset?: number;
   fillLineDash?: number[];
@@ -59,7 +58,6 @@ export interface ResolvedOptions extends Options {
   dashGap: number;
   zigzagOffset: number;
   seed: number;
-  combineNestedSvgPaths: boolean;
   randomizer?: Random;
   disableMultiStroke: boolean;
   disableMultiStrokeFill: boolean;

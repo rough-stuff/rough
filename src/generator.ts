@@ -1,6 +1,6 @@
 import { Config, Options, Drawable, OpSet, ResolvedOptions, PathInfo } from './core.js';
 import { Point } from './geometry.js';
-import { line, solidFillPolygon, patternFillPolygon, rectangle, ellipseWithParams, generateEllipseParams, linearPath, arc, patternFillArc, curve, svgPath } from './renderer.js';
+import { line, solidFillPolygon, patternFillPolygons, rectangle, ellipseWithParams, generateEllipseParams, linearPath, arc, patternFillArc, curve, svgPath } from './renderer.js';
 import { randomSeed } from './math.js';
 import { curveToBezier } from 'points-on-curve/lib/curve-to-bezier.js';
 import { pointsOnBezierCurves } from 'points-on-curve';
@@ -28,7 +28,6 @@ export class RoughGenerator {
     dashGap: -1,
     zigzagOffset: -1,
     seed: 0,
-    combineNestedSvgPaths: false,
     disableMultiStroke: false,
     disableMultiStrokeFill: false,
     preserveVertices: false,
@@ -65,9 +64,9 @@ export class RoughGenerator {
     if (o.fill) {
       const points: Point[] = [[x, y], [x + width, y], [x + width, y + height], [x, y + height]];
       if (o.fillStyle === 'solid') {
-        paths.push(solidFillPolygon(points, o));
+        paths.push(solidFillPolygon([points], o));
       } else {
-        paths.push(patternFillPolygon(points, o));
+        paths.push(patternFillPolygons([points], o));
       }
     }
     if (o.stroke !== NOS) {
@@ -87,7 +86,7 @@ export class RoughGenerator {
         shape.type = 'fillPath';
         paths.push(shape);
       } else {
-        paths.push(patternFillPolygon(ellipseResponse.estimatedPoints, o));
+        paths.push(patternFillPolygons([ellipseResponse.estimatedPoints], o));
       }
     }
     if (o.stroke !== NOS) {
@@ -136,9 +135,9 @@ export class RoughGenerator {
       const bcurve = curveToBezier(points);
       const polyPoints = pointsOnBezierCurves(bcurve, 10, (1 + o.roughness) / 2);
       if (o.fillStyle === 'solid') {
-        paths.push(solidFillPolygon(polyPoints, o));
+        paths.push(solidFillPolygon([polyPoints], o));
       } else {
-        paths.push(patternFillPolygon(polyPoints, o));
+        paths.push(patternFillPolygons([polyPoints], o));
       }
     }
     if (o.stroke !== NOS) {
@@ -153,9 +152,9 @@ export class RoughGenerator {
     const outline = linearPath(points, true, o);
     if (o.fill) {
       if (o.fillStyle === 'solid') {
-        paths.push(solidFillPolygon(points, o));
+        paths.push(solidFillPolygon([points], o));
       } else {
-        paths.push(patternFillPolygon(points, o));
+        paths.push(patternFillPolygons([points], o));
       }
     }
     if (o.stroke !== NOS) {
@@ -179,22 +178,10 @@ export class RoughGenerator {
     const sets = pointsOnPath(d, 1, distance);
 
     if (hasFill) {
-      if (o.combineNestedSvgPaths) {
-        const combined: Point[] = [];
-        sets.forEach((set) => combined.push(...set));
-        if (o.fillStyle === 'solid') {
-          paths.push(solidFillPolygon(combined, o));
-        } else {
-          paths.push(patternFillPolygon(combined, o));
-        }
+      if (o.fillStyle === 'solid') {
+        paths.push(solidFillPolygon(sets, o));
       } else {
-        sets.forEach((polyPoints) => {
-          if (o.fillStyle === 'solid') {
-            paths.push(solidFillPolygon(polyPoints, o));
-          } else {
-            paths.push(patternFillPolygon(polyPoints, o));
-          }
-        });
+        paths.push(patternFillPolygons(sets, o));
       }
     }
     if (hasStroke) {

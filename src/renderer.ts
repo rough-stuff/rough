@@ -174,23 +174,25 @@ export function svgPath(path: string, o: ResolvedOptions): OpSet {
 
 // Fills
 
-export function solidFillPolygon(points: Point[], o: ResolvedOptions): OpSet {
+export function solidFillPolygon(polygonList: Point[][], o: ResolvedOptions): OpSet {
   const ops: Op[] = [];
-  if (points.length) {
-    const offset = o.maxRandomnessOffset || 0;
-    const len = points.length;
-    if (len > 2) {
-      ops.push({ op: 'move', data: [points[0][0] + _offsetOpt(offset, o), points[0][1] + _offsetOpt(offset, o)] });
-      for (let i = 1; i < len; i++) {
-        ops.push({ op: 'lineTo', data: [points[i][0] + _offsetOpt(offset, o), points[i][1] + _offsetOpt(offset, o)] });
+  for (const points of polygonList) {
+    if (points.length) {
+      const offset = o.maxRandomnessOffset || 0;
+      const len = points.length;
+      if (len > 2) {
+        ops.push({ op: 'move', data: [points[0][0] + _offsetOpt(offset, o), points[0][1] + _offsetOpt(offset, o)] });
+        for (let i = 1; i < len; i++) {
+          ops.push({ op: 'lineTo', data: [points[i][0] + _offsetOpt(offset, o), points[i][1] + _offsetOpt(offset, o)] });
+        }
       }
     }
   }
   return { type: 'fillPath', ops };
 }
 
-export function patternFillPolygon(points: Point[], o: ResolvedOptions): OpSet {
-  return getFiller(o, helper).fillPolygon(points, o);
+export function patternFillPolygons(polygonList: Point[][], o: ResolvedOptions): OpSet {
+  return getFiller(o, helper).fillPolygons(polygonList, o);
 }
 
 export function patternFillArc(x: number, y: number, width: number, height: number, start: number, stop: number, o: ResolvedOptions): OpSet {
@@ -217,7 +219,7 @@ export function patternFillArc(x: number, y: number, width: number, height: numb
   }
   points.push([cx + rx * Math.cos(stp), cy + ry * Math.sin(stp)]);
   points.push([cx, cy]);
-  return patternFillPolygon(points, o);
+  return patternFillPolygons([points], o);
 }
 
 export function randOffset(x: number, o: ResolvedOptions): number {

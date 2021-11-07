@@ -10,8 +10,8 @@ export class DashedFiller implements PatternFiller {
     this.helper = helper;
   }
 
-  fillPolygon(points: Point[], o: ResolvedOptions): OpSet {
-    const lines = polygonHachureLines(points, o);
+  fillPolygons(polygonList: Point[][], o: ResolvedOptions): OpSet {
+    const lines = polygonHachureLines(polygonList, o);
     return { type: 'fillSketch', ops: this.dashedLine(lines, o) };
   }
 
