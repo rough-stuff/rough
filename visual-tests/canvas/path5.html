@@ -79,12 +79,14 @@
         const canvas = this.root.querySelector('canvas');
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         const rc = rough.canvas(canvas);
         rc.path(path, {
           fill: 'orange',
-          fillWeight: 2,
-          hachureAngle: 45,
-          hachureGap: 12,
+          fillWeight: 5,
+          hachureAngle: -45,
+          hachureGap: 20,
           roughness: 0.1,
           fillStyle: 'zigzag'
         });
