@@ -36,7 +36,7 @@ export class RoughCanvas {
         case 'fillPath': {
           ctx.save();
           ctx.fillStyle = o.fill || '';
-          const fillRule: CanvasFillRule = (drawable.shape === 'curve' || drawable.shape === 'polygon') ? 'evenodd' : 'nonzero';
+          const fillRule: CanvasFillRule = (drawable.shape === 'curve' || drawable.shape === 'polygon' || drawable.shape === 'path') ? 'evenodd' : 'nonzero';
           this._drawToContext(ctx, drawing, precision, fillRule);
           ctx.restore();
           break;

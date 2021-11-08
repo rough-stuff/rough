@@ -10,9 +10,9 @@ export class DotFiller implements PatternFiller {
     this.helper = helper;
   }
 
-  fillPolygon(points: Point[], o: ResolvedOptions): OpSet {
+  fillPolygons(polygonList: Point[][], o: ResolvedOptions): OpSet {
     o = Object.assign({}, o, { hachureAngle: 0 });
-    const lines = polygonHachureLines(points, o);
+    const lines = polygonHachureLines(polygonList, o);
     return this.dotsOnLines(lines, o);
   }
 
