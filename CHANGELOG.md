@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 # [4.5.0] - 2021-05-09
 * Better algorithm for nested and intersecting paths https://github.com/rough-stuff/rough/issues/183
+* Improved zigzag fill for concave shapes and nested paths.
 * Fixed "dots" fill when roughness was <1 Itw as creatings weird shapes https://github.com/rough-stuff/rough/issues/193
 * Configure precision when rendering to canvas as well as SVG using `fixedDecimalPlaceDigits` property.
 * Solid fill was broken for Arcs if arc angle was > 180 degrees
