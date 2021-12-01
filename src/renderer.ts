@@ -74,7 +74,7 @@ export function ellipse(x: number, y: number, width: number, height: number, o: 
 
 export function generateEllipseParams(width: number, height: number, o: ResolvedOptions): EllipseParams {
   const psq = Math.sqrt(Math.PI * 2 * Math.sqrt((Math.pow(width / 2, 2) + Math.pow(height / 2, 2)) / 2));
-  const stepCount = Math.max(o.curveStepCount, (o.curveStepCount / Math.sqrt(200)) * psq);
+  const stepCount = Math.ceil(Math.max(o.curveStepCount, (o.curveStepCount / Math.sqrt(200)) * psq));
   const increment = (Math.PI * 2) / stepCount;
   let rx = Math.abs(width / 2);
   let ry = Math.abs(height / 2);
