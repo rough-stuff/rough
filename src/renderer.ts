@@ -402,27 +402,47 @@ function _curve(points: Point[], closePoint: Point | null, o: ResolvedOptions): 
 }
 
 function _computeEllipsePoints(increment: number, cx: number, cy: number, rx: number, ry: number, offset: number, overlap: number, o: ResolvedOptions): Point[][] {
+  const coreOnly = o.roughness === 0;
   const corePoints: Point[] = [];
   const allPoints: Point[] = [];
-  const radOffset = _offsetOpt(0.5, o) - (Math.PI / 2);
-  const coreOnly = o.roughness === 0;
 
-  if (!coreOnly) {
+  if (coreOnly) {
+    increment = increment / 4;
+    allPoints.push([
+      cx + rx * Math.cos(-increment),
+      cy + ry * Math.sin(-increment),
+    ]);
+    for (let angle = 0; angle <= Math.PI * 2; angle = angle + increment) {
+      const p: Point = [
+        cx + rx * Math.cos(angle),
+        cy + ry * Math.sin(angle),
+      ];
+      corePoints.push(p);
+      allPoints.push(p);
+    }
+    allPoints.push([
+      cx + rx * Math.cos(0),
+      cy + ry * Math.sin(0),
+    ]);
+    allPoints.push([
+      cx + rx * Math.cos(increment),
+      cy + ry * Math.sin(increment),
+    ]);
+  } else {
+    const radOffset = _offsetOpt(0.5, o) - (Math.PI / 2);
     allPoints.push([
       _offsetOpt(offset, o) + cx + 0.9 * rx * Math.cos(radOffset - increment),
       _offsetOpt(offset, o) + cy + 0.9 * ry * Math.sin(radOffset - increment),
     ]);
-  }
-  const endAngle = Math.PI * 2 + (coreOnly ? 0 : (radOffset - 0.01));
-  for (let angle = radOffset; angle < endAngle; angle = angle + increment) {
-    const p: Point = [
-      _offsetOpt(offset, o) + cx + rx * Math.cos(angle),
-      _offsetOpt(offset, o) + cy + ry * Math.sin(angle),
-    ];
-    corePoints.push(p);
-    allPoints.push(p);
-  }
-  if (!coreOnly) {
+    const endAngle = Math.PI * 2 + radOffset - 0.01;
+    for (let angle = radOffset; angle < endAngle; angle = angle + increment) {
+      const p: Point = [
+        _offsetOpt(offset, o) + cx + rx * Math.cos(angle),
+        _offsetOpt(offset, o) + cy + ry * Math.sin(angle),
+      ];
+      corePoints.push(p);
+      allPoints.push(p);
+    }
     allPoints.push([
       _offsetOpt(offset, o) + cx + rx * Math.cos(radOffset + Math.PI * 2 + overlap * 0.5),
       _offsetOpt(offset, o) + cy + ry * Math.sin(radOffset + Math.PI * 2 + overlap * 0.5),
@@ -436,6 +456,7 @@ function _computeEllipsePoints(increment: number, cx: number, cy: number, rx: nu
       _offsetOpt(offset, o) + cy + 0.9 * ry * Math.sin(radOffset + overlap * 0.5),
     ]);
   }
+
 
   return [allPoints, corePoints];
 }
