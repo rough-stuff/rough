@@ -307,8 +307,8 @@ function _line(x1: number, y1: number, x2: number, y2: number, o: ResolvedOption
     } else {
       ops.push({
         op: 'move', data: [
-          x1 + (preserveVertices ? 0 : _offsetOpt(offset, o, roughnessGain)),
-          y1 + (preserveVertices ? 0 : _offsetOpt(offset, o, roughnessGain)),
+          x1 + (preserveVertices ? 0 : randomFull()),
+          y1 + (preserveVertices ? 0 : randomFull()),
         ],
       });
     }
