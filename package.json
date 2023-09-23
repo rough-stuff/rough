@@ -41,6 +41,7 @@
     "typescript": "^4.5.3"
   },
   "dependencies": {
+    "hachure-fill": "^0.4.0",
     "path-data-parser": "^0.1.0",
     "points-on-curve": "^0.2.0",
     "points-on-path": "^0.2.1"
