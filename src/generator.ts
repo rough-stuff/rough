@@ -84,7 +84,7 @@ export class RoughGenerator {
       if (o.fillStyle === 'solid') {
         const shape: OpSet = {
           type: 'fillPath',
-          ops: this._extractFirstPath(ellipseResponse.opset.ops),
+          ops: this._mergedShape(this._splicePath(ellipseResponse.opset.ops)),
         };
         paths.push(shape);
       } else {
@@ -282,26 +282,9 @@ export class RoughGenerator {
     });
   }
 
-  private _extractFirstPath(input: Op[]): Op[] {
+  private _splicePath(input: Op[], initialSkip = false): Op[] {
     const out: Op[] = [];
-    for (let i = 0; i < input.length; i++) {
-      if (i === 0) {
-        out.push(input[i]);
-      } else {
-        const d = input[i];
-        if (d.op === 'move') {
-          break;
-        } else {
-          out.push(d);
-        }
-      }
-    }
-    return out;
-  }
-
-  private _splicePath(input: Op[]): Op[] {
-    const out: Op[] = [];
-    let skip = false;
+    let skip = initialSkip;
     let current: Op[] = [];
     for (let i = 0; i < input.length; i++) {
       const d = input[i];
