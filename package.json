@@ -1,10 +1,9 @@
 {
   "name": "roughjs",
-  "version": "4.5.2",
+  "version": "4.6.0",
   "description": "Create graphics using HTML Canvas or SVG with a hand-drawn, sketchy, appearance.",
   "main": "bundled/rough.cjs.js",
   "module": "bundled/rough.esm.js",
-  "browser": "bundled/rough.js",
   "types": "bin/rough.d.ts",
   "scripts": {
     "build": "rm -rf bin && tsc && rollup -c",
@@ -41,6 +40,7 @@
     "typescript": "^4.5.3"
   },
   "dependencies": {
+    "hachure-fill": "^0.4.0",
     "path-data-parser": "^0.1.0",
     "points-on-curve": "^0.2.0",
     "points-on-path": "^0.2.1"
