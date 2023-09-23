@@ -146,9 +146,6 @@ export function svgPath(path: string, o: ResolvedOptions): OpSet {
   for (const { key, data } of segments) {
     switch (key) {
       case 'M': {
-        const ro = 1 * (o.maxRandomnessOffset || 0);
-        const pv = o.preserveVertices;
-        ops.push({ op: 'move', data: data.map((d) => d + (pv ? 0 : _offsetOpt(ro, o))) });
         current = [data[0], data[1]];
         first = [data[0], data[1]];
         break;

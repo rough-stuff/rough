@@ -1,4 +1,4 @@
-import { Config, Options, Drawable, OpSet, ResolvedOptions, PathInfo } from './core.js';
+import { Config, Options, Drawable, OpSet, Op, ResolvedOptions, PathInfo } from './core.js';
 import { Point } from './geometry.js';
 import { line, solidFillPolygon, patternFillPolygons, rectangle, ellipseWithParams, generateEllipseParams, linearPath, arc, patternFillArc, curve, svgPath } from './renderer.js';
 import { randomSeed } from './math.js';
@@ -82,8 +82,10 @@ export class RoughGenerator {
     const ellipseResponse = ellipseWithParams(x, y, o, ellipseParams);
     if (o.fill) {
       if (o.fillStyle === 'solid') {
-        const shape = ellipseWithParams(x, y, o, ellipseParams).opset;
-        shape.type = 'fillPath';
+        const shape: OpSet = {
+          type: 'fillPath',
+          ops: this._extractFirstPath(ellipseResponse.opset.ops),
+        };
         paths.push(shape);
       } else {
         paths.push(patternFillPolygons([ellipseResponse.estimatedPoints], o));
@@ -174,12 +176,17 @@ export class RoughGenerator {
     const hasFill = o.fill && o.fill !== 'transparent' && o.fill !== NOS;
     const hasStroke = o.stroke !== NOS;
     const simplified = !!(o.simplification && (o.simplification < 1));
-    const distance = simplified ? (4 - 4 * (o.simplification!)) : ((1 + o.roughness) / 2);
+    const distance = simplified ? (4 - 4 * (o.simplification || 1)) : ((1 + o.roughness) / 2);
     const sets = pointsOnPath(d, 1, distance);
+    const shape = svgPath(d, o);
 
     if (hasFill) {
       if (o.fillStyle === 'solid') {
-        paths.push(solidFillPolygon(sets, o));
+        const fillShape: OpSet = {
+          type: 'fillPath',
+          ops: this._mergedShape(this._splicePath(shape.ops)),
+        };
+        paths.push(fillShape);
       } else {
         paths.push(patternFillPolygons(sets, o));
       }
@@ -190,7 +197,7 @@ export class RoughGenerator {
           paths.push(linearPath(set, false, o));
         });
       } else {
-        paths.push(svgPath(d, o));
+        paths.push(shape);
       }
     }
 
@@ -261,5 +268,62 @@ export class RoughGenerator {
       strokeWidth: fweight,
       fill: NOS,
     };
+  }
+
+  private _mergedShape(input: Op[]): Op[] {
+    return input.filter((d, i) => {
+      if (i === 0) {
+        return true;
+      }
+      if (d.op === 'move') {
+        return false;
+      }
+      return true;
+    });
+  }
+
+  private _extractFirstPath(input: Op[]): Op[] {
+    const out: Op[] = [];
+    for (let i = 0; i < input.length; i++) {
+      if (i === 0) {
+        out.push(input[i]);
+      } else {
+        const d = input[i];
+        if (d.op === 'move') {
+          break;
+        } else {
+          out.push(d);
+        }
+      }
+    }
+    return out;
+  }
+
+  private _splicePath(input: Op[]): Op[] {
+    const out: Op[] = [];
+    let skip = false;
+    let current: Op[] = [];
+    for (let i = 0; i < input.length; i++) {
+      const d = input[i];
+      if (d.op === 'move') {
+        if (current.length > 1) {
+          if (!skip) {
+            out.push(...current);
+            skip = true;
+          } else {
+            skip = false;
+          }
+        }
+        current = [d];
+      } else {
+        current.push(d);
+      }
+    }
+    if (current.length > 1) {
+      if (!skip) {
+        out.push(...current);
+      }
+    }
+    return out;
   }
 }
