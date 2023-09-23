@@ -137,7 +137,11 @@ export class RoughGenerator {
       const bcurve = curveToBezier(points);
       const polyPoints = pointsOnBezierCurves(bcurve, 10, (1 + o.roughness) / 2);
       if (o.fillStyle === 'solid') {
-        paths.push(solidFillPolygon([polyPoints], o));
+        const shape: OpSet = {
+          type: 'fillPath',
+          ops: this._mergedShape(this._splicePath(outline.ops)),
+        };
+        paths.push(shape);
       } else {
         paths.push(patternFillPolygons([polyPoints], o));
       }
