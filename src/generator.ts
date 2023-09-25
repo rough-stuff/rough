@@ -82,10 +82,8 @@ export class RoughGenerator {
     const ellipseResponse = ellipseWithParams(x, y, o, ellipseParams);
     if (o.fill) {
       if (o.fillStyle === 'solid') {
-        const shape: OpSet = {
-          type: 'fillPath',
-          ops: this._mergedShape(this._splicePath(ellipseResponse.opset.ops)),
-        };
+        const shape = ellipseWithParams(x, y, o, ellipseParams).opset;
+        shape.type = 'fillPath';
         paths.push(shape);
       } else {
         paths.push(patternFillPolygons([ellipseResponse.estimatedPoints], o));
