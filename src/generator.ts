@@ -287,32 +287,4 @@ export class RoughGenerator {
       return true;
     });
   }
-
-  private _splicePath(input: Op[], initialSkip = false): Op[] {
-    const out: Op[] = [];
-    let skip = initialSkip;
-    let current: Op[] = [];
-    for (let i = 0; i < input.length; i++) {
-      const d = input[i];
-      if (d.op === 'move') {
-        if (current.length > 1) {
-          if (!skip) {
-            out.push(...current);
-            skip = true;
-          } else {
-            skip = false;
-          }
-        }
-        current = [d];
-      } else {
-        current.push(d);
-      }
-    }
-    if (current.length > 1) {
-      if (!skip) {
-        out.push(...current);
-      }
-    }
-    return out;
-  }
 }
