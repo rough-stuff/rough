@@ -185,11 +185,11 @@ export class RoughGenerator {
     if (hasFill) {
       if (o.fillStyle === 'solid') {
         if (sets.length === 1) {
-          const fillShape: OpSet = {
+          const fillShape = svgPath(d, { ...o, disableMultiStroke: true });
+          paths.push({
             type: 'fillPath',
-            ops: this._mergedShape(this._splicePath(shape.ops)),
-          };
-          paths.push(fillShape);
+            ops: this._mergedShape(fillShape.ops),
+          });
         } else {
           paths.push(solidFillPolygon(sets, o));
         }
