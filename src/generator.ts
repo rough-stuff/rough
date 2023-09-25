@@ -132,15 +132,15 @@ export class RoughGenerator {
     const paths: OpSet[] = [];
     const outline = curve(points, o);
     if (o.fill && o.fill !== NOS && points.length >= 3) {
-      const bcurve = curveToBezier(points);
-      const polyPoints = pointsOnBezierCurves(bcurve, 10, (1 + o.roughness) / 2);
       if (o.fillStyle === 'solid') {
-        const shape: OpSet = {
+        const fillShape = curve(points, { ...o, disableMultiStroke: true });
+        paths.push({
           type: 'fillPath',
-          ops: this._mergedShape(this._splicePath(outline.ops)),
-        };
-        paths.push(shape);
+          ops: this._mergedShape(fillShape.ops),
+        });
       } else {
+        const bcurve = curveToBezier(points);
+        const polyPoints = pointsOnBezierCurves(bcurve, 10, (1 + o.roughness) / 2);
         paths.push(patternFillPolygons([polyPoints], o));
       }
     }
