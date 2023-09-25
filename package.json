@@ -1,6 +1,6 @@
 {
   "name": "roughjs",
-  "version": "4.6.1",
+  "version": "4.6.3",
   "description": "Create graphics using HTML Canvas or SVG with a hand-drawn, sketchy, appearance.",
   "main": "bundled/rough.cjs.js",
   "module": "bundled/rough.esm.js",

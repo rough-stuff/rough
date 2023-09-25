@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+  <title>RoughJS Curve</title>
+</head>
+
+<body>
+  <canvas width="800" height="800"></canvas>
+
+  <script type="module">
+    import rough from '../../bin/rough.js';
+    const canvas = document.querySelector('canvas');
+    const rc = rough.canvas(canvas);
+
+    const roughness = 1;
+    const path = `M 32 0 L 153.96380615234375 0 Q 185.96380615234375 0, 185.96380615234375 32 L 185.96380615234375 157.74319458007812 Q 185.96380615234375 189.74319458007812, 153.96380615234375 189.74319458007812 L 32 189.74319458007812 Q 0 189.74319458007812, 0 157.74319458007812 L 0 32 Q 0 0, 32 0`;
+    const ops = {
+      preserveVertices: true,
+      fill: 'red',
+      fillStyle: 'solid',
+      roughness: roughness,
+    }
+
+    const ctx = rc.ctx;
+
+    ctx.translate(0, 50);
+    rc.path(path, ops);
+
+    ctx.translate(200, 0);
+    rc.path(path, ops);
+
+    ctx.translate(200, 0);
+    rc.path(path, ops);
+
+    ctx.translate(200, 0);
+    rc.path(path, ops);
+
+    ctx.resetTransform();
+    ctx.translate(0, 250);
+    rc.path(path, ops);
+
+    ctx.translate(200, 0);
+    rc.path(path, ops);
+
+    ctx.translate(200, 0);
+    rc.path(path, ops);
+
+    ctx.translate(200, 0);
+    rc.path(path, ops);
+
+    ctx.resetTransform();
+    ctx.translate(0, 450);
+    rc.path(path, ops);
+
+    ctx.translate(200, 0);
+    rc.path(path, ops);
+
+    ctx.translate(200, 0);
+    rc.path(path, ops);
+
+    ctx.translate(200, 0);
+    rc.path(path, ops);
+  </script>
+</body>
+
+</html>

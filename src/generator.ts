@@ -82,10 +82,8 @@ export class RoughGenerator {
     const ellipseResponse = ellipseWithParams(x, y, o, ellipseParams);
     if (o.fill) {
       if (o.fillStyle === 'solid') {
-        const shape: OpSet = {
-          type: 'fillPath',
-          ops: this._mergedShape(this._splicePath(ellipseResponse.opset.ops)),
-        };
+        const shape = ellipseWithParams(x, y, o, ellipseParams).opset;
+        shape.type = 'fillPath';
         paths.push(shape);
       } else {
         paths.push(patternFillPolygons([ellipseResponse.estimatedPoints], o));
@@ -134,15 +132,15 @@ export class RoughGenerator {
     const paths: OpSet[] = [];
     const outline = curve(points, o);
     if (o.fill && o.fill !== NOS && points.length >= 3) {
-      const bcurve = curveToBezier(points);
-      const polyPoints = pointsOnBezierCurves(bcurve, 10, (1 + o.roughness) / 2);
       if (o.fillStyle === 'solid') {
-        const shape: OpSet = {
+        const fillShape = curve(points, { ...o, disableMultiStroke: true });
+        paths.push({
           type: 'fillPath',
-          ops: this._mergedShape(this._splicePath(outline.ops)),
-        };
-        paths.push(shape);
+          ops: this._mergedShape(fillShape.ops),
+        });
       } else {
+        const bcurve = curveToBezier(points);
+        const polyPoints = pointsOnBezierCurves(bcurve, 10, (1 + o.roughness) / 2);
         paths.push(patternFillPolygons([polyPoints], o));
       }
     }
@@ -187,11 +185,11 @@ export class RoughGenerator {
     if (hasFill) {
       if (o.fillStyle === 'solid') {
         if (sets.length === 1) {
-          const fillShape: OpSet = {
+          const fillShape = svgPath(d, { ...o, disableMultiStroke: true });
+          paths.push({
             type: 'fillPath',
-            ops: this._mergedShape(this._splicePath(shape.ops)),
-          };
-          paths.push(fillShape);
+            ops: this._mergedShape(fillShape.ops),
+          });
         } else {
           paths.push(solidFillPolygon(sets, o));
         }
@@ -288,33 +286,5 @@ export class RoughGenerator {
       }
       return true;
     });
-  }
-
-  private _splicePath(input: Op[], initialSkip = false): Op[] {
-    const out: Op[] = [];
-    let skip = initialSkip;
-    let current: Op[] = [];
-    for (let i = 0; i < input.length; i++) {
-      const d = input[i];
-      if (d.op === 'move') {
-        if (current.length > 1) {
-          if (!skip) {
-            out.push(...current);
-            skip = true;
-          } else {
-            skip = false;
-          }
-        }
-        current = [d];
-      } else {
-        current.push(d);
-      }
-    }
-    if (current.length > 1) {
-      if (!skip) {
-        out.push(...current);
-      }
-    }
-    return out;
   }
 }

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+  <title>RoughJS Curve</title>
+</head>
+
+<body>
+  <canvas width="800" height="800"></canvas>
+
+  <script type="module">
+    import rough from '../../bin/rough.js';
+    const canvas = document.querySelector('canvas');
+    const rc = rough.canvas(canvas);
+    const ctx = canvas.getContext('2d');
+
+    const ops = { fill: 'red', fillStyle: 'solid', roughness: 1.2 };
+
+    rc.curve([
+      [10, 10],
+      [200, 10],
+      [100, 100],
+      [100, 50],
+      [300, 100],
+      [60, 200]
+    ], ops);
+
+    ctx.translate(0, 210);
+    rc.curve([
+      [10, 10],
+      [200, 10],
+      [100, 100],
+      [100, 50],
+      [300, 100],
+      [60, 200]
+    ], ops);
+
+    ctx.translate(0, 210);
+    rc.curve([
+      [10, 10],
+      [200, 10],
+      [100, 100],
+      [100, 50],
+      [300, 100],
+      [60, 200]
+    ], ops);
+
+    ctx.translate(300, 0);
+
+
+    ctx.translate(0, -210);
+    rc.curve([
+      [10, 10],
+      [200, 10],
+      [100, 100],
+      [100, 50],
+      [300, 100],
+      [60, 200]
+    ], ops);
+
+    ctx.translate(0, -210);
+    rc.curve([
+      [10, 10],
+      [200, 10],
+      [100, 100],
+      [100, 50],
+      [300, 100],
+      [60, 200]
+    ], ops);
+
+  </script>
+</body>
+
+</html>
