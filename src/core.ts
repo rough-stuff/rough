@@ -39,6 +39,7 @@ export interface Options {
   disableMultiStrokeFill?: boolean;
   preserveVertices?: boolean;
   fixedDecimalPlaceDigits?: number;
+  fillShapeRoughnessGain?: number;
 }
 
 export interface ResolvedOptions extends Options {
@@ -62,6 +63,7 @@ export interface ResolvedOptions extends Options {
   disableMultiStroke: boolean;
   disableMultiStrokeFill: boolean;
   preserveVertices: boolean;
+  fillShapeRoughnessGain: number;
 }
 
 export declare type OpType = 'move' | 'bcurveTo' | 'lineTo';
