@@ -9,5 +9,11 @@ export function polygonHachureLines(polygonList: Point[][], o: ResolvedOptions):
     gap = o.strokeWidth * 4;
   }
   gap = Math.max(gap, 0.1);
-  return hachureLines(polygonList, gap, angle);
+  let skipOffset = 1;
+  if (o.roughness >= 1) {
+    if ((o.randomizer?.next() || Math.random()) > 0.7) {
+      skipOffset = gap;
+    }
+  }
+  return hachureLines(polygonList, gap, angle, skipOffset || 1);
 }
