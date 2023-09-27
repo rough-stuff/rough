@@ -31,6 +31,7 @@ export class RoughGenerator {
     disableMultiStroke: false,
     disableMultiStrokeFill: false,
     preserveVertices: false,
+    fillShapeRoughnessGain: 0.8,
   };
 
   constructor(config?: Config) {
@@ -133,7 +134,7 @@ export class RoughGenerator {
     const outline = curve(points, o);
     if (o.fill && o.fill !== NOS && points.length >= 3) {
       if (o.fillStyle === 'solid') {
-        const fillShape = curve(points, { ...o, disableMultiStroke: true });
+        const fillShape = curve(points, { ...o, disableMultiStroke: true, roughness: o.roughness ? (o.roughness + o.fillShapeRoughnessGain) : 0 });
         paths.push({
           type: 'fillPath',
           ops: this._mergedShape(fillShape.ops),
@@ -185,7 +186,7 @@ export class RoughGenerator {
     if (hasFill) {
       if (o.fillStyle === 'solid') {
         if (sets.length === 1) {
-          const fillShape = svgPath(d, { ...o, disableMultiStroke: true });
+          const fillShape = svgPath(d, { ...o, disableMultiStroke: true, roughness: o.roughness ? (o.roughness + o.fillShapeRoughnessGain) : 0 });
           paths.push({
             type: 'fillPath',
             ops: this._mergedShape(fillShape.ops),
