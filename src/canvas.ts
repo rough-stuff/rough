@@ -139,7 +139,7 @@ export class RoughCanvas {
     return d;
   }
 
-  curve(points: Point[], options?: Options): Drawable {
+  curve(points: Point[] | Point[][], options?: Options): Drawable {
     const d = this.gen.curve(points, options);
     this.draw(d);
     return d;

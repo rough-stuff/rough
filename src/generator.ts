@@ -128,11 +128,11 @@ export class RoughGenerator {
     return this._d('arc', paths, o);
   }
 
-  curve(points: Point[], options?: Options): Drawable {
+  curve(points: Point[] | Point[][], options?: Options): Drawable {
     const o = this._o(options);
     const paths: OpSet[] = [];
     const outline = curve(points, o);
-    if (o.fill && o.fill !== NOS && points.length >= 3) {
+    if (o.fill && o.fill !== NOS) {
       if (o.fillStyle === 'solid') {
         const fillShape = curve(points, { ...o, disableMultiStroke: true, roughness: o.roughness ? (o.roughness + o.fillShapeRoughnessGain) : 0 });
         paths.push({
@@ -140,9 +140,29 @@ export class RoughGenerator {
           ops: this._mergedShape(fillShape.ops),
         });
       } else {
-        const bcurve = curveToBezier(points);
-        const polyPoints = pointsOnBezierCurves(bcurve, 10, (1 + o.roughness) / 2);
-        paths.push(patternFillPolygons([polyPoints], o));
+        const polyPoints: Point[] = [];
+        const inputPoints = points;
+        if (inputPoints.length) {
+          const p1 = inputPoints[0];
+          const pointsList = (typeof p1[0] === 'number') ? [inputPoints as Point[]] : inputPoints as Point[][];
+          for (const points of pointsList) {
+            if (points.length < 3) {
+              polyPoints.push(...points);
+            } else if (points.length === 3) {
+              polyPoints.push(...pointsOnBezierCurves(curveToBezier([
+                points[0],
+                points[0],
+                points[1],
+                points[2],
+              ]), 10, (1 + o.roughness) / 2));
+            } else {
+              polyPoints.push(...pointsOnBezierCurves(curveToBezier(points), 10, (1 + o.roughness) / 2));
+            }
+          }
+        }
+        if (polyPoints.length) {
+          paths.push(patternFillPolygons([polyPoints], o));
+        }
       }
     }
     if (o.stroke !== NOS) {

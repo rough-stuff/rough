@@ -123,7 +123,7 @@ export class RoughSVG {
     return this.draw(d);
   }
 
-  curve(points: Point[], options?: Options): SVGGElement {
+  curve(points: Point[] | Point[][], options?: Options): SVGGElement {
     const d = this.gen.curve(points, options);
     return this.draw(d);
   }
