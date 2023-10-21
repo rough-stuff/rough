@@ -53,13 +53,35 @@ export function rectangle(x: number, y: number, width: number, height: number, o
   return polygon(points, o);
 }
 
-export function curve(points: Point[], o: ResolvedOptions): OpSet {
-  let o1 = _curveWithOffset(points, 1 * (1 + o.roughness * 0.2), o);
-  if (!o.disableMultiStroke) {
-    const o2 = _curveWithOffset(points, 1.5 * (1 + o.roughness * 0.22), cloneOptionsAlterSeed(o));
-    o1 = o1.concat(o2);
+export function curve(inputPoints: Point[] | Point[][], o: ResolvedOptions): OpSet {
+  if (inputPoints.length) {
+    const p1 = inputPoints[0];
+    const pointsList = (typeof p1[0] === 'number') ? [inputPoints as Point[]] : inputPoints as Point[][];
+
+    const o1 = _curveWithOffset(pointsList[0], 1 * (1 + o.roughness * 0.2), o);
+    const o2 = o.disableMultiStroke ? [] : _curveWithOffset(pointsList[0], 1.5 * (1 + o.roughness * 0.22), cloneOptionsAlterSeed(o));
+
+    for (let i = 1; i < pointsList.length; i++) {
+      const points = pointsList[i];
+      if (points.length) {
+        const underlay = _curveWithOffset(points, 1 * (1 + o.roughness * 0.2), o);
+        const overlay = o.disableMultiStroke ? [] : _curveWithOffset(points, 1.5 * (1 + o.roughness * 0.22), cloneOptionsAlterSeed(o));
+        for (const item of underlay) {
+          if (item.op !== 'move') {
+            o1.push(item);
+          }
+        }
+        for (const item of overlay) {
+          if (item.op !== 'move') {
+            o2.push(item);
+          }
+        }
+      }
+    }
+
+    return { type: 'path', ops: o1.concat(o2) };
   }
-  return { type: 'path', ops: o1 };
+  return { type: 'path', ops: [] };
 }
 
 export interface EllipseResult {
@@ -339,6 +361,9 @@ function _line(x1: number, y1: number, x2: number, y2: number, o: ResolvedOption
 }
 
 function _curveWithOffset(points: Point[], offset: number, o: ResolvedOptions): Op[] {
+  if (!points.length) {
+    return [];
+  }
   const ps: Point[] = [];
   ps.push([
     points[0][0] + _offsetOpt(offset, o),
@@ -393,7 +418,7 @@ function _curve(points: Point[], closePoint: Point | null, o: ResolvedOptions): 
       ],
     });
   } else if (len === 2) {
-    ops.push(..._doubleLine(points[0][0], points[0][1], points[1][0], points[1][1], o));
+    ops.push(..._line(points[0][0], points[0][1], points[1][0], points[1][1], o, true, true));
   }
   return ops;
 }

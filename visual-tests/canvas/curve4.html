@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+  <title>RoughJS Curve</title>
+</head>
+
+<body>
+  <canvas width="800" height="800"></canvas>
+
+  <script type="module">
+    import rough from '../../bin/rough.js';
+    const canvas = document.querySelector('canvas');
+    const rc = rough.canvas(canvas);
+    const ctx = canvas.getContext('2d');
+
+    const ops = { roughness: 1, fill: 'red', };
+    // preserveVertices
+
+    ctx.translate(20, 20);
+
+    // rc.curve([
+    //   [
+    //     [0, 0],
+    //     [107.03890991210938, 324.7185974121094],
+    //     [297.3592224121094, 186.47903442382812],
+    //     [356.3987731933594, -5.518890380859375],
+    //     [490.5584411621094, 216.71908569335938],
+    //     [645.1175231933594, 47.040374755859375],
+    //   ]
+    // ], ops);
+
+    rc.curve([
+      [
+        [0, 0],
+        [107.03890991210938, 324.7185974121094],
+        [297.3592224121094, 186.47903442382812],
+        [356.3987731933594, -5.518890380859375],
+        [490.5584411621094, 216.71908569335938],
+        // [645.1175231933594, 47.040374755859375]
+      ],
+      [
+        [490.5584411621094, 216.71908569335938],
+        [645.1175231933594, 47.040374755859375]
+      ],
+    ], ops);
+
+    ctx.translate(0, 210);
+
+  </script>
+</body>
+
+</html>
