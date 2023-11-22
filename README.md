@@ -78,9 +78,18 @@ rc.rectangle(120, 105, 80, 80, {
 });
 ```
 
-Fill styles can be: **hachure**(default), **solid**, **zigzag**, **cross-hatch**, **dots**, **dashed**, or **zigzag-line**
+Fill styles can be one of the following options (default is `hachure`):
 
-![Rough.js fill examples](https://roughjs.com/images/m14.png)
+| value          | description                                                                                                                                                               | example                                                                                                                                                                |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `hachure`      | Draws sketchy parallel lines with the same roughness as defined by the roughness and the bowing properties of the shape.                                                  | <img src="https://raw.githubusercontent.com/fsefidabi/projects-assets/main/rough-react-wrapper/fill-style-hachure.png" alt="fill-style-hachure" width="70">            |
+| `solid`        | Like a conventional fill.                                                                                                                                                 | <img src="https://raw.githubusercontent.com/fsefidabi/projects-assets/main/rough-react-wrapper/fill-style-solid.png" alt="fill-style-solid" width="70">                |
+| `zigzag`       | Draws zig-zag lines filling the shape.                                                                                                                                    | <img src="https://raw.githubusercontent.com/fsefidabi/projects-assets/main/rough-react-wrapper/fill-style-zigzag.png" alt="fill-style-zigzag" width="70">              |
+| `cross-hatch`  | Similar to `hachure`, but draws cross hatch lines (akin to two `hachure` fills 90 degrees from each other).                                                               | <img src="https://raw.githubusercontent.com/fsefidabi/projects-assets/main/rough-react-wrapper/fill-style-cross-hatch.png" alt="fill-style-cross-hatch" width="70">    |
+| `dots`         | Fills the shape with sketchy dots.                                                                                                                                        | <img src="https://raw.githubusercontent.com/fsefidabi/projects-assets/main/rough-react-wrapper/fill-style-dots.png" alt="fill-style-dots" width="70">                  |
+| `dashed`       | Similar to `hachure` but the individual lines are dashed. Dashes can be configured using the `dashOffset` and `dashGap` properties.                                       | <img src="https://raw.githubusercontent.com/fsefidabi/projects-assets/main/rough-react-wrapper/fill-style-dashed.png" alt="fill-style-dashed" width="70">              |
+| `zigzag-line`  | Similar to `hachure` but individual lines are drawn in a zig-zag fashion. The size of the zig-zag can be configured using the `zigzagOffset` proeprty.                    | <img src="https://raw.githubusercontent.com/fsefidabi/projects-assets/main/rough-react-wrapper/fill-style-zigzag-line.png" alt="fill-style-zigzag-line" width="70">    |
+
 
 ### Sketching style
 
