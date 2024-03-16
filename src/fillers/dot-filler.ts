@@ -2,6 +2,7 @@ import { PatternFiller, RenderHelper } from './filler-interface';
 import { ResolvedOptions, OpSet, Op } from '../core';
 import { Point, Line, lineLength } from '../geometry';
 import { polygonHachureLines } from './scan-line-hachure';
+import { Random } from 'src/math';
 
 export class DotFiller implements PatternFiller {
   private helper: RenderHelper;
@@ -17,6 +18,10 @@ export class DotFiller implements PatternFiller {
   }
 
   private dotsOnLines(lines: Line[], o: ResolvedOptions): OpSet {
+    if (!o.randomizer) {
+      o.randomizer = new Random(o.seed || 0);
+    }
+
     const ops: Op[] = [];
     let gap = o.hachureGap;
     if (gap < 0) {
@@ -38,8 +43,8 @@ export class DotFiller implements PatternFiller {
 
       for (let i = 0; i < count; i++) {
         const y = minY + offset + (i * gap);
-        const cx = (x - ro) + Math.random() * 2 * ro;
-        const cy = (y - ro) + Math.random() * 2 * ro;
+        const cx = (x - ro) + o.randomizer.next() * 2 * ro;
+        const cy = (y - ro) + o.randomizer.next() * 2 * ro;
         const el = this.helper.ellipse(cx, cy, fweight, fweight, o);
         ops.push(...el.ops);
       }
