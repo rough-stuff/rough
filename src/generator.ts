@@ -156,7 +156,7 @@ export class RoughGenerator {
                 points[2],
               ]).map(p => [p[0], p[1]] as Point), 10, (1 + o.roughness) / 2).map(p => [p[0], p[1]] as Point));
             } else {
-              polyPoints.push(...pointsOnBezierCurves(curveToBezier(points), 10, (1 + o.roughness) / 2));
+              polyPoints.push(...pointsOnBezierCurves(curveToBezier(points), 10, (1 + o.roughness) / 2).map(p => [p[0], p[1]] as Point));
             }
           }
         }
