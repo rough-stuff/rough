@@ -1,9 +1,0 @@
-.cache
-.DS_Store
-z
-node_modules
-src
-tslint.json
-rollup.config.js
-.gitignore
-visual-tests
