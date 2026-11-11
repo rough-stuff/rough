@@ -4,22 +4,18 @@ parts:
   - ellipse: [75, 122, 140, 44]
     color: orange
     fill: yellow
-    fillAlpha: 0.5
   - path: "M5 122 L5 100 M145 122 L145 100"
     color: orange
   - ellipse: [75, 98, 140, 44]
     color: orange
     fill: yellow
-    fillAlpha: 0.5
   - path: "M5 98 L5 76 M145 98 L145 76"
     color: orange
   - ellipse: [75, 74, 140, 44]
     color: orange
     fill: yellow
-    fillAlpha: 0.5
   - path: "M5 74 L5 52 M145 74 L145 52"
     color: orange
   - ellipse: [75, 50, 140, 44]
     color: orange
     fill: yellow
-    fillAlpha: 0.5

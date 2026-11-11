@@ -6,28 +6,33 @@ parts:
   - rect: [18, 80, 24, 50]
     color: red
     fill: red
-    fillGap: 6
+    fillStyle: solid
+    fillAlpha: 0.85
   - line: [90, 130, 90, 30]
     color: red
   - rect: [78, 50, 24, 60]
     color: red
     fill: red
-    fillGap: 6
+    fillStyle: solid
+    fillAlpha: 0.85
   - line: [150, 110, 150, 40]
     color: green
   - rect: [138, 55, 24, 40]
     color: green
     fill: green
-    fillGap: 6
+    fillStyle: solid
+    fillAlpha: 0.85
   - line: [210, 170, 210, 70]
     color: green
   - rect: [198, 90, 24, 65]
     color: green
     fill: green
-    fillGap: 6
+    fillStyle: solid
+    fillAlpha: 0.85
   - line: [270, 150, 270, 20]
     color: red
   - rect: [258, 40, 24, 90]
     color: red
     fill: red
-    fillGap: 6
+    fillStyle: solid
+    fillAlpha: 0.85

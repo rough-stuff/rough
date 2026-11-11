@@ -5,13 +5,11 @@ parts:
   - rect: [0, 0, 220, 120]
     color: $tint
     fill: $tint
-    fillGap: 13
-    fillAlpha: 0.3
   - ellipse: [110, 60, 96, 76]
     color: $tint
     fill: paper
     fillStyle: solid
-    fillAlpha: 1
+    fillAlpha: 0.9
   - text: $text
     at: [110, 60]
     size: 46

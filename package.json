@@ -3,16 +3,19 @@
   "version": "0.1.0",
   "description": "画讲：把带时间表的口播稿做成“边画边讲”手绘视频的框架（基于 rough.js 笔画引擎）",
   "type": "module",
-  "bin": { "hj": "bin/hj.mjs" },
+  "bin": {
+    "hj": "bin/hj.mjs"
+  },
   "scripts": {
     "hj": "tsx src/cli/main.ts",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test test/*.test.ts"
   },
   "license": "MIT",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
-    "@fontsource/lxgw-wenkai-tc": "^5.2.0",
     "@napi-rs/canvas": "^0.1.60",
     "@tabler/icons": "^3.30.0",
     "hachure-fill": "^0.5.2",

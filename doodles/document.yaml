@@ -14,4 +14,5 @@ parts:
   - circle: [118, 160, 40]
     color: $seal
     fill: $seal
-    fillGap: 7
+    fillStyle: solid
+    fillAlpha: 0.8

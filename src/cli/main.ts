@@ -6,7 +6,7 @@ import { createCanvas, Path2D } from '@napi-rs/canvas';
 import YAML from 'yaml';
 import { compile, type Compiled, type CScene } from '../core/compile';
 import { lint, printIssues, planMarkdown } from '../core/lint';
-import { drawFrame, type Env } from '../core/render';
+import { drawFrame, drawStrokes, type Env } from '../core/render';
 import { writeSfx } from '../core/sfx';
 import { loadAlignment, fakeAlignment, resolveAnchor } from '../core/alignment';
 import { searchIcons } from '../core/icons';
@@ -159,8 +159,8 @@ const commands: Record<string, () => Promise<void> | void> = {
         sx.drawImage(cv, x, y + cap, tw, th);
         sx.strokeStyle = '#adb5bd'; sx.lineWidth = 1; sx.strokeRect(x + 0.5, y + cap + 0.5, tw, th);
         const lab = textStrokes(tiles[i].label, { size: 28, color: '#212529' });
-        sx.save(); sx.translate(x + 4, y + 6); sx.fillStyle = '#212529';
-        for (const s of lab.strokes) if (s.kind === 'wipe') { sx.save(); sx.translate(s.tx, s.ty); sx.fill(new Path2D(s.d)); sx.restore(); }
+        sx.save(); sx.translate(x + 4, y + 6);
+        drawStrokes(sx, env, lab.strokes);
         sx.restore();
       }
       const sf = `sheet-${String(sc.index + 1).padStart(2, '0')}-${sc.id}.png`;
@@ -185,7 +185,7 @@ const commands: Record<string, () => Promise<void> | void> = {
     const amix: string[] = [];
     if (audio && existsSync(audio)) { inputs.push('-ss', String(from), '-t', String(to - from), '-i', audio); amix.push(`[${amix.length + 1}:a]`); }
     else console.log('  （没有配音文件，成片只有落笔音效）');
-    if (c.meta.sfx !== false) { const sfx = join(outDir, 'sfx.wav'); writeSfx(c, sfx, c.meta.sfxVolume ?? 0.5); inputs.push('-ss', String(from), '-t', String(to - from), '-i', sfx); amix.push(`[${amix.length + 1}:a]`); }
+    if (c.meta.sfx !== false) { const sfx = join(outDir, 'sfx.wav'); writeSfx(c, sfx, c.meta.sfxVolume ?? 1); inputs.push('-ss', String(from), '-t', String(to - from), '-i', sfx); amix.push(`[${amix.length + 1}:a]`); }
     const ff = ['-y', '-loglevel', 'error', ...inputs];
     if (amix.length > 1) ff.push('-filter_complex', `${amix.join('')}amix=inputs=${amix.length}:normalize=0[a]`, '-map', '0:v', '-map', '[a]');
     else if (amix.length === 1) ff.push('-map', '0:v', '-map', '1:a');
@@ -244,18 +244,12 @@ async function assetSheet() {
   const c: any = { fmt: { ...fmt, W: cv.width, H: cv.height }, cams: [], scenes: [{ origin: [0, 0] }], tls: [], erases: [], subs: [] };
   items.forEach((it, i) => {
     const x = (i % cols) * cw + cw / 2, y = Math.floor(i / cols) * chh + 140, b = it.el.box;
-    ctx.save(); ctx.translate(x - (b.x + b.w / 2), y - (b.y + b.h / 2)); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-    for (const under of [true, false]) for (const s of it.el.strokes) {
-      if (!!s.under !== under) continue;
-      if (s.kind === 'line') { ctx.globalAlpha = s.alpha ?? 1; ctx.beginPath(); ctx.moveTo(s.pts[0], s.pts[1]); for (let k = 2; k < s.pts.length; k += 2) ctx.lineTo(s.pts[k], s.pts[k + 1]); ctx.strokeStyle = s.color; ctx.lineWidth = s.w; ctx.stroke(); }
-      else if (s.kind === 'fill') { ctx.globalAlpha = s.alpha; ctx.beginPath(); ctx.moveTo(s.pts[0], s.pts[1]); for (let k = 2; k < s.pts.length; k += 2) ctx.lineTo(s.pts[k], s.pts[k + 1]); ctx.fillStyle = s.color; ctx.fill(); }
-      else if (s.kind === 'glyph') { ctx.globalAlpha = 1; ctx.save(); ctx.transform(...(s.m as [number, number, number, number, number, number])); ctx.fillStyle = s.color; ctx.fill(new Path2D(s.d)); ctx.restore(); }
-      else { ctx.globalAlpha = 1; ctx.save(); ctx.translate(s.tx, s.ty); ctx.fillStyle = s.color; ctx.fill(new Path2D(s.d)); ctx.restore(); }
-    }
+    ctx.save(); ctx.translate(x - (b.x + b.w / 2), y - (b.y + b.h / 2));
+    drawStrokes(ctx, env, it.el.strokes);
     ctx.restore(); ctx.globalAlpha = 1;
     const lab = textStrokes(it.label, { size: 26, color: '#495057' });
-    ctx.save(); ctx.translate(x - lab.w / 2, Math.floor(i / cols) * chh + chh - 50); ctx.fillStyle = '#495057';
-    for (const s of lab.strokes) if (s.kind === 'wipe') { ctx.save(); ctx.translate(s.tx, s.ty); ctx.fill(new Path2D(s.d)); ctx.restore(); }
+    ctx.save(); ctx.translate(x - lab.w / 2, Math.floor(i / cols) * chh + chh - 50);
+    drawStrokes(ctx, env, lab.strokes);
     ctx.restore();
   });
   void c;

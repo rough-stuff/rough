@@ -94,16 +94,17 @@ src/rough/        原 rough.js：把几何图形抖成手绘线（笔画引擎�
 src/core/
   alignment.ts    时间表加载、口播锚点解析、字幕切分
   strokes.ts      rough 输出 → 可按时间重放的笔画
-  text.ts         汉字按笔顺书写；数字字母用字形轮廓
+  text.ts         手写字体字形 + 按笔顺书写
   figure.ts       火柴人：姿势、表情、配饰
   icons.ts        Tabler 图标
   elements.ts     元素构建与相对布局
   compile.ts      分镜 → 绝对时间线（动作排程、镜头、擦除）
   lint.ts         质量检查、文字分镜表
-  render.ts       drawFrame(ctx, 时间线, t)：画面是时间的纯函数
+  render.ts       drawFrame(ctx, 时间线, t)：画面是时间的纯函数；笔触、纸面、涂色的质感都在这里
   sfx.ts          落笔音效合成
 src/cli/main.ts   hj 命令
 doodles/          内置手绘件
+assets/fonts/     手写字体（霞鹜漫黑，OFL）
 ```
 
 改引擎之后跑 `npm test` 和 `npm run typecheck`。

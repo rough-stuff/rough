@@ -47,7 +47,7 @@ export function naturalDraw(el: El): number {
 }
 /** 一笔占多少“时间份额”：上色的排线是快速涂抹，只算三分之一 */
 const weight = (s: any) => ((s.under ? 0.35 : 1) * s.len + penUp(s));
-const penUp = (s: { kind: string; len: number }) => (s.kind === 'glyph' ? 14 : s.kind === 'wipe' ? 6 : Math.min(75, 18 + s.len * 0.3));
+const penUp = (s: { kind: string; len: number }) => (s.kind === 'fglyph' ? 40 : s.kind === 'wipe' ? 10 : (s as any).flat ? 10 : Math.min(75, 18 + s.len * 0.3));
 
 export function loadProject(dir: string): { meta: any; scenes: { file: string; src: any }[] } {
   const pf = join(dir, 'project.yaml');

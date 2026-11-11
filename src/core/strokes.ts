@@ -5,11 +5,11 @@ import type { Drawable, Options } from '../rough/core';
 export type Pt = [number, number];
 export type Box = { x: number; y: number; w: number; h: number };
 
-export interface LineStroke { kind: 'line'; pts: number[]; w: number; color: string; len: number; under?: boolean; alpha?: number; cum?: number[] }
-/** 汉字笔画：outline 是该笔的轮廓，median 是运笔中线，按中线推进并用轮廓裁剪 */
-export interface GlyphStroke { kind: 'glyph'; d: string; m: [number, number, number, number, number, number]; median: number[]; mw: number; color: string; len: number; bold: number; box: Box; cum?: number[] }
+export interface LineStroke { kind: 'line'; pts: number[]; w: number; color: string; len: number; under?: boolean; alpha?: number; cum?: number[]; /** 平头、等宽：马克笔涂色的宽笔道 */ flat?: boolean; wm?: Float32Array }
+/** 汉字：整个字形 + 笔顺中线。笔沿中线走，走过的地方露出字形 */
+export interface GlyphStroke { kind: 'fglyph'; d: string; tx: number; ty: number; s: number; medians: number[][]; r: number; color: string; len: number; box: Box; mcum?: number[][] }
 /** 非汉字字形：整个字形轮廓，从左到右揭开 */
-export interface WipeStroke { kind: 'wipe'; d: string; tx: number; ty: number; color: string; len: number; bold: number; box: Box }
+export interface WipeStroke { kind: 'wipe'; d: string; tx: number; ty: number; s: number; color: string; len: number; box: Box }
 /** 实心填充块：在自己的时间片里淡入 */
 export interface FillStroke { kind: 'fill'; pts: number[]; color: string; alpha: number; len: number; under: true }
 export type Stroke = LineStroke | GlyphStroke | WipeStroke | FillStroke;
@@ -66,23 +66,42 @@ export function translateStrokes(strokes: Stroke[], dx: number, dy: number): voi
   for (const s of strokes) {
     if (s.kind === 'line' || s.kind === 'fill') { for (let i = 0; i < s.pts.length; i += 2) { s.pts[i] += dx; s.pts[i + 1] += dy; } }
     else {
-      s.box.x += dx; s.box.y += dy;
-      if (s.kind === 'glyph') { s.m[4] += dx; s.m[5] += dy; }
-      else { s.tx += dx; s.ty += dy; }
+      s.box.x += dx; s.box.y += dy; s.tx += dx; s.ty += dy;
+      if (s.kind === 'fglyph') for (const m of s.medians) for (let i = 0; i < m.length; i += 2) { m[i] += dx; m[i + 1] += dy; }
     }
   }
 }
 
+/** 笔触粗细曲线：落笔略重、行笔有轻微起伏、收笔带出一点笔锋。返回每个点的粗细倍数 */
+export function widthProfile(s: LineStroke): Float32Array {
+  if (s.wm) return s.wm;
+  const cum = cumLen(s), L = cum[cum.length - 1] || 1, n = cum.length, wm = new Float32Array(n);
+  const r = rng(Math.round(L * 131 + s.pts[0] * 17 + s.pts[1] * 29) || 1);
+  const ph1 = r() * 6.28, ph2 = r() * 6.28, f1 = 0.018 + r() * 0.012, f2 = 0.05 + r() * 0.03;
+  const tail = Math.min(26, L * 0.3), head = Math.min(16, L * 0.2);
+  for (let i = 0; i < n; i++) {
+    const d = cum[i];
+    let m = 1 + 0.1 * Math.sin(ph1 + d * f1) + 0.05 * Math.sin(ph2 + d * f2);
+    if (d < head) m *= 1.16 - 0.16 * (d / head);
+    if (L - d < tail) m *= 0.52 + 0.48 * ((L - d) / tail);
+    wm[i] = m;
+  }
+  return (s.wm = wm);
+}
+
 const gen = new RoughGenerator();
 
-export interface Style { color: string; w: number; rough: number; seed: number; fill?: string; fillStyle?: string; fillGap?: number; fillAlpha?: number; double?: boolean; bow?: number }
+export interface Style { color: string; w: number; rough: number; seed: number; fill?: string; /** marker（默认，马克笔宽笔道涂色）/ hachure（细排线）/ solid / zigzag / cross-hatch / dots */ fillStyle?: string; fillGap?: number; fillAlpha?: number; double?: boolean; bow?: number }
 
-function opts(st: Style): Options {
+const isMarker = (st: Style) => !!st.fill && (!st.fillStyle || st.fillStyle === 'marker');
+
+function opts(st: Style, fillStyle = st.fillStyle): Options {
+  const marker = isMarker(st);
   return {
     seed: st.seed, roughness: st.rough, bowing: st.bow ?? 1, stroke: st.color, strokeWidth: st.w,
     disableMultiStroke: !st.double, disableMultiStrokeFill: true,
-    fill: st.fill, fillStyle: st.fillStyle ?? 'hachure', hachureGap: st.fillGap ?? Math.max(9, st.w * 2.4), fillWeight: Math.max(2, st.w * 0.6),
-    hachureAngle: -41, preserveVertices: st.rough < 0.5, curveStepCount: 12,
+    fill: st.fill, fillStyle: marker ? fillStyle ?? 'solid' : st.fillStyle, hachureGap: marker ? st.fillGap ?? 15 : st.fillGap ?? Math.max(9, st.w * 2.4), fillWeight: Math.max(2, st.w * 0.6),
+    hachureAngle: marker ? -33 : -41, preserveVertices: st.rough < 0.5, curveStepCount: 12, fillShapeRoughnessGain: marker ? 0.4 : 0.8,
   };
 }
 
@@ -113,18 +132,34 @@ export function toStrokes(d: Drawable, st: Style): Stroke[] {
       const len = polyLen(pts);
       if (set.type === 'path') outline.push({ kind: 'line', pts, w: st.w, color: st.color, len });
       else if (set.type === 'fillSketch') fills.push({ kind: 'line', pts, w: Math.max(2, st.w * 0.6), color: st.fill!, len, under: true, alpha: st.fillAlpha ?? 0.85 });
-      else fills.push({ kind: 'fill', pts, color: st.fill!, alpha: st.fillAlpha ?? 0.35, len: Math.sqrt(len) * 12, under: true });
+      else {
+        const marker = isMarker(st);
+        if (marker) for (let i = 0; i < pts.length; i += 2) { pts[i] += 4; pts[i + 1] += 3; } // 涂色故意和轮廓错开一点
+        fills.push({ kind: 'fill', pts, color: st.fill!, alpha: st.fillAlpha ?? (marker ? 0.42 : 0.35), len: Math.sqrt(len) * 16, under: true });
+      }
     }
   }
   return [...outline, ...fills];
 }
 
+/** 马克笔涂色的笔道纹理：在色块上再叠几道更深的斜线 */
+function streaks(d: Drawable, st: Style): Stroke[] {
+  if (!isMarker(st)) return [];
+  const out: Stroke[] = [];
+  for (const s of toStrokes(d, { ...st, fillStyle: 'hachure' })) if (s.kind === 'line' && s.under) { for (let i = 0; i < s.pts.length; i += 2) { s.pts[i] += 4; s.pts[i + 1] += 3; } out.push({ ...s, w: 5, alpha: 0.16, flat: true }); }
+  return out;
+}
+
+const shape = (make: (o: Options) => Drawable, st: Style): Stroke[] => {
+  const base = toStrokes(make(opts(st)), st);
+  return isMarker(st) ? [...base, ...streaks(make({ ...opts(st, 'hachure'), stroke: 'none' }), st)] : base;
+};
 export const R = {
   line: (x1: number, y1: number, x2: number, y2: number, st: Style) => toStrokes(gen.line(x1, y1, x2, y2, opts(st)), st),
-  rect: (x: number, y: number, w: number, h: number, st: Style) => toStrokes(gen.rectangle(x, y, w, h, opts(st)), st),
-  ellipse: (cx: number, cy: number, w: number, h: number, st: Style) => toStrokes(gen.ellipse(cx, cy, w, h, opts(st)), st),
-  poly: (pts: Pt[], close: boolean, st: Style) => toStrokes(close ? gen.polygon(pts, opts(st)) : gen.linearPath(pts, opts(st)), st),
-  curve: (pts: Pt[], st: Style) => toStrokes(gen.curve(pts, opts(st)), st),
-  path: (d: string, st: Style) => toStrokes(gen.path(d, opts(st)), st),
+  rect: (x: number, y: number, w: number, h: number, st: Style) => shape(o => gen.rectangle(x, y, w, h, o), st),
+  ellipse: (cx: number, cy: number, w: number, h: number, st: Style) => shape(o => gen.ellipse(cx, cy, w, h, o), st),
+  poly: (pts: Pt[], close: boolean, st: Style) => (close ? shape(o => gen.polygon(pts, o), st) : toStrokes(gen.linearPath(pts, opts(st)), st)),
+  curve: (pts: Pt[], st: Style) => shape(o => gen.curve(pts, o), st),
+  path: (d: string, st: Style) => shape(o => gen.path(d, o), st),
   arc: (cx: number, cy: number, w: number, h: number, a0: number, a1: number, st: Style) => toStrokes(gen.arc(cx, cy, w, h, a0, a1, false, opts(st)), st),
 };

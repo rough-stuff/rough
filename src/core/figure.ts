@@ -65,16 +65,16 @@ const rad = (d: number) => (d * Math.PI) / 180;
 
 export function figureStrokes(f: FigureSpec): { strokes: Stroke[]; anchors: Record<string, Pt> } {
   const H = f.size, p = f.pose;
-  const w = Math.max(4, H * 0.021);
+  const w = Math.min(11, Math.max(6, H * 0.02));
   let n = 0;
   const st = (extra: Partial<Style> = {}): Style => ({ color: f.color, w, rough: 0.7, seed: f.seed + n++, bow: 0.6, ...extra });
   const rot = (x: number, y: number, deg: number, ox = 0, oy = 0): Pt => { const a = rad(deg), c = Math.cos(a), s = Math.sin(a); return [ox + (x - ox) * c - (y - oy) * s, oy + (x - ox) * s + (y - oy) * c]; };
   const dir = (side: 1 | -1, deg: number): Pt => [side * Math.sin(rad(deg)), Math.cos(rad(deg))];
 
   const hip: Pt = [0, 0];
-  const shoulder = rot(0, -0.30 * H, p.lean);
-  const neck = rot(0, -0.335 * H, p.lean);
-  const hr = 0.125 * H;
+  const shoulder = rot(0, -0.27 * H, p.lean);
+  const neck = rot(0, -0.30 * H, p.lean);
+  const hr = 0.15 * H;
   const headC = rot(neck[0], neck[1] - hr * 1.02, p.head * 0.5, neck[0], neck[1]);
   const out: Stroke[] = [];
 
@@ -113,8 +113,8 @@ export function figureStrokes(f: FigureSpec): { strokes: Stroke[]; anchors: Reco
       else if (face.eyes === 'arc') cur([fx(ex - 0.15, ey + 0.05), fx(ex, ey - 0.1), fx(ex + 0.15, ey + 0.05)]);
       else if (face.eyes === 'x') { seg(fx(ex - 0.12, ey - 0.12), fx(ex + 0.12, ey + 0.12)); seg(fx(ex + 0.12, ey - 0.12), fx(ex - 0.12, ey + 0.12)); }
       else if (face.eyes === 'dollar') {
-        cur([fx(ex + 0.12, ey - 0.12), fx(ex - 0.1, ey - 0.1), fx(ex, ey), fx(ex + 0.1, ey + 0.1), fx(ex - 0.12, ey + 0.13)], { color: f.accent ?? '#2f9e44' });
-        seg(fx(ex, ey - 0.22), fx(ex, ey + 0.22), { color: f.accent ?? '#2f9e44' });
+        cur([fx(ex + 0.12, ey - 0.12), fx(ex - 0.1, ey - 0.1), fx(ex, ey), fx(ex + 0.1, ey + 0.1), fx(ex - 0.12, ey + 0.13)], { color: f.accent ?? '#3c8f4f' });
+        seg(fx(ex, ey - 0.22), fx(ex, ey + 0.22), { color: f.accent ?? '#3c8f4f' });
       }
       const by = ey - 0.32;
       if (face.brows === 'angry') seg(fx(ex + sx * 0.18, by - 0.1), fx(ex - sx * 0.16, by + 0.08));
@@ -136,16 +136,16 @@ export function figureStrokes(f: FigureSpec): { strokes: Stroke[]; anchors: Reco
   const acc = f.accent ?? f.color;
   const hx = (x: number, y: number): Pt => fx(x, y);
   for (const a of f.accessories ?? []) {
-    if (a === 'tophat') { out.push(...R.line(...hx(-1.25, -0.82), ...hx(1.25, -0.82), st())); out.push(...R.poly([hx(-0.78, -0.84), hx(-0.72, -1.95), hx(0.72, -1.95), hx(0.78, -0.84)], false, st({ fill: f.color, fillGap: w * 1.6 }))); }
+    if (a === 'tophat') { out.push(...R.line(...hx(-1.25, -0.82), ...hx(1.25, -0.82), st())); out.push(...R.poly([hx(-0.78, -0.84), hx(-0.72, -1.95), hx(0.72, -1.95), hx(0.78, -0.84)], false, st({ fill: f.color, fillGap: 14 }))); }
     else if (a === 'hardhat') { out.push(...R.curve([hx(-1.05, -0.62), hx(-0.8, -1.3), hx(0, -1.55), hx(0.8, -1.3), hx(1.05, -0.62)], st({ color: acc }))); out.push(...R.line(...hx(-1.3, -0.62), ...hx(1.3, -0.62), st({ color: acc }))); }
     else if (a === 'cap') { out.push(...R.curve([hx(-0.98, -0.6), hx(-0.7, -1.25), hx(0, -1.4), hx(0.7, -1.25), hx(0.98, -0.6)], st({ color: acc }))); out.push(...R.line(...hx(-0.98, -0.6), ...hx(1.7, -0.6), st({ color: acc }))); }
-    else if (a === 'crown') out.push(...R.poly([hx(-0.8, -0.85), hx(-0.9, -1.75), hx(-0.4, -1.3), hx(0, -1.9), hx(0.4, -1.3), hx(0.9, -1.75), hx(0.8, -0.85)], true, st({ color: '#f08c00', fill: '#ffd43b', fillGap: w * 1.5 })));
-    else if (a === 'gradcap') { out.push(...R.poly([hx(-1.3, -1.1), hx(0, -1.6), hx(1.3, -1.1), hx(0, -0.7)], true, st({ fill: f.color, fillGap: w * 1.6 }))); out.push(...R.line(...hx(1.3, -1.1), ...hx(1.3, -0.3), st({ color: acc }))); }
+    else if (a === 'crown') out.push(...R.poly([hx(-0.8, -0.85), hx(-0.9, -1.75), hx(-0.4, -1.3), hx(0, -1.9), hx(0.4, -1.3), hx(0.9, -1.75), hx(0.8, -0.85)], true, st({ color: '#e8792b', fill: '#f2b830', fillGap: 14 })));
+    else if (a === 'gradcap') { out.push(...R.poly([hx(-1.3, -1.1), hx(0, -1.6), hx(1.3, -1.1), hx(0, -0.7)], true, st({ fill: f.color, fillGap: 14 }))); out.push(...R.line(...hx(1.3, -1.1), ...hx(1.3, -0.3), st({ color: acc }))); }
     else if (a === 'glasses') { for (const sx of [-1, 1]) out.push(...R.ellipse(...hx(sx * 0.38, -0.1), hr * 0.62, hr * 0.56, st({ w: fw, rough: 0.4 }))); seg(hx(-0.08, -0.12), hx(0.08, -0.12)); }
     else if (a === 'longhair') { out.push(...R.curve([hx(-0.3, -1.0), hx(-0.95, -0.6), hx(-1.15, 0.5), hx(-0.9, 1.5)], st())); out.push(...R.curve([hx(0.3, -1.0), hx(0.95, -0.6), hx(1.15, 0.5), hx(0.9, 1.5)], st())); out.push(...R.curve([hx(-0.8, -0.55), hx(-0.2, -0.75), hx(0.8, -0.5)], st({ w: fw }))); }
-    else if (a === 'beard') out.push(...R.curve([hx(-0.85, 0.3), hx(-0.6, 1.15), hx(0, 1.5), hx(0.6, 1.15), hx(0.85, 0.3)], st({ fill: f.color, fillGap: w * 1.4 })));
-    else if (a === 'tie') { const t0: Pt = [neck[0], neck[1] + 0.02 * H]; out.push(...R.poly([t0, [t0[0] - 0.03 * H, t0[1] + 0.13 * H], [t0[0], t0[1] + 0.17 * H], [t0[0] + 0.03 * H, t0[1] + 0.13 * H]], true, st({ color: acc, fill: acc, fillGap: w * 1.2, w: fw }))); }
-    else if (a === 'briefcase') { const h = armL[2]; out.push(...R.rect(h[0] - 0.09 * H, h[1] + 0.02 * H, 0.18 * H, 0.13 * H, st({ fill: acc === f.color ? '#868e96' : acc, fillGap: w * 1.6 }))); out.push(...R.poly([[h[0] - 0.035 * H, h[1] + 0.02 * H], [h[0] - 0.035 * H, h[1] - 0.015 * H], [h[0] + 0.035 * H, h[1] - 0.015 * H], [h[0] + 0.035 * H, h[1] + 0.02 * H]], false, st({ w: fw }))); }
+    else if (a === 'beard') out.push(...R.curve([hx(-0.85, 0.3), hx(-0.6, 1.15), hx(0, 1.5), hx(0.6, 1.15), hx(0.85, 0.3)], st({ fill: f.color, fillGap: 12 })));
+    else if (a === 'tie') { const t0: Pt = [neck[0], neck[1] + 0.02 * H]; out.push(...R.poly([t0, [t0[0] - 0.03 * H, t0[1] + 0.13 * H], [t0[0], t0[1] + 0.17 * H], [t0[0] + 0.03 * H, t0[1] + 0.13 * H]], true, st({ color: acc, fill: acc, fillStyle: 'solid', fillAlpha: 0.85, w: fw }))); }
+    else if (a === 'briefcase') { const h = armL[2]; out.push(...R.rect(h[0] - 0.09 * H, h[1] + 0.02 * H, 0.18 * H, 0.13 * H, st({ fill: acc === f.color ? '#8a8580' : acc, fillGap: 14 }))); out.push(...R.poly([[h[0] - 0.035 * H, h[1] + 0.02 * H], [h[0] - 0.035 * H, h[1] - 0.015 * H], [h[0] + 0.035 * H, h[1] - 0.015 * H], [h[0] + 0.035 * H, h[1] + 0.02 * H]], false, st({ w: fw }))); }
   }
   return { strokes: out, anchors: { head: headC, handL: armL[2], handR: armR[2], hip, feet: [(legL[2][0] + legR[2][0]) / 2, Math.max(legL[2][1], legR[2][1])] } };
 }

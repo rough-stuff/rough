@@ -7,10 +7,10 @@ export const FORMATS: Record<string, Format> = {
 };
 
 export const THEME = {
-  paper: '#fcfbf7',
-  ink: '#23272c',
-  colors: { ink: '#23272c', red: '#e03131', blue: '#1c7ed6', green: '#2f9e44', yellow: '#fab005', orange: '#f76707', purple: '#7048e8', gray: '#868e96', paper: '#fcfbf7' } as Record<string, string>,
-  pen: 5.5,
+  paper: '#f8f5ed',
+  ink: '#24211e',
+  colors: { ink: '#24211e', red: '#d9433a', blue: '#2f6fb7', green: '#3c8f4f', yellow: '#f2b830', orange: '#e8792b', purple: '#7556c2', gray: '#8a8580', paper: '#f8f5ed' } as Record<string, string>,
+  pen: 7,
   rough: 0.9,
   textSize: 84,
   /** “自然”书写速度：用来估算每个动作本来要画多久 */

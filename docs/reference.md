@@ -25,7 +25,7 @@
 | `audio` | 无 | 配音文件。没有则成片只有落笔音效 |
 | `subtitles` | `true` | 字幕 |
 | `subtitleMaxChars` | 竖 13 / 横 24 | 每行字幕最多字数 |
-| `sfx` / `sfxVolume` | `true` / 0.5 | 落笔音效及音量 |
+| `sfx` / `sfxVolume` | `true` / 1 | 落笔音效及音量倍数。默认已经很轻，是垫在配音下面的一层沙沙声 |
 | `pen` | `false` | 显示一个极小的笔尖 |
 | `tail` | 0.6 | 口播结束后多留几秒 |
 
@@ -122,7 +122,7 @@
 
 ### 通用外观
 
-`size`（大小）、`color`、`fill`（填充色）、`fillStyle`（`hachure` 排线，默认 / `solid` / `zigzag` / `cross-hatch` / `dots`）、`pen`（线宽，默认 5.5）、`rough`（抖动程度，默认 0.9）、`label` + `labelSize`（写在元素正下方的标签，随元素一起画）。
+`size`（大小）、`color`、`fill`（填充色）、`fillStyle`（`marker` 马克笔涂色，默认 / `hachure` 细排线 / `solid` 平涂 / `zigzag` / `cross-hatch` / `dots`）、`pen`（线宽，默认 5.5）、`rough`（抖动程度，默认 0.9）、`label` + `labelSize`（写在元素正下方的标签，随元素一起画）。
 
 颜色名：`ink red blue green yellow orange purple gray paper`，也可以直接写 `"#rrggbb"`。
 
@@ -130,7 +130,7 @@
 
 | 类型 | 写法 | 说明 |
 |---|---|---|
-| 文字 | `{ text: "+0", size: 150, color: red }` | `\n` 换行；`align`、`bold`。`size` 是字高 |
+| 文字 | `{ text: "+0", size: 150, color: red }` | `\n` 换行；`align`。`size` 是字高。字体是手写马克笔体「霞鹜漫黑」 |
 | 小人 | `{ figure: stand, face: happy, wear: [tophat, tie], size: 420 }` | `size` 是身高；`accent` 是配饰颜色。姿势/表情/配饰清单：`hj assets figure` |
 | 图标 | `{ icon: building-bank, size: 280 }` | 5000+ 个，`hj assets icons <英文关键词>` 搜索 |
 | 手绘件 | `{ doodle: banknote, size: 200, vars: { text: "100" } }` | `hj assets doodles` 查看；`vars` 是该手绘件开放的可调项 |

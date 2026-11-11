@@ -6,7 +6,6 @@ parts:
   - path: "M110 110 L110 10 A100 100 0 0 1 205 141 Z"
     color: $slice
     fill: $slice
-    fillGap: 9
   - text: $text
     at: [150, 80]
     size: 40

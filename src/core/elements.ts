@@ -25,7 +25,7 @@ export const KINDS = ['text', 'figure', 'icon', 'doodle', 'parts', 'shape', 'arr
 const POS_KEYS = ['at', 'rightOf', 'leftOf', 'above', 'below'];
 const COMMON = ['id', 'at', 'rightOf', 'leftOf', 'above', 'below', 'gap', 'align', 'anchor', 'dx', 'dy', 'size', 'color', 'label', 'labelSize', 'rough', 'w', 'h', 'fill', 'fillStyle', 'pen', 'z'];
 const FIELDS: Record<string, string[]> = {
-  text: ['bold', 'lineGap'], figure: ['face', 'wear', 'accent', 'pose'], icon: [], doodle: ['vars'], parts: ['box'],
+  text: ['lineGap'], figure: ['face', 'wear', 'accent', 'pose'], icon: [], doodle: ['vars'], parts: ['box'],
   shape: [], arrow: ['curve', 'head', 'both', 'pad'], line: ['curve', 'pad'], mark: ['target', 'pad'],
   chart: ['data', 'labels', 'highlight', 'values', 'unit'],
 };
@@ -115,7 +115,7 @@ export function buildElement(ctx: BuildCtx, id: string, src: any): El {
   let placed = false; // arrow/line/mark 直接画在场景坐标里
 
   if (kind === 'text') {
-    const t = textStrokes(String(src.text), { size: src.size ?? THEME.textSize, color: st.color, bold: src.bold, align: src.align, lineGap: src.lineGap });
+    const t = textStrokes(String(src.text), { size: src.size ?? THEME.textSize, color: st.color, align: src.align, lineGap: src.lineGap });
     el.strokes = t.strokes; el.text = String(src.text); el.missing = t.missing;
   } else if (kind === 'figure') {
     const f = typeof src.figure === 'string' ? { pose: src.figure } : src.figure ?? {};
