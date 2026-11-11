@@ -1,0 +1,22 @@
+desc: 钞票（面额可改）
+box: [220, 120]
+vars: { text: "100", tint: green }
+parts:
+  - rect: [0, 0, 220, 120]
+    color: $tint
+    fill: $tint
+    fillGap: 13
+    fillAlpha: 0.3
+  - ellipse: [110, 60, 96, 76]
+    color: $tint
+    fill: paper
+    fillStyle: solid
+    fillAlpha: 1
+  - text: $text
+    at: [110, 60]
+    size: 46
+    color: $tint
+  - line: [16, 18, 40, 18]
+    color: $tint
+  - line: [180, 102, 204, 102]
+    color: $tint

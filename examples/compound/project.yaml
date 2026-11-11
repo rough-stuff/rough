@@ -1,0 +1,8 @@
+title: "复利：关键不是本金，是时间"
+format: portrait        # portrait 竖屏 1080×1920 / landscape 横屏 1920×1080
+fps: 30
+voice: voice/alignment.json
+# audio: voice/narration.wav   # 示例用的是 hj fake-align 造的匀速时间表，没有配音
+subtitles: true
+sfx: true
+pen: false

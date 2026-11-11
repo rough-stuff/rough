@@ -174,7 +174,7 @@ export function buildElement(ctx: BuildCtx, id: string, src: any): El {
     const b = { x: tb.x - pad, y: tb.y - pad, w: tb.w + pad * 2, h: tb.h + pad * 2 }, cx = b.x + b.w / 2, cy = b.y + b.h / 2;
     const ms: Style = { ...st, color: color(src.color, THEME.colors.red), w: src.pen ?? THEME.pen * 1.15 };
     const m = src.mark;
-    if (m === 'circle') el.strokes = R.ellipse(cx, cy, b.w * 1.22 + 20, b.h * 1.3 + 20, { ...ms, rough: 1.6, double: true });
+    if (m === 'circle') el.strokes = R.ellipse(cx, cy, b.w + Math.max(44, b.h * 0.5), b.h * 1.25 + 16, { ...ms, rough: 1.6, double: true });
     else if (m === 'box') el.strokes = R.rect(b.x, b.y, b.w, b.h, { ...ms, rough: 1.3 });
     else if (m === 'underline') el.strokes = [...R.line(b.x, b.y + b.h + 2, b.x + b.w, b.y + b.h + 2, ms), ...R.line(b.x + b.w * 0.98, b.y + b.h + 14, b.x + b.w * 0.08, b.y + b.h + 14, { ...ms, seed: seed + 5 })];
     else if (m === 'strike') el.strokes = R.line(b.x, cy + 2, b.x + b.w, cy - 2, { ...ms, w: ms.w * 1.2 });
@@ -185,7 +185,9 @@ export function buildElement(ctx: BuildCtx, id: string, src: any): El {
     else throw new SrcError(where, `没有标记 "${m}"。可用：circle box underline strike cross highlight check burst`);
     placed = true;
   } else if (kind === 'chart') {
-    el.strokes = chartStrokes(src, st, where); el.text = (src.labels ?? []).join('');
+    const csrc = { ...src };
+    el.strokes = chartStrokes(csrc, st, where); el.text = (src.labels ?? []).join('') || undefined;
+    if (csrc.__path) el.path = csrc.__path;
   }
 
   if (!el.strokes.length) throw new SrcError(where, '这个元素没有画出任何笔画');
@@ -224,6 +226,7 @@ export function buildElement(ctx: BuildCtx, id: string, src: any): El {
     }
     tx += src.dx ?? 0; ty += src.dy ?? 0;
     translateStrokes(el.strokes, tx, ty);
+    if (el.path) for (let i = 0; i < el.path.length; i += 2) { el.path[i] += tx; el.path[i + 1] += ty; }
     for (const k of Object.keys(el.anchors)) el.anchors[k] = [el.anchors[k][0] + tx, el.anchors[k][1] + ty];
     el.box = boxOf(el.strokes);
     if (el.figure) {
@@ -258,7 +261,9 @@ function chartStrokes(src: any, st: Style, where: string): Stroke[] {
     });
   } else if (src.chart === 'line') {
     const X = (i: number) => (W * (i + 0.5)) / n, c = color(src.color ?? 'blue');
-    out.push(...R.poly(data.map((v, i) => [X(i), Y(v)] as Pt), false, { ...st, color: c, w: st.w * 1.25, rough: 0.5, seed: st.seed + 9 }));
+    const linePts = data.map((v, i) => [X(i), Y(v)] as Pt);
+    (src as any).__path = linePts.flat();
+    out.push(...R.poly(linePts, false, { ...st, color: c, w: st.w * 1.25, rough: 0.5, seed: st.seed + 9 }));
     data.forEach((v, i) => {
       const hc = hl[i] ? color(hl[i]) : null;
       if (hc) out.push(...R.ellipse(X(i), Y(v), 26, 26, { ...st, color: hc, fill: hc, fillStyle: 'solid', fillAlpha: 1, seed: st.seed + 20 + i }));

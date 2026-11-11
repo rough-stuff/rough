@@ -1,0 +1,12 @@
+desc: 上涨粗箭头
+box: [220, 180]
+vars: { tint: red }
+parts:
+  - poly: [[10, 165], [70, 105], [110, 135], [185, 45]]
+    color: $tint
+    pen: 9
+    rough: 0.6
+  - poly: [[140, 38], [192, 36], [190, 90]]
+    color: $tint
+    pen: 9
+    rough: 0.4

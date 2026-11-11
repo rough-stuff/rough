@@ -1,0 +1,17 @@
+desc: 文件/合同/法律条文（带印章）
+box: [160, 200]
+vars: { seal: red }
+parts:
+  - poly: [[6, 6], [116, 6], [154, 44], [154, 194], [6, 194]]
+    close: true
+  - poly: [[116, 6], [116, 44], [154, 44]]
+  - line: [28, 74, 132, 74]
+    color: gray
+  - line: [28, 102, 132, 102]
+    color: gray
+  - line: [28, 130, 100, 130]
+    color: gray
+  - circle: [118, 160, 40]
+    color: $seal
+    fill: $seal
+    fillGap: 7

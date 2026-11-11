@@ -1,0 +1,16 @@
+desc: 空钱包（飞出一只苍蝇）
+box: [220, 190]
+parts:
+  - path: "M14 70 L190 70 C202 70 206 76 206 88 L206 170 C206 180 200 184 190 184 L28 184 C18 184 14 178 14 168 Z"
+    rough: 0.6
+  - path: "M14 70 C14 50 30 46 46 46 L176 46 L176 70"
+    rough: 0.6
+  - rect: [150, 112, 56, 34]
+  - circle: [168, 129, 10]
+  - path: "M120 24 C108 6 92 22 106 30 M124 24 C138 6 152 22 136 30"
+    color: gray
+  - circle: [122, 30, 9]
+    color: gray
+    fill: gray
+    fillStyle: solid
+    fillAlpha: 1

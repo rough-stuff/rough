@@ -1,0 +1,55 @@
+from: "你存一百块"
+intent: 小人把一张 100 块塞进存钱罐，罐子每年吐出利息；第二年吐出的比第一年多一块，多出来的那一块是“利息的利息”。
+elements:
+  me:    { figure: stand, face: happy, size: 560, at: [200, 370] }
+  bill:  { doodle: banknote, size: 230, at: me.handR, dx: 150, dy: -110 }
+  pig:   { icon: pig-money, size: 400, at: [690, 380], label: 存钱罐, labelSize: 56 }
+  rate:  { text: "10%", size: 130, color: red, above: pig, gap: 10 }
+  y1:    { text: "第1年", size: 76, color: gray, at: [60, 860], anchor: left }
+  c1:    { doodle: coin, size: 170, vars: { text: "10" }, rightOf: y1, gap: 70 }
+  y2:    { text: "第2年", size: 76, color: gray, below: y1, gap: 150 }
+  c2:    { doodle: coin, size: 170, vars: { text: "10" }, rightOf: y2, gap: 70 }
+  plus:  { text: "+1", size: 150, color: red, rightOf: c2, gap: 110 }
+  loop:  { arrow: [c1.right, plus.top], curve: -0.3, color: red, pad: 30 }
+beats:
+  - at: "你存一百块"
+    intent: 画出小人，手里举着一张 100 块
+    do:
+      - draw: me
+      - draw: bill
+      - { pose: me, to: give-right, with: prev }
+  - at: "年利率"
+    intent: 旁边画出存钱罐
+    do:
+      - draw: pig
+  - at: "百分之十"
+    intent: 钞票滑进存钱罐，罐子上方写下红色的 10%
+    do:
+      - { move: bill, to: pig.top, dur: 0.4 }
+      - { hide: bill }
+      - { pose: me, to: stand, with: prev }
+      - draw: rate
+      - { nod: pig, with: prev }
+  - at: "第一年"
+    intent: 第 1 年：罐子吐出一枚 10 块的硬币
+    do:
+      - draw: y1
+      - draw: c1
+  - at: "第二年呢"
+    intent: 第 2 年：小人歪头想；先画出同样一枚 10 块
+    do:
+      - { pose: me, to: think, face: thinking }
+      - draw: y2
+      - draw: c2
+  - at: "是十一块"
+    intent: 硬币旁边多出一个红色的 +1，小人吃惊
+    do:
+      - draw: plus
+      - { face: me, to: surprised, with: prev }
+      - { pulse: plus }
+  - at: "去年的利息"
+    intent: 从第 1 年的硬币画一条红箭头指向 +1：这一块是利息生出来的
+    do:
+      - draw: loop
+      - { pose: me, to: point-down-right, face: happy }
+      - draw: { mark: circle, target: plus, pad: 4 }

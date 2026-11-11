@@ -1,0 +1,174 @@
+# 字段参考
+
+## 项目目录
+
+```
+<项目>/
+  project.yaml        项目设置
+  voice/              alignment.json（时间表）、narration.wav（配音）
+  scenes/             一个场景一个文件，按文件名排序：01-hook.yaml、02-xxx.yaml …
+  doodles/            （可选）本项目自己画的手绘件
+  brief.md            hj brief 生成：逐句时间简报
+  storyboard.md       hj plan 生成：给用户确认的文字分镜表
+  approvals.json      hj approve 写入：确认记录
+  out/                关键帧与视频
+```
+
+## project.yaml
+
+| 字段 | 默认 | 说明 |
+|---|---|---|
+| `title` | | 标题 |
+| `format` | `portrait` | `portrait` 竖屏 1080×1920；`landscape` 横屏 1920×1080 |
+| `fps` | 30 | |
+| `voice` | `voice/alignment.json` | 时间表。也接受 `.srt`（降级：只有句级精度） |
+| `audio` | 无 | 配音文件。没有则成片只有落笔音效 |
+| `subtitles` | `true` | 字幕 |
+| `subtitleMaxChars` | 竖 13 / 横 24 | 每行字幕最多字数 |
+| `sfx` / `sfxVolume` | `true` / 0.5 | 落笔音效及音量 |
+| `pen` | `false` | 显示一个极小的笔尖 |
+| `tail` | 0.6 | 口播结束后多留几秒 |
+
+## 画板坐标
+
+元素坐标以**画板**左上角为原点，x 向右、y 向下。画板已经避开了平台按钮和字幕区，画在里面就是安全的。
+
+| 画幅 | 画板大小 |
+|---|---|
+| 竖屏 | 960 × 1250 |
+| 横屏 | 1700 × 800 |
+
+坐标可以写数字，也可以写百分比：`at: ["50%", "30%"]`。
+
+## 场景文件
+
+| 字段 | 必填 | 说明 |
+|---|---|---|
+| `from` | 第一个场景可省 | 场景开口的头几个字（口播锚点） |
+| `intent` | 是 | 这个场景要让观众看到什么。写给用户看的人话 |
+| `enter` | | `pan`（默认，镜头平移到新板面）/ `wipe`（把上一场擦掉）/ `cut` |
+| `elements` | | `id: 定义` 的映射。id 只在本场景内有效 |
+| `beats` | | 节拍列表，按口播顺序 |
+| `id` | | 场景名，默认取文件名（去掉序号） |
+| `note` | | 随便写的备注，不参与任何计算 |
+
+## 口播锚点
+
+节拍的 `at`、场景的 `from`、动作的 `at` 都用它。
+
+| 写法 | 含义 |
+|---|---|
+| `"收走一百块税"` | 这几个字开口的那一刻 |
+| `"一百块#2"` | 本场景口播里第 2 次出现的“一百块” |
+| `"一分没有@end"` | 说完这几个字的那一刻 |
+| `"发给你-0.3"` / `"发给你+0.2"` | 提前 / 推后若干秒 |
+| `"一百块#2@end+0.1"` | 可以组合，顺序固定：文字、`#n`、`@end`、偏移 |
+
+锚点只在**本场景的口播范围内**查找，所以片段不用写很长，够在本场景里唯一就行。标点会被忽略。
+
+## 节拍
+
+```yaml
+- at: "收走一百块税"     # 必填：口播锚点
+  lead: 0.3               # 可选：比锚点提前几秒起笔
+  intent: 钞票从公司滑到政府   # 必填：这一拍画面上发生什么（人话）
+  do: [ … ]               # 动作列表
+```
+
+**动作怎么排时间：** 默认一个接一个顺序执行，从节拍的时刻开始，到下一拍为止。
+`draw` 的时长是自动的：按笔画长度估算“自然时长”，时间不够就整体加快，时间富余则最多放慢到 1.25 倍。
+
+每个动作都可以加：
+
+| 选项 | 说明 |
+|---|---|
+| `with: prev` | 和上一个动作同时开始（不排队） |
+| `dur: 0.8` | 指定时长（秒） |
+| `delay: 0.2` | 开始前多等一会儿 |
+| `at: "口播片段"` | 这个动作自己卡一个点；它后面的动作接着它排 |
+
+## 动作
+
+| 动作 | 写法 | 说明 |
+|---|---|---|
+| 画 | `draw: id` 或 `draw: [a, b, c]` | 一笔一笔画出来。数组表示依次画 |
+| 画（内联） | `draw: { mark: circle, target: x }` | 直接在动作里定义一个元素，省得去 elements 里起名 |
+| 擦 | `erase: id` / `[ids]` / `all` | `style: wipe`（默认，板擦擦掉）或 `fade` |
+| 移动 | `move: id`，配 `to` / `by` / `along` | `to: gov` 或 `to: you.handR` 或 `to: [x, y]`；`by: [dx, dy]`；`along: 箭头id` 沿箭头走 |
+| 缩放 | `scale: id, to: 1.6` | 相对原始大小的倍数 |
+| 换姿势 | `pose: 小人id, to: shrug` | 可同时 `face: surprised` |
+| 换表情 | `face: 小人id, to: worried` | |
+| 弹出 / 淡入 | `pop: id` / `fade: id` | 不经过“画”直接出现。少用，这是 PPT 的出场方式 |
+| 隐去 | `hide: id` | 快速淡出 |
+| 晃动 / 放大强调 / 点头 | `shake: id` / `pulse: id` / `nod: id` | 吸引注意 |
+| 镜头 | `camera: { focus: [a, b], pad: 90 }` / `camera: home` | 推近若干元素 / 回到全景 |
+| 等待 | `wait: 0.5` | |
+
+`move` 之后，元素的新位置会被后续的 `move ... to` 和 `camera focus` 认到；但先前已经画好的箭头和标记不会跟着动。
+
+## 元素
+
+### 定位（非箭头、连线、标记的元素必须选一种）
+
+| 写法 | 说明 |
+|---|---|
+| `at: [x, y]` | 元素中心放在这个点 |
+| `at: other` / `at: other.top` | 放在另一个元素的中心 / 某个锚点上 |
+| `rightOf: other`、`leftOf`、`above`、`below` | 贴在另一个元素旁边，`gap`（默认 40）控制间距，`align: start/center/end` 控制对齐 |
+| `anchor: bottom` | 配合 `at`：用自己的哪个点去对齐（默认 `center`；可选 `top bottom left right topLeft …`） |
+| `dx`、`dy` | 在以上基础上再微调。**改位置优先用它** |
+
+被引用的元素必须写在前面。锚点有：`center top bottom left right topLeft topRight bottomLeft bottomRight`，小人另有 `head handL handR hip feet`。
+
+### 通用外观
+
+`size`（大小）、`color`、`fill`（填充色）、`fillStyle`（`hachure` 排线，默认 / `solid` / `zigzag` / `cross-hatch` / `dots`）、`pen`（线宽，默认 5.5）、`rough`（抖动程度，默认 0.9）、`label` + `labelSize`（写在元素正下方的标签，随元素一起画）。
+
+颜色名：`ink red blue green yellow orange purple gray paper`，也可以直接写 `"#rrggbb"`。
+
+### 各类元素
+
+| 类型 | 写法 | 说明 |
+|---|---|---|
+| 文字 | `{ text: "+0", size: 150, color: red }` | `\n` 换行；`align`、`bold`。`size` 是字高 |
+| 小人 | `{ figure: stand, face: happy, wear: [tophat, tie], size: 420 }` | `size` 是身高；`accent` 是配饰颜色。姿势/表情/配饰清单：`hj assets figure` |
+| 图标 | `{ icon: building-bank, size: 280 }` | 5000+ 个，`hj assets icons <英文关键词>` 搜索 |
+| 手绘件 | `{ doodle: banknote, size: 200, vars: { text: "100" } }` | `hj assets doodles` 查看；`vars` 是该手绘件开放的可调项 |
+| 形状 | `{ shape: rect, w: 300, h: 180 }` | `rect ellipse circle diamond triangle cloud` |
+| 箭头 | `{ arrow: [a, b], curve: 0.2 }` | 起终点可以是元素 id（自动停在边缘外）、`"id.锚点"` 或 `[x, y]`。`curve` 弯曲程度（正负决定朝向）、`both: true` 双向、`head` 箭头大小、`pad` 离元素的距离 |
+| 连线 | `{ line: [a, b] }` | 同箭头，没有箭头尖 |
+| 标记 | `{ mark: circle, target: x }` | `circle box underline strike cross highlight check burst`。`target` 可以是数组；`pad` 调松紧；默认红色 |
+| 图表 | `{ chart: bar, data: [3800, 1200], labels: [法定, 实发], values: true }` | `bar` / `line`。`highlight: 1` 或 `highlight: {1: red}` 标红某项；`unit` 数值后缀；`w`、`h` |
+| 自由图形 | `{ parts: [ … ], box: [w, h], size: 200 }` | 就地用基本图形拼一个，格式同手绘件 |
+
+折线图和箭头、连线一样，可以当作 `move … along` 的轨迹。
+
+## 自己画手绘件
+
+在项目的 `doodles/<名字>.yaml` 里：
+
+```yaml
+desc: 钞票
+box: [220, 120]              # 设计尺寸；使用时 size 对应长边
+vars: { text: "100", tint: green }   # 可调项及默认值
+parts:                       # 按书写顺序排列，坐标在 box 内
+  - rect: [0, 0, 220, 120]   # x, y, w, h
+    color: $tint
+    fill: $tint
+  - ellipse: [110, 60, 96, 76]   # cx, cy, w, h
+  - text: $text
+    at: [110, 60]
+    size: 46
+```
+
+可用图形：`line: [x1,y1,x2,y2]`、`rect: [x,y,w,h]`、`ellipse: [cx,cy,w,h]`、`circle: [cx,cy,直径]`、`arc: [cx,cy,w,h,起始角,终止角]`、`poly: [[x,y],…]`（加 `close: true` 闭合）、`curve: [[x,y],…]`（过这些点的平滑曲线）、`path: "SVG 路径"`、`icon: 名字`（配 `at`、`size`）、`text`（配 `at`、`size`）。
+每个图形可带 `color fill fillStyle fillAlpha fillGap pen rough`。
+
+画完用 `hj assets sheet` 看效果。内置的在仓库根目录 `doodles/`，可以照着写。
+
+## 检查器会拦什么
+
+| 级别 | 情况 |
+|---|---|
+| 错误 | 锚点在口播里找不到；引用了不存在的元素；缺 `intent`；板书照抄口播 ≥7 字；元素整个在画板外 |
+| 警告 | 画得太赶（超过自然速度 2.5 倍）；一拍的动作拖过了下一拍；画面静止超过 4.2 秒；元素重叠、出界；画面太空；纯文字场景；板书太多；弹出/淡入用得太多；卡点落在时间不可靠的字上；锚点有歧义 |

@@ -1,0 +1,13 @@
+desc: 饼图（切出一块，标签可改）
+box: [220, 220]
+vars: { text: "", slice: red }
+parts:
+  - circle: [110, 110, 200]
+  - path: "M110 110 L110 10 A100 100 0 0 1 205 141 Z"
+    color: $slice
+    fill: $slice
+    fillGap: 9
+  - text: $text
+    at: [150, 80]
+    size: 40
+    color: paper

@@ -35,16 +35,18 @@ export interface Compiled {
   planHash: string;
 }
 
-const NATURAL: Record<string, number> = { move: 0.6, pose: 0.35, face: 0.15, pop: 0.3, fade: 0.35, hide: 0.2, erase: 0.55, camera: 0.7, shake: 0.5, pulse: 0.45, nod: 0.5 };
-const VERBS = ['draw', 'erase', 'move', 'pose', 'face', 'pop', 'fade', 'hide', 'shake', 'pulse', 'nod', 'camera', 'wait'];
+const NATURAL: Record<string, number> = { move: 0.6, scale: 0.5, pose: 0.35, face: 0.15, pop: 0.3, fade: 0.35, hide: 0.2, erase: 0.55, camera: 0.7, shake: 0.5, pulse: 0.45, nod: 0.5 };
+const VERBS = ['draw', 'erase', 'move', 'scale', 'pose', 'face', 'pop', 'fade', 'hide', 'shake', 'pulse', 'nod', 'camera', 'wait'];
 const ACTION_OPTS = ['dur', 'at', 'with', 'to', 'by', 'along', 'style', 'face', 'pad', 'zoom', 'delay'];
 const SCENE_GAP = 260;
 
 export function naturalDraw(el: El): number {
   let d = 0;
-  for (const s of el.strokes) d += (s.len + penUp(s)) / THEME.pace.px;
+  for (const s of el.strokes) d += weight(s) / THEME.pace.px;
   return Math.max(THEME.pace.min, d);
 }
+/** 一笔占多少“时间份额”：上色的排线是快速涂抹，只算三分之一 */
+const weight = (s: any) => ((s.under ? 0.35 : 1) * s.len + penUp(s));
 const penUp = (s: { kind: string; len: number }) => (s.kind === 'glyph' ? 14 : s.kind === 'wipe' ? 6 : Math.min(75, 18 + s.len * 0.3));
 
 export function loadProject(dir: string): { meta: any; scenes: { file: string; src: any }[] } {
@@ -109,7 +111,7 @@ export function compile(dir: string): Compiled {
 
     // 进场镜头
     if (si > 0) {
-      if (enter === 'pan') camEvents.push({ t0: t0 - 0.45, t1: t0 + 0.25, to: home });
+      if (enter === 'pan') camEvents.push({ t0: t0 - 0.6, t1: t0 + 0.08, to: home });
       else camEvents.push({ t0: t0 - 0.08, t1: t0 - 0.08, to: home, cut: true });
     } else camEvents.push({ t0: -1, t1: -1, to: home, cut: true });
 
@@ -243,9 +245,9 @@ export function compile(dir: string): Compiled {
             tl.order = order++;
             if (a.verb === 'draw') {
               tl.drawT0 = a.t0; tl.drawT1 = a.t1; tl.compress = a.fixed ? a.natural / naturalDraw(tl.el) : Math.min(1, (a.t1 - a.t0) / a.natural);
-              const ws = tl.el.strokes.map(s => s.len + penUp(s)), sum = ws.reduce((x, y) => x + y, 0), sched = new Float64Array(ws.length * 2);
+              const ws = tl.el.strokes.map(weight), sum = ws.reduce((x, y) => x + y, 0), sched = new Float64Array(ws.length * 2);
               let acc = a.t0;
-              tl.el.strokes.forEach((s, i) => { const slot = ((a.t1 - a.t0) * ws[i]) / sum; sched[2 * i] = acc + slot * (penUp(s) / ws[i]) * 0.9; sched[2 * i + 1] = acc + slot; acc += slot; });
+              tl.el.strokes.forEach((s, i) => { const slot = ((a.t1 - a.t0) * ws[i]) / sum; sched[2 * i] = acc + slot * Math.min(0.6, penUp(s) / ws[i]) * 0.9; sched[2 * i + 1] = acc + slot; acc += slot; });
               tl.sched = sched;
             } else tl.appear = { t: a.t0, kind: a.verb, dur: a.t1 - a.t0 };
           }
@@ -267,7 +269,7 @@ export function compile(dir: string): Compiled {
             let to: Pt = cur, path: number[] | undefined, base: Pt | undefined;
             const c = tl.el.anchors.center;
             try {
-              if (o.along) { const ar = els.get(String(o.along)); if (!ar?.path) throw new SrcError(aw, `along 要写一个 arrow 或 line 元素的 id，"${o.along}" 不是`); path = ar.path; base = c; to = [path[path.length - 2] - c[0], path[path.length - 1] - c[1]]; }
+              if (o.along) { const ar = els.get(String(o.along)); if (!ar?.path) throw new SrcError(aw, `along 要写一个 arrow、line 或折线图元素的 id，"${o.along}" 不是`); path = ar.path; base = c; to = [path[path.length - 2] - c[0], path[path.length - 1] - c[1]]; }
               else if (o.to != null) { const r = refPoint(els, pos, o.to, fmt, aw); to = [r[0] - c[0], r[1] - c[1]]; }
               else if (Array.isArray(o.by)) to = [cur[0] + o.by[0], cur[1] + o.by[1]];
               else throw new SrcError(aw, 'move 需要 to（目标：元素 id、"id.锚点" 或 [x,y]）、by（相对位移 [dx,dy]）或 along（沿某条箭头走）');
@@ -276,6 +278,10 @@ export function compile(dir: string): Compiled {
             pos.set(tl.el.id, to);
           }
           desc = `移动 ${ids.join('、')}` + (o.along ? ` 沿 ${o.along}` : o.to ? ` 到 ${JSON.stringify(o.to)}` : '');
+        } else if (a.verb === 'scale') {
+          if (typeof o.to !== 'number' || o.to <= 0) err(aw, 'scale 需要 to: 倍数（如 1.6 放大、0.5 缩小，相对元素原始大小）');
+          else for (const tl of tlsOf.filter(need)) { const from = tl.scale.length ? tl.scale[tl.scale.length - 1].to : 1; tl.scale.push({ t0: a.t0, t1: a.t1, from, to: o.to }); }
+          desc = `${ids.join('、')} 缩放到 ${o.to} 倍`;
         } else if (a.verb === 'pose' || a.verb === 'face') {
           for (const tl of tlsOf.filter(need)) {
             if (!tl.el.figure) { err(aw, `"${tl.el.id}" 不是火柴人，不能 ${a.verb}`); continue; }

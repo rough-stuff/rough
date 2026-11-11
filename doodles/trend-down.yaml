@@ -1,0 +1,12 @@
+desc: 下跌粗箭头
+box: [220, 180]
+vars: { tint: green }
+parts:
+  - poly: [[10, 20], [70, 80], [110, 50], [185, 140]]
+    color: $tint
+    pen: 9
+    rough: 0.6
+  - poly: [[140, 148], [192, 150], [190, 96]]
+    color: $tint
+    pen: 9
+    rough: 0.4

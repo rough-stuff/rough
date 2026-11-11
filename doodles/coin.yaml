@@ -1,0 +1,13 @@
+desc: 硬币（符号可改）
+box: [120, 120]
+vars: { text: "¥" }
+parts:
+  - circle: [60, 60, 116]
+    color: orange
+    fill: yellow
+    fillGap: 10
+    fillAlpha: 0.55
+  - text: $text
+    at: [60, 60]
+    size: 62
+    color: orange

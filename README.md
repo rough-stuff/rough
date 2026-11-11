@@ -1,155 +1,58 @@
-# Rough.js
+# 画讲 huajiang
 
-<b>Rough.js</b> is a small (\<9 kB) graphics library that lets you draw in a _sketchy_, _hand-drawn-like_, style.
-The library defines primitives to draw lines, curves, arcs, polygons, circles, and ellipses. It also supports drawing [SVG paths](https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths).
+把**带逐字时间表的口播**做成“边画边讲”的手绘视频：板书、增量、擦除、移镜头，画面和声音逐字同步，像一个人站在白板前讲给你听。
 
-Rough.js works with both [Canvas](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API) and [SVG](https://developer.mozilla.org/en-US/docs/Web/SVG).
+这是一个给 AI agent 用的底座。agent 读口播、写分镜（YAML），框架负责把分镜变成一笔一笔画出来的视频，并在渲染前拦住“抄字幕、像 PPT、画面静止、不同步”这些毛病。
 
-![Rough.js sample](https://roughjs.com/images/cap_demo.png)
+> agent 请从 [AGENTS.md](AGENTS.md) 开始读。
 
-[@RoughLib](https://twitter.com/RoughLib) on Twitter.
+## 它做什么
 
-## Install
+- **按口播原文卡点**：`at: "收走一百块税"`。换配音后自动跟随，不用改秒数。
+- **一笔一笔画**：图形经 rough.js 抖成手绘线；汉字按真实笔顺书写；画的速度自动匹配语速。
+- **会动的画面**：元素可以移动、沿箭头走、缩放、被板擦擦掉；镜头可以平移到新板面、推近细节。
+- **讲述者的替身**：可摆姿势、换表情、戴配饰的火柴人。
+- **素材**：5000+ 线条图标（Tabler）、一组财经向手绘件、柱状图与折线图；不够时用基本图形自己画。
+- **字幕与落笔音效**：字幕来自时间表；音效按每一笔的起止时间合成。
+- **两道确认闸**：文字分镜 → 关键帧 → 视频。用户没确认，命令行拒绝出图和渲染。
+- **为返工设计**：一个场景一个文件，位置与时间分开写，可以只看一帧、只渲染一段。
 
-from npm:
+## 快速体验
 
-```
-npm install --save roughjs
-```
-
-Or get the latest using unpkg: https://unpkg.com/roughjs@latest/bundled/rough.js
-
-
-If you are looking for bundled version in different formats, the npm package will have these in the following locations:
-
-CommonJS: `roughjs/bundled/rough.cjs.js`
-
-ESM: `roughjs/bundled/rough.esm.js`
-
-Browser IIFE: `roughjs/bundled/rough.js`
-
-
-## Usage
-
-![Rough.js rectangle](https://roughjs.com/images/m1.png)
-
-```js
-const rc = rough.canvas(document.getElementById('canvas'));
-rc.rectangle(10, 10, 200, 200); // x, y, width, height
+```bash
+npm install
 ```
 
-or SVG
-
-```js
-const rc = rough.svg(svg);
-let node = rc.rectangle(10, 10, 200, 200); // x, y, width, height
-svg.appendChild(node);
+```bash
+npx hj check examples/compound
 ```
 
-### Lines and Ellipses
-
-![Rough.js rectangle](https://roughjs.com/images/m2.png)
-
-```js
-rc.circle(80, 120, 50); // centerX, centerY, diameter
-rc.ellipse(300, 100, 150, 80); // centerX, centerY, width, height
-rc.line(80, 120, 300, 100); // x1, y1, x2, y2
+```bash
+npx hj stills examples/compound
 ```
 
-### Filling
-
-![Rough.js rectangle](https://roughjs.com/images/m3.png)
-
-```js
-rc.circle(50, 50, 80, { fill: 'red' }); // fill with red hachure
-rc.rectangle(120, 15, 80, 80, { fill: 'red' });
-rc.circle(50, 150, 80, {
-  fill: "rgb(10,150,10)",
-  fillWeight: 3 // thicker lines for hachure
-});
-rc.rectangle(220, 15, 80, 80, {
-  fill: 'red',
-  hachureAngle: 60, // angle of hachure,
-  hachureGap: 8
-});
-rc.rectangle(120, 105, 80, 80, {
-  fill: 'rgba(255,0,200,0.2)',
-  fillStyle: 'solid' // solid fill
-});
+```bash
+npx hj render examples/compound
 ```
 
-Fill styles can be: **hachure**(default), **solid**, **zigzag**, **cross-hatch**, **dots**, **dashed**, or **zigzag-line**
+示例是一段 22 秒的“复利”讲解，使用匀速的假时间表，没有配音。成片在 `examples/compound/out/video.mp4`。
+需要 Node 20+ 和 ffmpeg。渲染不依赖浏览器。
 
-![Rough.js fill examples](https://roughjs.com/images/m14.png)
+## 文档
 
-### Sketching style
+| | |
+|---|---|
+| [AGENTS.md](AGENTS.md) | 工作流、铁律、代码地图 |
+| [docs/directing.md](docs/directing.md) | 导演手册：怎么把话变成画 |
+| [docs/reference.md](docs/reference.md) | 全部字段、动作、元素 |
+| [docs/revising.md](docs/revising.md) | 返工手册：修改意见对应改哪几行 |
+| [docs/voice-guide.md](docs/voice-guide.md) | 给配音方的要求与时间表格式 |
 
-![Rough.js rectangle](https://roughjs.com/images/m4.png)
+## 现在还不支持
 
-```js
-rc.rectangle(15, 15, 80, 80, { roughness: 0.5, fill: 'red' });
-rc.rectangle(120, 15, 80, 80, { roughness: 2.8, fill: 'blue' });
-rc.rectangle(220, 15, 80, 80, { bowing: 6, stroke: 'green', strokeWidth: 3 });
-```
+背景音乐；真人或手的出镜；位图图片素材；在浏览器里实时预览；图表按数据点逐个卡点（目前一张图表是一次 `draw`）。
 
-### SVG Paths
+## 致谢与许可
 
-![Rough.js paths](https://roughjs.com/images/m5.png)
-
-```js
-rc.path('M80 80 A 45 45, 0, 0, 0, 125 125 L 125 80 Z', { fill: 'green' });
-rc.path('M230 80 A 45 45, 0, 1, 0, 275 125 L 275 80 Z', { fill: 'purple' });
-rc.path('M80 230 A 45 45, 0, 0, 1, 125 275 L 125 230 Z', { fill: 'red' });
-rc.path('M230 230 A 45 45, 0, 1, 1, 275 275 L 275 230 Z', { fill: 'blue' });
-```
-
-SVG Path with simplification:
-
-![Rough.js texas map](https://roughjs.com/images/m9.png) ![Rough.js texas map](https://roughjs.com/images/m10.png)
-
-## Examples
-
-![Rough.js US map](https://roughjs.com/images/m6.png)
-
-[View examples here](https://github.com/pshihn/rough/wiki/Examples)
-
-## API & Documentation
-
-[Full Rough.js API](https://github.com/pshihn/rough/wiki)
-
-## Credits
-
-Some of the core algorithms were adapted from [handy](https://www.gicentre.net/software/#/handy/) processing lib.
-
-Algorithm to convert SVG arcs to Canvas [described here](https://www.w3.org/TR/SVG/implnote.html) was adapted from [Mozilla codebase](https://hg.mozilla.org/mozilla-central/file/17156fbebbc8/content/svg/content/src/nsSVGPathDataParser.cpp#l887)
-
-## Contributors
-
-### Financial Contributors
-
-Become a financial contributor and help us sustain our community. [[Contribute](https://opencollective.com/rough/contribute)]
-
-#### Individuals
-
-<a href="https://opencollective.com/rough"><img src="https://opencollective.com/rough/individuals.svg?width=890"></a>
-
-#### Organizations
-
-Support this project with your organization. Your logo will show up here with a link to your website. [[Contribute](https://opencollective.com/rough/contribute)]
-
-<a href="https://excalidraw.com/"><img src="https://avatars.githubusercontent.com/u/59452120?s=64&v=4"></a>
-<a href="https://www.diagrams.net/"><img src="https://avatars.githubusercontent.com/u/1769238?s=64&v=4"></a>
-<a href="https://terrastruct.com/"><img width="64" height="64" src="https://roughjs.com/images/sponsors/terrastruct.png"></a>
-<a href="https://opencollective.com/rough/organization/0/website"><img src="https://opencollective.com/rough/organization/0/avatar.svg"></a>
-<a href="https://opencollective.com/rough/organization/1/website"><img src="https://opencollective.com/rough/organization/1/avatar.svg"></a>
-<a href="https://opencollective.com/rough/organization/2/website"><img src="https://opencollective.com/rough/organization/2/avatar.svg"></a>
-<a href="https://opencollective.com/rough/organization/3/website"><img src="https://opencollective.com/rough/organization/3/avatar.svg"></a>
-<a href="https://opencollective.com/rough/organization/4/website"><img src="https://opencollective.com/rough/organization/4/avatar.svg"></a>
-<a href="https://opencollective.com/rough/organization/5/website"><img src="https://opencollective.com/rough/organization/5/avatar.svg"></a>
-<a href="https://opencollective.com/rough/organization/6/website"><img src="https://opencollective.com/rough/organization/6/avatar.svg"></a>
-<a href="https://opencollective.com/rough/organization/7/website"><img src="https://opencollective.com/rough/organization/7/avatar.svg"></a>
-<a href="https://opencollective.com/rough/organization/8/website"><img src="https://opencollective.com/rough/organization/8/avatar.svg"></a>
-<a href="https://opencollective.com/rough/organization/9/website"><img src="https://opencollective.com/rough/organization/9/avatar.svg"></a>
-
-## License
-[MIT License](https://github.com/pshihn/rough/blob/master/LICENSE) (c) [Preet Shihn](https://twitter.com/preetster)
+本项目以 MIT 许可发布，笔画引擎来自 [rough.js](https://github.com/rough-stuff/rough)（MIT，Preet Shihn）。
+所用第三方数据与字体见 [THIRD_PARTY.md](THIRD_PARTY.md)。

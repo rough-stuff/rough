@@ -95,6 +95,7 @@ export function stateAt(tl: TL, t: number): ElState {
     } else { st.dx = m.from[0] + (m.to[0] - m.from[0]) * k; st.dy = m.from[1] + (m.to[1] - m.from[1]) * k; }
   }
   for (const a of tl.alpha) if (t >= a.t0) st.alpha *= a.from + (a.to - a.from) * span(t, a.t0, a.t1);
+  for (const a of tl.scale) if (t >= a.t0) st.scale = (st.scale / (tl.scale[tl.scale.indexOf(a) - 1]?.to ?? 1)) * (a.from + (a.to - a.from) * ease(span(t, a.t0, a.t1)));
   for (const s of tl.shakes) {
     if (t < s.t0 || t > s.t1) continue;
     const k = span(t, s.t0, s.t1);
@@ -214,7 +215,7 @@ export function drawFrame(ctx: any, c: Compiled, t: number, env: Env, o: FrameOp
     const line = c.subs.find(s => t >= s.start && t < s.end);
     if (line) {
       let sub = subCache.get(line.text);
-      if (!sub) { const r = textStrokes(line.text, { size: c.fmt.subSize, color: THEME.ink, bold: c.fmt.subSize * 0.03 }); sub = { strokes: r.strokes, w: r.w }; subCache.set(line.text, sub); }
+      if (!sub) { const r = textStrokes(line.text, { size: c.fmt.subSize, color: THEME.ink, bold: c.fmt.subSize * 0.05 }); sub = { strokes: r.strokes, w: r.w }; subCache.set(line.text, sub); }
       ctx.save(); ctx.translate(W / 2 - sub.w / 2, c.fmt.subY - c.fmt.subSize / 2);
       ctx.lineJoin = 'round';
       for (const s of sub.strokes) { // 先垫一圈纸色描边，保证压在画上也读得清

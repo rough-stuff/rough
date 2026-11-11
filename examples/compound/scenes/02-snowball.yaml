@@ -1,0 +1,35 @@
+from: "时间越长"
+intent: 一条越翘越高的曲线，像雪球越滚越快；最后把“本金”划掉，圈出“时间”。
+enter: pan
+elements:
+  growth: { chart: line, data: [1, 1.2, 1.6, 2.3, 3.6, 6, 10], w: 800, h: 560, color: blue, highlight: { 6: red }, at: [480, 400] }
+  ball:   { shape: circle, size: 70, color: blue, fill: blue, at: [130, 500] }
+  me:     { figure: cheer, face: joy, size: 400, at: [810, 1010] }
+  base:   { text: "本金", size: 130, at: [160, 1010] }
+  time:   { text: "时间", size: 170, color: red, at: [530, 1010] }
+beats:
+  - at: "时间越长"
+    intent: 画坐标轴和一条先平后陡的增长曲线
+    do:
+      - draw: growth
+  - at: "这个雪球"
+    intent: 一个雪球沿着曲线滚上去，越滚越大
+    do:
+      - draw: ball
+      - { move: ball, along: growth, dur: 1.2 }
+      - { scale: ball, to: 2.4, dur: 1.2, with: prev }
+  - at: "所以复利"
+    intent: 小人欢呼出场
+    do:
+      - draw: me
+  - at: "不是本金"
+    intent: 写下“本金”，立刻划掉
+    do:
+      - draw: base
+      - draw: { mark: cross, target: base }
+  - at: "是时间"
+    intent: 写下红色的“时间”，圈起来强调
+    do:
+      - draw: time
+      - draw: { mark: circle, target: time, pad: 0 }
+      - { pose: me, to: point-left, with: prev }
