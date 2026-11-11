@@ -63,6 +63,9 @@ export function lint(c: Compiled): Issue[] {
       const refs = (x: TL, y: TL) => typeof x.el.src.at === 'string' && x.el.src.at.split('.')[0] === y.el.id;
       if (refs(a, b) || refs(b, a)) continue;
       const ov = inter(a.el.box, b.el.box) / Math.max(1, Math.min(a.el.box.w * a.el.box.h, b.el.box.w * b.el.box.h));
+      // 小的整个装在大的容器里（气泡里的字、框里的图）是有意为之
+      const big = a.el.box.w * a.el.box.h > b.el.box.w * b.el.box.h ? a : b;
+      if (ov > 0.9 && ['doodle', 'shape', 'parts'].includes(big.el.kind)) continue;
       if (ov > 0.06) add('warn', sc.file, `元素 "${a.el.id}" 和 "${b.el.id}" 重叠了 ${(ov * 100).toFixed(0)}%，会互相压住。挪开（dx/dy 或换定位），或确认是有意为之`);
     }
     // 5. 画面静止太久

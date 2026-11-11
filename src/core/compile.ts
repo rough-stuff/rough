@@ -111,7 +111,7 @@ export function compile(dir: string): Compiled {
 
     // 进场镜头
     if (si > 0) {
-      if (enter === 'pan') camEvents.push({ t0: t0 - 0.6, t1: t0 + 0.08, to: home });
+      if (enter === 'pan') camEvents.push({ t0: t0 - 0.45, t1: t0 + 0.1, to: home });
       else camEvents.push({ t0: t0 - 0.08, t1: t0 - 0.08, to: home, cut: true });
     } else camEvents.push({ t0: -1, t1: -1, to: home, cut: true });
 
