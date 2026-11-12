@@ -72,6 +72,13 @@ export function translateStrokes(strokes: Stroke[], dx: number, dy: number): voi
   }
 }
 
+/** 复制一组笔画并平移（原笔画不变） */
+export function cloneStrokes(strokes: Stroke[], dx = 0, dy = 0): Stroke[] {
+  const out = strokes.map(s => { const c: any = { ...s }; delete c.cum; delete c.wm; delete c.mcum; if (c.pts) c.pts = c.pts.slice(); if (c.box) c.box = { ...c.box }; if (c.medians) c.medians = c.medians.map((m: number[]) => m.slice()); return c as Stroke; });
+  if (dx || dy) translateStrokes(out, dx, dy);
+  return out;
+}
+
 /** 笔触粗细曲线：落笔略重、行笔有轻微起伏、收笔带出一点笔锋。返回每个点的粗细倍数 */
 export function widthProfile(s: LineStroke): Float32Array {
   if (s.wm) return s.wm;

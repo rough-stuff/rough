@@ -3,7 +3,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import YAML from 'yaml';
-import { R, type Stroke, type Style, type Pt, type Box, boxOf, unionBox, translateStrokes, hash, polyLen } from './strokes';
+import { R, type Stroke, type Style, type Pt, type Box, boxOf, unionBox, translateStrokes, cloneStrokes, hash, polyLen } from './strokes';
 import { textStrokes } from './text';
 import { iconStrokes, iconExists, scalePath } from './icons';
 import { figureStrokes, POSES, FACES, ACCESSORIES, type Pose, type FigureSpec } from './figure';
@@ -17,15 +17,15 @@ export interface El {
   text?: string;              // 板书文字内容（用于检查与分镜表）
   missing?: string[];
   path?: number[];            // 箭头/线的走向，可作移动轨迹
-  figure?: { spec: FigureSpec; dx: number; dy: number; labelStrokes: Stroke[] };
+  figure?: { spec: FigureSpec; dx: number; dy: number; labelStrokes: Stroke[]; prop?: { strokes: Stroke[]; hand: 'handL' | 'handR' } };
   rebuild?: (pose: Pose, face: string) => Stroke[];
 }
 
 export const KINDS = ['text', 'figure', 'icon', 'doodle', 'parts', 'shape', 'arrow', 'line', 'mark', 'chart'] as const;
 const POS_KEYS = ['at', 'rightOf', 'leftOf', 'above', 'below'];
-const COMMON = ['id', 'at', 'rightOf', 'leftOf', 'above', 'below', 'gap', 'align', 'anchor', 'dx', 'dy', 'size', 'color', 'label', 'labelSize', 'rough', 'w', 'h', 'fill', 'fillStyle', 'pen', 'z'];
+const COMMON = ['id', 'at', 'rightOf', 'leftOf', 'above', 'below', 'gap', 'align', 'anchor', 'dx', 'dy', 'size', 'color', 'label', 'labelSize', 'rough', 'w', 'h', 'fill', 'fillStyle', 'fillAlpha', 'fillGap', 'pen'];
 const FIELDS: Record<string, string[]> = {
-  text: ['lineGap'], figure: ['face', 'wear', 'accent', 'pose'], icon: [], doodle: ['vars'], parts: ['box'],
+  text: ['lineGap'], figure: ['face', 'wear', 'accent', 'pose', 'carry'], icon: [], doodle: ['vars'], parts: ['box'],
   shape: [], arrow: ['curve', 'head', 'both', 'pad'], line: ['curve', 'pad'], mark: ['target', 'pad'],
   chart: ['data', 'labels', 'highlight', 'values', 'unit'],
 };
@@ -110,7 +110,7 @@ export function buildElement(ctx: BuildCtx, id: string, src: any): El {
   for (const k of Object.keys(src)) if (k !== kind && !COMMON.includes(k) && !FIELDS[kind].includes(k)) throw new SrcError(where, `${kind} 元素不认识字段 "${k}"。可用：${[...COMMON, ...FIELDS[kind]].join(' ')}`);
   const B = ctx.fmt.board;
   const seed = hash(ctx.scene + '/' + id);
-  const st: Style = { color: color(src.color), w: src.pen ?? THEME.pen, rough: src.rough ?? THEME.rough, seed, fill: src.fill ? color(src.fill) : undefined, fillStyle: src.fillStyle };
+  const st: Style = { color: color(src.color), w: src.pen ?? THEME.pen, rough: src.rough ?? THEME.rough, seed, fill: src.fill ? color(src.fill) : undefined, fillStyle: src.fillStyle, fillAlpha: src.fillAlpha, fillGap: src.fillGap };
   const el: El = { id, scene: ctx.scene, kind, src, strokes: [], box: { x: 0, y: 0, w: 0, h: 0 }, anchors: {} };
   let placed = false; // arrow/line/mark 直接画在场景坐标里
 
@@ -126,6 +126,13 @@ export function buildElement(ctx: BuildCtx, id: string, src: any): El {
     const spec: FigureSpec = { size: src.size ?? 360, color: st.color, pose: POSES[poseName], face, accessories: wear, accent: src.accent ? color(src.accent) : undefined, seed };
     const r = figureStrokes(spec);
     el.strokes = r.strokes; el.anchors = r.anchors; el.figure = { spec, dx: 0, dy: 0, labelStrokes: [] };
+    if (src.carry) { // 手里拿的东西：跟着手走
+      const { hand, ...psrc } = src.carry;
+      const prop = buildElement({ ...ctx, els: new Map() }, id + '.carry', { size: Math.round(spec.size * 0.28), ...psrc, at: [0, 0] });
+      const h = hand === 'left' ? 'handL' : 'handR', pc = prop.anchors.center;
+      el.figure.prop = { strokes: cloneStrokes(prop.strokes, -pc[0], -pc[1]), hand: h };
+      el.strokes.push(...cloneStrokes(el.figure.prop.strokes, r.anchors[h][0], r.anchors[h][1]));
+    }
   } else if (kind === 'icon') {
     if (!iconExists(src.icon)) throw new SrcError(where, `没有叫 "${src.icon}" 的图标。用 hj assets icons <英文关键词> 搜索`);
     el.strokes = iconStrokes(src.icon, 0, 0, src.size ?? 200, { ...st, rough: src.rough ?? 0.6 });
@@ -232,7 +239,7 @@ export function buildElement(ctx: BuildCtx, id: string, src: any): El {
     if (el.figure) {
       el.figure.dx = tx; el.figure.dy = ty; el.figure.labelStrokes = labelStrokes;
       const fg = el.figure;
-      el.rebuild = (pose, face) => { const r = figureStrokes({ ...fg.spec, pose, face }); translateStrokes(r.strokes, fg.dx, fg.dy); return [...r.strokes, ...fg.labelStrokes]; };
+      el.rebuild = (pose, face) => { const r = figureStrokes({ ...fg.spec, pose, face }); translateStrokes(r.strokes, fg.dx, fg.dy); return [...r.strokes, ...(fg.prop ? cloneStrokes(fg.prop.strokes, r.anchors[fg.prop.hand][0] + fg.dx, r.anchors[fg.prop.hand][1] + fg.dy) : []), ...fg.labelStrokes]; };
     }
   } else if (src.dx || src.dy) { translateStrokes(el.strokes, src.dx ?? 0, src.dy ?? 0); el.box = boxOf(el.strokes); }
   setAnchors(el);

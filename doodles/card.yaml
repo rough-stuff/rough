@@ -1,0 +1,13 @@
+desc: 银行卡
+box: [220, 150]
+parts:
+  - rect: [10, 14, 200, 126]
+    color: "blue"
+    fill: "blue"
+  - line: [12, 52, 208, 52]
+    pen: 16
+  - rect: [30, 84, 36, 28]
+    color: "orange"
+    fill: "yellow"
+    fillAlpha: 0.9
+    fillStyle: "solid"

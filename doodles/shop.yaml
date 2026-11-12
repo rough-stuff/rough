@@ -1,0 +1,13 @@
+desc: 店铺（遮阳棚）
+box: [220, 200]
+parts:
+  - poly: [[14, 66], [206, 66], [188, 22], [32, 22]]
+    close: true
+    color: "red"
+    fill: "red"
+  - rect: [30, 66, 160, 118]
+  - rect: [120, 112, 44, 72]
+  - rect: [46, 98, 56, 46]
+    fill: "blue"
+    fillAlpha: 0.25
+  - line: [8, 186, 212, 186]

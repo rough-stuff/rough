@@ -1,0 +1,15 @@
+desc: 地球 / 全球化 / 出口
+box: [200, 200]
+parts:
+  - circle: [100, 100, 172]
+    color: "blue"
+    fill: "blue"
+    fillAlpha: 0.18
+  - ellipse: [100, 100, 78, 172]
+    color: "blue"
+  - line: [14, 100, 186, 100]
+    color: "blue"
+  - curve: [[30, 54], [100, 70], [170, 54]]
+    color: "blue"
+  - curve: [[30, 146], [100, 130], [170, 146]]
+    color: "blue"

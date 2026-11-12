@@ -1,0 +1,15 @@
+from: "机器造出货"
+intent: 【因果链】机器 → 货 → 购物车 → 工资，一环一环长出来；最后一环断掉。
+pattern:
+  kind: chain
+  items:
+    - { doodle: robot }
+    - { doodle: goods }
+    - { doodle: cart }
+    - { doodle: banknote, vars: { text: 工资 } }
+beats:
+  - { at: "机器造出货", intent: 画出机器人，再连到货, do: [{ step: item.1 }, { step: item.2 }] }
+  - { at: "货要有人买", intent: 连到购物车, do: [{ step: item.3 }] }
+  - { at: "买要有工资", intent: 连到工资, do: [{ step: item.4 }] }
+  - { at: "工资没了", intent: 工资被擦掉, do: [{ erase: c4 }] }
+  - { at: "这条链就断了", intent: 最后一条箭头打叉, do: [{ draw: { mark: cross, target: l3, pad: 18 } }, { shake: c3 }] }

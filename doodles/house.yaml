@@ -1,0 +1,11 @@
+desc: 房子
+box: [200, 200]
+parts:
+  - poly: [[100, 14], [190, 96], [10, 96]]
+    close: true
+    color: "orange"
+    fill: "orange"
+  - rect: [30, 96, 140, 90]
+  - rect: [86, 130, 32, 56]
+  - rect: [44, 114, 28, 28]
+    fill: "yellow"

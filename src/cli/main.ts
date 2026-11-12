@@ -13,9 +13,11 @@ import { searchIcons } from '../core/icons';
 import { POSES, FACES, ACCESSORIES } from '../core/figure';
 import { doodleDirs } from '../core/elements';
 import { textStrokes } from '../core/text';
+import { PATTERNS } from '../core/patterns';
 import { THEME, FORMATS } from '../core/theme';
 
 const env: Env = { createCanvas, Path2D };
+process.stdout.on('error', () => process.exit(0)); // 输出被 head 之类截断时安静退出
 const argv = process.argv.slice(2);
 const cmd = argv[0];
 const flags: Record<string, string | true> = {};
@@ -142,7 +144,9 @@ const commands: Record<string, () => Promise<void> | void> = {
       for (let bi = 0; bi < sc.beats.length; bi++) {
         const b = sc.beats[bi];
         const end = Math.max(b.t + 0.05, ...b.actions.map(a => a.t1));
-        const t = Math.min(end + 0.03, Math.max(b.tEnd - 0.03, end + 0.03), c.duration - 0.01);
+        // 取这一拍“画完之后、下一拍之前”的一刻；场景最后一拍要避开转场镜头
+        const cap = bi === sc.beats.length - 1 && c.scenes[sc.index + 1] ? sc.t1 - 0.7 : b.tEnd - 0.03;
+        const t = Math.min(Math.max(b.t + 0.05, cap, Math.min(end + 0.03, sc.t1 - 0.7)), c.duration - 0.01);
         const file = `${String(sc.index + 1).padStart(2, '0')}-${sc.id}-${String(bi + 1).padStart(2, '0')}.png`;
         await shot(t, file);
         tiles.push({ t, label: `${sc.index + 1}.${bi + 1}  ${fmtT(t)}`, file });
@@ -222,6 +226,18 @@ const commands: Record<string, () => Promise<void> | void> = {
     else die('用法：hj assets icons <关键词> | doodles [项目目录] | figure | colors | sheet [--out 文件]');
   },
 
+  patterns() {
+    const name = args[0];
+    for (const [k, p] of Object.entries(PATTERNS)) {
+      if (name && name !== k) continue;
+      console.log(`■ ${k}  ${p.title}\n  什么时候用：${p.when}`);
+      if (name) { console.log('  参数：'); for (const x of p.params) console.log('    ' + x); console.log('    area: [x, y, w, h]  只占画板的一部分（可省，默认整块画板），留出地方放自己的元素'); console.log('  步骤（在节拍的 do 里写 {step: 名字}）：'); for (const x of p.steps) console.log('    ' + x); }
+      console.log('');
+    }
+    if (!name) console.log('hj patterns <名字> 查看参数和步骤。九种手法的实际效果见 examples/patterns/');
+    else if (!PATTERNS[name]) die(`没有叫 "${name}" 的手法。可用：${Object.keys(PATTERNS).join(' ')}`);
+  },
+
   'fake-align'() {
     const f = args[0] ?? die('用法：hj fake-align <口播稿.txt> [--cps 4.5] > alignment.json   （没有配音时先造一份匀速时间表打草稿）');
     process.stdout.write(JSON.stringify(fakeAlignment(readFileSync(f, 'utf8'), +(flags.cps ?? 4.5)), null, 1));
@@ -268,7 +284,8 @@ if (!cmd || !commands[cmd]) {
   hj approve <目录> plan|keyframes --by "<用户确认原话>"
   hj stills <目录> [--scene x]        出关键帧（需先确认文字分镜）→ 交用户确认
   hj render <目录> [--scene x] [--draft]   渲染视频（需先确认关键帧）
-  hj assets icons <关键词> | doodles | figure | colors | sheet
+  hj patterns [名字]                  表现手法：自带构图和动作编排的场景骨架
+  hj assets doodles | figure | icons <关键词> | colors | sheet
   hj fake-align <稿.txt>              没配音时造匀速时间表打草稿
 
 完整工作流见 AGENTS.md`);

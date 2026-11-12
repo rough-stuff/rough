@@ -1,0 +1,25 @@
+desc: 筹码（谈判的本钱）
+box: [170, 170]
+parts:
+  - ellipse: [85, 128, 146, 46]
+    color: "red"
+    fill: "red"
+    fillAlpha: 0.3
+  - ellipse: [85, 100, 146, 46]
+    color: "red"
+    fill: "red"
+    fillAlpha: 0.3
+  - ellipse: [85, 72, 146, 46]
+    color: "red"
+    fill: "red"
+    fillAlpha: 0.3
+  - ellipse: [85, 44, 146, 46]
+    color: "red"
+    fill: "red"
+    fillAlpha: 0.3
+  - line: [52, 40, 62, 48]
+    color: "red"
+  - line: [108, 48, 118, 40]
+    color: "red"
+  - line: [80, 30, 90, 30]
+    color: "red"

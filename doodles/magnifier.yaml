@@ -1,0 +1,10 @@
+desc: 放大镜 / 细看
+box: [200, 200]
+parts:
+  - circle: [86, 86, 124]
+    fill: "blue"
+    fillAlpha: 0.15
+  - line: [132, 132, 186, 186]
+    pen: 14
+  - curve: [[54, 70], [66, 52], [88, 46]]
+    color: "gray"

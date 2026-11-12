@@ -1,0 +1,24 @@
+desc: 写字楼 / 公司
+box: [170, 220]
+parts:
+  - rect: [32, 18, 106, 188]
+    fill: "blue"
+    fillAlpha: 0.2
+  - rect: [50, 36, 22, 20]
+    fill: "yellow"
+  - rect: [90, 36, 22, 20]
+    fill: "yellow"
+  - rect: [50, 72, 22, 20]
+    fill: "yellow"
+  - rect: [90, 72, 22, 20]
+    fill: "yellow"
+  - rect: [50, 108, 22, 20]
+    fill: "yellow"
+  - rect: [90, 108, 22, 20]
+    fill: "yellow"
+  - rect: [50, 144, 22, 20]
+    fill: "yellow"
+  - rect: [90, 144, 22, 20]
+    fill: "yellow"
+  - rect: [72, 176, 26, 30]
+  - line: [10, 208, 160, 208]

@@ -1,0 +1,20 @@
+desc: 火箭 / 暴涨
+box: [160, 236]
+parts:
+  - path: "M80 10 C122 52 120 122 110 172 L50 172 C40 122 38 52 80 10 Z"
+    fill: "gray"
+    fillAlpha: 0.25
+  - circle: [80, 82, 32]
+    color: "blue"
+    fill: "blue"
+    fillAlpha: 0.5
+  - poly: [[50, 132], [20, 184], [50, 172]]
+    close: true
+    color: "red"
+    fill: "red"
+  - poly: [[110, 132], [140, 184], [110, 172]]
+    close: true
+    color: "red"
+    fill: "red"
+  - curve: [[64, 180], [80, 230], [96, 180]]
+    color: "orange"

@@ -3,7 +3,7 @@ intent: 小人把一张 100 块塞进存钱罐，罐子每年吐出利息；第�
 elements:
   me:    { figure: stand, face: happy, size: 560, at: [200, 370] }
   bill:  { doodle: banknote, size: 230, at: me.handR, dx: 150, dy: -110 }
-  pig:   { icon: pig-money, size: 400, at: [690, 380], label: 存钱罐, labelSize: 56 }
+  pig:   { doodle: piggy, size: 400, at: [690, 400], label: 存钱罐, labelSize: 56 }
   rate:  { text: "10%", size: 130, color: red, above: pig, gap: 10 }
   y1:    { text: "第1年", size: 76, color: gray, at: [60, 860], anchor: left }
   c1:    { doodle: coin, size: 170, vars: { text: "10" }, rightOf: y1, gap: 70 }
@@ -13,15 +13,15 @@ elements:
   loop:  { arrow: [c1.right, plus.top], curve: -0.3, color: red, pad: 30 }
 beats:
   - at: "你存一百块"
-    intent: 画出小人，手里举着一张 100 块
+    intent: 画出小人，和旁边的存钱罐
     do:
       - draw: me
+      - draw: pig
+  - at: "年利率"
+    intent: 小人手里多了一张 100 块，递向存钱罐
+    do:
       - draw: bill
       - { pose: me, to: give-right, with: prev }
-  - at: "年利率"
-    intent: 旁边画出存钱罐
-    do:
-      - draw: pig
   - at: "百分之十"
     intent: 钞票滑进存钱罐，罐子上方写下红色的 10%
     do:

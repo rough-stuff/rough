@@ -1,0 +1,10 @@
+desc: 电脑
+box: [240, 170]
+parts:
+  - rect: [40, 14, 160, 106]
+    fill: "blue"
+    fillAlpha: 0.25
+  - poly: [[14, 152], [40, 120], [200, 120], [226, 152]]
+    close: true
+    fill: "gray"
+    fillAlpha: 0.3

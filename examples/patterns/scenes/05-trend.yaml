@@ -1,0 +1,15 @@
+from: "一九四七年是"
+intent: 【走势】一条线从 65 一段一段画到 53，最低点标红。
+pattern:
+  kind: trend
+  points:
+    - { label: "1947", value: 65 }
+    - { label: "2000", value: 60 }
+    - { label: " ", value: 56 }
+    - { label: 现在, value: 53 }
+beats:
+  - { at: "一九四七年是", intent: 画坐标轴和起点, do: [{ step: axis }, { step: to.1 }] }
+  - { at: "两千年还有", intent: 线画到 2000 年, do: [{ step: to.2 }] }
+  - { at: "之后一路往下", intent: 线继续往下, do: [{ step: to.3 }] }
+  - { at: "现在只剩", intent: 线画到现在, do: [{ step: to.4 }] }
+  - { at: "五十三", intent: 最低点标红、写出 53 并圈起来, do: [{ step: mark.4 }] }

@@ -1,0 +1,30 @@
+desc: 机房 / 数据中心 / 服务器
+box: [180, 220]
+parts:
+  - rect: [25, 20, 130, 54]
+    fill: "gray"
+    fillAlpha: 0.25
+  - circle: [50, 47, 13]
+    color: "green"
+    fill: "green"
+    fillAlpha: 0.9
+    fillStyle: "solid"
+  - line: [76, 47, 136, 47]
+  - rect: [25, 82, 130, 54]
+    fill: "gray"
+    fillAlpha: 0.25
+  - circle: [50, 109, 13]
+    color: "green"
+    fill: "green"
+    fillAlpha: 0.9
+    fillStyle: "solid"
+  - line: [76, 109, 136, 109]
+  - rect: [25, 144, 130, 54]
+    fill: "gray"
+    fillAlpha: 0.25
+  - circle: [50, 171, 13]
+    color: "green"
+    fill: "green"
+    fillAlpha: 0.9
+    fillStyle: "solid"
+  - line: [76, 171, 136, 171]

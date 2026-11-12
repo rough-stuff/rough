@@ -1,0 +1,18 @@
+desc: 汽车
+box: [240, 150]
+parts:
+  - path: "M14 102 L24 66 L70 60 L96 26 L164 26 L196 60 L226 70 L226 102 Z"
+    color: "blue"
+    fill: "blue"
+  - line: [100, 60, 190, 60]
+    color: "blue"
+  - line: [132, 28, 132, 60]
+    color: "blue"
+  - circle: [70, 106, 42]
+    fill: "paper"
+    fillAlpha: 1
+    fillStyle: "solid"
+  - circle: [176, 106, 42]
+    fill: "paper"
+    fillAlpha: 1
+    fillStyle: "solid"

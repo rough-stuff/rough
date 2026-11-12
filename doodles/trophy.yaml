@@ -1,0 +1,16 @@
+desc: 奖杯 / 赢家
+box: [190, 220]
+parts:
+  - path: "M50 20 L140 20 L135 86 C130 122 60 122 55 86 Z"
+    color: "orange"
+    fill: "yellow"
+    fillAlpha: 0.6
+  - curve: [[50, 34], [20, 40], [30, 80], [56, 84]]
+    color: "orange"
+  - curve: [[140, 34], [170, 40], [160, 80], [134, 84]]
+    color: "orange"
+  - line: [95, 120, 95, 166]
+    color: "orange"
+  - rect: [60, 166, 70, 26]
+    color: "orange"
+    fill: "orange"

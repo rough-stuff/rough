@@ -48,7 +48,7 @@ export function lint(c: Compiled): Issue[] {
     const visual = shown.filter(t => !['text', 'mark'].includes(t.el.kind));
     if (shown.length && !visual.length) add('warn', sc.file, '这个场景只有文字，没有任何图形或小人——这就是“像 PPT”。至少用一个画面元素来演示正在讲的事');
     // 画面太空
-    if (visual.length) {
+    if (visual.length && sc.t1 - sc.t0 >= 6) {
       const bs = shown.map(t => t.el.box), x0 = Math.min(...bs.map(b => b.x)), y0 = Math.min(...bs.map(b => b.y)), x1 = Math.max(...bs.map(b => b.x + b.w)), y1 = Math.max(...bs.map(b => b.y + b.h));
       const cover = ((x1 - x0) * (y1 - y0)) / (B.w * B.h);
       if (cover < 0.45) add('warn', sc.file, `所有元素加起来只占了画板的 ${(cover * 100).toFixed(0)}%（画板 ${B.w}×${B.h}，内容在 x ${x0.toFixed(0)}…${x1.toFixed(0)}，y ${y0.toFixed(0)}…${y1.toFixed(0)}）。画面太空、东西太小，手机上看不清：放大元素，把板面用满`);

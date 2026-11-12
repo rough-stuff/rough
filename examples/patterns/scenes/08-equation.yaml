@@ -1,0 +1,10 @@
+from: "老板挣到的"
+intent: 【等式】上面是老板收钱，下面是老板花钱，中间一个等号。
+pattern:
+  kind: equation
+  terms:
+    - { figure: hold, face: greedy, wear: [tophat], carry: { doodle: moneybag }, label: 挣到的 }
+    - { figure: give-right, face: happy, wear: [tophat], carry: { doodle: banknote }, label: 花出去的 }
+beats:
+  - { at: "老板挣到的", intent: 画出抱着钱袋的老板, do: [{ step: term.1 }] }
+  - { at: "就等于", intent: 写等号，画出往外递钱的老板, do: [{ step: term.2 }] }

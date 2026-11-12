@@ -8,6 +8,7 @@ import { buildElement, SrcError, KINDS, type El } from './elements';
 import { POSES, FACES, type Pose } from './figure';
 import { FORMATS, THEME, type Format } from './theme';
 import { type Pt, type Box, unionBox, polyLen } from './strokes';
+import { PATTERNS } from './patterns';
 
 export interface Issue { level: 'error' | 'warn' | 'info'; where: string; msg: string }
 export interface Tween { t0: number; t1: number; from: number; to: number }
@@ -15,7 +16,7 @@ export interface TL {
   el: El; order: number; scene: number;
   drawT0?: number; drawT1?: number; sched?: Float64Array; // 每笔 [起, 止]
   appear?: { t: number; kind: 'pop' | 'fade'; dur: number };
-  moves: { t0: number; t1: number; from: Pt; to: Pt; path?: number[]; base?: Pt }[];
+  moves: { t0: number; t1: number; from: Pt; to: Pt; path?: number[]; base?: Pt; linear?: boolean }[];
   alpha: Tween[]; scale: Tween[];
   shakes: { t0: number; t1: number; kind: 'shake' | 'pulse' | 'nod' }[];
   poses: { t0: number; t1: number; from: Pose; to: Pose; faceFrom: string; faceTo: string }[];
@@ -35,8 +36,8 @@ export interface Compiled {
   planHash: string;
 }
 
-const NATURAL: Record<string, number> = { move: 0.6, scale: 0.5, pose: 0.35, face: 0.15, pop: 0.3, fade: 0.35, hide: 0.2, erase: 0.55, camera: 0.7, shake: 0.5, pulse: 0.45, nod: 0.5 };
-const VERBS = ['draw', 'erase', 'move', 'scale', 'pose', 'face', 'pop', 'fade', 'hide', 'shake', 'pulse', 'nod', 'camera', 'wait'];
+const NATURAL: Record<string, number> = { move: 0.6, walk: 1.1, scale: 0.5, pose: 0.35, face: 0.15, pop: 0.3, fade: 0.35, hide: 0.2, erase: 0.55, camera: 0.7, shake: 0.5, pulse: 0.45, nod: 0.5 };
+const VERBS = ['draw', 'erase', 'move', 'walk', 'scale', 'pose', 'face', 'pop', 'fade', 'hide', 'shake', 'pulse', 'nod', 'camera', 'wait'];
 const ACTION_OPTS = ['dur', 'at', 'with', 'to', 'by', 'along', 'style', 'face', 'pad', 'zoom', 'delay'];
 const SCENE_GAP = 260;
 
@@ -98,7 +99,7 @@ export function compile(dir: string): Compiled {
     const id = String(src.id ?? basename(file).replace(/\.ya?ml$/, '').replace(/^\d+[-_]?/, '') ?? `s${si + 1}`);
     if (seenIds.has(id)) err(file, `场景 id "${id}" 重复了`);
     seenIds.add(id);
-    for (const k of Object.keys(src)) if (!['id', 'from', 'intent', 'enter', 'elements', 'beats', 'note'].includes(k)) err(file, `场景不认识字段 "${k}"。可用：from intent enter elements beats note`);
+    for (const k of Object.keys(src)) if (!['id', 'from', 'intent', 'enter', 'pattern', 'elements', 'beats', 'note'].includes(k)) err(file, `场景不认识字段 "${k}"。可用：from intent enter pattern elements beats note`);
     const t0 = starts[si], t1 = si + 1 < N ? starts[si + 1] : duration;
     const origin: Pt = [si * (fmt.W + SCENE_GAP), 0];
     const home: Cam = { cx: origin[0] + fmt.W / 2, cy: fmt.H / 2, zoom: 1 };
@@ -130,6 +131,22 @@ export function compile(dir: string): Compiled {
         return tl;
       } catch (e: any) { if (e instanceof SrcError) { err(file, e.message); return null; } throw e; }
     };
+    // 表现手法：展开成元素和具名步骤
+    let steps: Record<string, any[]> = {};
+    const fromPattern = new Set<string>();
+    if (src.pattern != null) {
+      const ps = typeof src.pattern === 'string' ? { kind: src.pattern } : src.pattern, pat = PATTERNS[ps?.kind];
+      if (!pat) err(file, `pattern.kind 写一种表现手法：${Object.keys(PATTERNS).join(' ')}（hj patterns 查看说明）`);
+      else {
+        const B = fmt.board, pc = (v: any, total: number) => (typeof v === 'string' && v.endsWith('%') ? (parseFloat(v) / 100) * total : +v);
+        const a = Array.isArray(ps.area) && ps.area.length === 4 ? { x: pc(ps.area[0], B.w), y: pc(ps.area[1], B.h), w: pc(ps.area[2], B.w), h: pc(ps.area[3], B.h) } : { x: 20, y: 20, w: B.w - 40, h: B.h - 40 };
+        try {
+          const out = pat.build(ps, { fmt, A: a, portrait: a.h > a.w, fail: (m: string) => { throw new SrcError(`${file} / 手法 ${ps.kind}`, m); } });
+          for (const [eid, esrc] of out.elements) { addEl(eid, esrc); fromPattern.add(eid); }
+          steps = out.steps;
+        } catch (e: any) { if (e instanceof SrcError) err(file, e.message); else throw e; }
+      }
+    }
     if (src.elements && typeof src.elements !== 'object') err(file, 'elements 应该是 "id: 定义" 的映射');
     for (const [eid, esrc] of Object.entries(src.elements ?? {})) addEl(eid, esrc);
 
@@ -163,7 +180,15 @@ export function compile(dir: string): Compiled {
       const beat: CBeat = { at: b.at, t: bt, tEnd: next, intent: String(b.intent ?? ''), actions: [], say: endUnit.map(u => u.display).join(''), shaky: beatTimes[bi].shaky, compress: 1 };
       scene.beats.push(beat);
       if (!beat.intent) err(where, '缺少 intent：用一句人话说明这一拍画面上发生什么');
-      const acts: any[] = Array.isArray(b.do) ? b.do : [];
+      // 把 {step: 名字} 换成手法给出的那组动作；写在 step 上的 at/with/delay 作用于这组动作的第一个
+      const acts: any[] = [];
+      for (const a of Array.isArray(b.do) ? b.do : []) {
+        if (a && typeof a === 'object' && 'step' in a) {
+          const st = steps[String(a.step)];
+          if (!st) { err(where, `没有叫 "${a.step}" 的步骤。${Object.keys(steps).length ? '本场景可用：' + Object.keys(steps).join(' ') : '本场景没有使用表现手法（pattern）'}`); continue; }
+          st.forEach((x, i) => { const { step: _s, ...rest } = a; void _s; acts.push(i === 0 ? { ...x, ...rest } : { ...x }); });
+        } else acts.push(a);
+      }
       if (!acts.length) warn(where, '这一拍没有动作（do 为空）');
 
       // 展开动作
@@ -263,7 +288,8 @@ export function compile(dir: string): Compiled {
             desc = '擦掉 ' + ok.map(tl => describe(tl.el)).join('、');
           }
         } else if (a.verb === 'hide') { for (const tl of tlsOf.filter(need)) { tl.alpha.push({ t0: a.t0, t1: a.t1, from: 1, to: 0 }); tl.gone = a.t1; } desc = '隐去 ' + ids.join('、'); }
-        else if (a.verb === 'move') {
+        else if (a.verb === 'move' || a.verb === 'walk') {
+          const walking = a.verb === 'walk';
           for (const tl of tlsOf.filter(need)) {
             const cur = pos.get(tl.el.id) ?? [0, 0];
             let to: Pt = cur, path: number[] | undefined, base: Pt | undefined;
@@ -274,10 +300,17 @@ export function compile(dir: string): Compiled {
               else if (Array.isArray(o.by)) to = [cur[0] + o.by[0], cur[1] + o.by[1]];
               else throw new SrcError(aw, 'move 需要 to（目标：元素 id、"id.锚点" 或 [x,y]）、by（相对位移 [dx,dy]）或 along（沿某条箭头走）');
             } catch (e: any) { if (e instanceof SrcError) { err(aw, e.message.replace(aw + ': ', '')); continue; } throw e; }
-            tl.moves.push({ t0: a.t0, t1: a.t1, from: cur, to, path, base });
+            tl.moves.push({ t0: a.t0, t1: a.t1, from: cur, to, path, base, linear: walking });
             pos.set(tl.el.id, to);
+            if (walking) { // 走过去：边移动边交替迈步，到了恢复原来的姿势
+              if (!tl.el.figure) { err(aw, `"${tl.el.id}" 不是火柴人，不能 walk（用 move）`); continue; }
+              const now = poseNow.get(tl.el.id) ?? { pose: tl.el.figure.spec.pose, face: tl.el.figure.spec.face };
+              const right = to[0] >= cur[0], n = Math.max(2, Math.round((a.t1 - a.t0) / 0.22)), dt = (a.t1 - a.t0) / n;
+              let prev = now.pose;
+              for (let i = 0; i < n; i++) { const nx = i === n - 1 ? now.pose : POSES[(i % 2 === 0) === right ? 'walk-right' : 'walk-left']; tl.poses.push({ t0: a.t0 + i * dt, t1: a.t0 + (i + 1) * dt, from: prev, to: nx, faceFrom: now.face, faceTo: now.face }); prev = nx; }
+            }
           }
-          desc = `移动 ${ids.join('、')}` + (o.along ? ` 沿 ${o.along}` : o.to ? ` 到 ${JSON.stringify(o.to)}` : '');
+          desc = `${walking ? '走动' : '移动'} ${ids.join('、')}` + (o.along ? ` 沿 ${o.along}` : o.to ? ` 到 ${JSON.stringify(o.to)}` : '');
         } else if (a.verb === 'scale') {
           if (typeof o.to !== 'number' || o.to <= 0) err(aw, 'scale 需要 to: 倍数（如 1.6 放大、0.5 缩小，相对元素原始大小）');
           else for (const tl of tlsOf.filter(need)) { const from = tl.scale.length ? tl.scale[tl.scale.length - 1].to : 1; tl.scale.push({ t0: a.t0, t1: a.t1, from, to: o.to }); }
@@ -328,7 +361,7 @@ export function compile(dir: string): Compiled {
       }
     }
     for (const tl of local.values()) {
-      if (tl.drawT0 == null && !tl.appear) warn(`${file} / 元素 ${tl.el.id}`, '定义了但从没画出来（没有任何 draw / pop / fade 用到它）');
+      if (tl.drawT0 == null && !tl.appear && !fromPattern.has(tl.el.id)) warn(`${file} / 元素 ${tl.el.id}`, '定义了但从没画出来（没有任何 draw / pop / fade 用到它）');
       tls.push(tl);
     }
     void lastEnd;
@@ -337,7 +370,7 @@ export function compile(dir: string): Compiled {
   // 镜头：按时间排好
   camEvents.sort((a, b) => a.t0 - b.t0);
   const subs = meta.subtitles === false ? [] : buildSubtitles(al, meta.subtitleMaxChars ?? fmt.subMax);
-  const planHash = createHash('sha256').update(JSON.stringify({ format: fmt.name, scenes: srcScenes.map(s => [s.src.from, s.src.intent, s.src.enter, (s.src.beats ?? []).map((b: any) => [b?.at, b?.intent])]) })).digest('hex').slice(0, 16);
+  const planHash = createHash('sha256').update(JSON.stringify({ format: fmt.name, scenes: srcScenes.map(s => [s.src.from, s.src.intent, s.src.enter, typeof s.src.pattern === 'string' ? s.src.pattern : s.src.pattern?.kind ?? null, (s.src.beats ?? []).map((b: any) => [b?.at, b?.intent])]) })).digest('hex').slice(0, 16);
   tls.sort((a, b) => a.order - b.order);
   return { dir, meta, fmt, fps, al, duration, scenes, tls, erases, cams: camEvents, subs, issues, planHash };
 }

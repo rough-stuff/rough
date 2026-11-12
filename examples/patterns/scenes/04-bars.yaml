@@ -1,0 +1,10 @@
+from: "按公式该发"
+intent: 【柱子被砍】一根 3800 的高柱子，被擦掉上面一大截，只剩 1200。
+pattern:
+  kind: bars
+  area: ["8%", "5%", "67%", "90%"]
+  items:
+    - { label: 每人, value: 3800, cutTo: 1200, color: green }
+beats:
+  - { at: "按公式该发", intent: 画出底线和 3800 的柱子, do: [{ step: axis }, { step: bar.1 }] }
+  - { at: "最后只批了", intent: 上半截被擦掉，写上 1200, do: [{ step: cut.1 }] }

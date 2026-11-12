@@ -1,0 +1,13 @@
+desc: 货物（纸箱）
+box: [200, 180]
+parts:
+  - rect: [20, 62, 160, 108]
+    color: "orange"
+    fill: "orange"
+  - line: [100, 62, 100, 170]
+    color: "orange"
+  - rect: [62, 12, 78, 50]
+    color: "orange"
+    fill: "orange"
+  - line: [101, 12, 101, 62]
+    color: "orange"

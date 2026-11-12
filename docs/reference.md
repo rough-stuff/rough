@@ -47,10 +47,45 @@
 | `from` | 第一个场景可省 | 场景开口的头几个字（口播锚点） |
 | `intent` | 是 | 这个场景要让观众看到什么。写给用户看的人话 |
 | `enter` | | `pan`（默认，镜头平移到新板面）/ `wipe`（把上一场擦掉）/ `cut` |
+| `pattern` | | 表现手法：自带构图和动作编排的场景骨架，见下文 |
 | `elements` | | `id: 定义` 的映射。id 只在本场景内有效 |
 | `beats` | | 节拍列表，按口播顺序 |
 | `id` | | 场景名，默认取文件名（去掉序号） |
 | `note` | | 随便写的备注，不参与任何计算 |
+
+## 表现手法（pattern）
+
+手法替你决定位置、大小、箭头走向和动作顺序；你决定角色是谁、每一步卡在哪句话上。
+
+```yaml
+from: "咱们跟着一百块钱"
+intent: 一张钞票从公司到政府、到你、再回公司，公司一分没多赚。
+pattern:
+  kind: cycle
+  nodes:
+    - { id: company, doodle: factory, label: 公司 }
+    - { id: gov, doodle: gov, label: 政府 }
+    - { id: you, figure: stand, label: 你 }
+  result: "+0"
+beats:
+  - at: "收走一百块税"
+    intent: 画出政府，钞票沿箭头滑过去
+    do:
+      - { step: show.2 }
+      - { step: go.1 }
+  - at: "一分没有"
+    intent: 写下 +0
+    do:
+      - { step: result }
+      - { pose: you, to: shrug, with: prev }     # 手法的步骤和自己的动作可以混着写
+```
+
+- `hj patterns` 列出全部九种，`hj patterns cycle` 看某一种的参数和步骤。实际效果见 `examples/patterns/`。
+- 手法里的角色写法和普通元素一样，只是不用写位置；大小可省（手法会给合适的默认值），也可以自己写 `size` 覆盖。
+- 给角色写 `id`，之后就能在自己的动作里引用它（换姿势、圈起来、推镜头）。没写 id 的，用手法自动起的名字（`hj check` 报错信息里会列出）。
+- `{ step: 名字 }` 上可以加 `at`、`with: prev`、`delay`，作用于这一步的第一个动作。
+- `area: [x, y, w, h]` 让手法只占画板的一部分（可用百分比），剩下的地方放自己的元素。
+- 手法展开后就是普通元素。位置不满意时，可以把 `hj check` 通过后的那个元素在 `elements` 里重新定义一个，或者干脆不用手法、照着它的布局自己摆。
 
 ## 口播锚点
 
@@ -94,6 +129,7 @@
 | 画 | `draw: id` 或 `draw: [a, b, c]` | 一笔一笔画出来。数组表示依次画 |
 | 画（内联） | `draw: { mark: circle, target: x }` | 直接在动作里定义一个元素，省得去 elements 里起名 |
 | 擦 | `erase: id` / `[ids]` / `all` | `style: wipe`（默认，板擦擦掉）或 `fade` |
+| 走过去 | `walk: 小人id`，配 `to` / `by` | 边移动边迈步，到了恢复原姿势。时长默认 1.1 秒，远的话写 `dur` |
 | 移动 | `move: id`，配 `to` / `by` / `along` | `to: gov` 或 `to: you.handR` 或 `to: [x, y]`；`by: [dx, dy]`；`along: 箭头id` 沿箭头走 |
 | 缩放 | `scale: id, to: 1.6` | 相对原始大小的倍数 |
 | 换姿势 | `pose: 小人id, to: shrug` | 可同时 `face: surprised` |
@@ -122,7 +158,7 @@
 
 ### 通用外观
 
-`size`（大小）、`color`、`fill`（填充色）、`fillStyle`（`marker` 马克笔涂色，默认 / `hachure` 细排线 / `solid` 平涂 / `zigzag` / `cross-hatch` / `dots`）、`pen`（线宽，默认 5.5）、`rough`（抖动程度，默认 0.9）、`label` + `labelSize`（写在元素正下方的标签，随元素一起画）。
+`size`（大小）、`color`、`fill`（填充色）、`fillAlpha`（填充浓度）、`fillStyle`（`marker` 马克笔涂色，默认 / `hachure` 细排线 / `solid` 平涂 / `zigzag` / `cross-hatch` / `dots`）、`pen`（线宽，默认 5.5）、`rough`（抖动程度，默认 0.9）、`label` + `labelSize`（写在元素正下方的标签，随元素一起画）。
 
 颜色名：`ink red blue green yellow orange purple gray paper`，也可以直接写 `"#rrggbb"`。
 
@@ -131,9 +167,9 @@
 | 类型 | 写法 | 说明 |
 |---|---|---|
 | 文字 | `{ text: "+0", size: 150, color: red }` | `\n` 换行；`align`。`size` 是字高。字体是手写马克笔体「霞鹜漫黑」 |
-| 小人 | `{ figure: stand, face: happy, wear: [tophat, tie], size: 420 }` | `size` 是身高；`accent` 是配饰颜色。姿势/表情/配饰清单：`hj assets figure` |
-| 图标 | `{ icon: building-bank, size: 280 }` | 5000+ 个，`hj assets icons <英文关键词>` 搜索 |
-| 手绘件 | `{ doodle: banknote, size: 200, vars: { text: "100" } }` | `hj assets doodles` 查看；`vars` 是该手绘件开放的可调项 |
+| 小人 | `{ figure: stand, face: happy, wear: [tophat, tie], size: 420 }` | `size` 是身高；`accent` 是配饰颜色；`carry: { doodle: moneybag, hand: left }` 手里拿一样东西（默认右手，跟着手动）。姿势/表情/配饰清单：`hj assets figure` |
+| 手绘件 | `{ doodle: banknote, size: 200, vars: { text: "100" } }` | **首选**。47 个，和小人同一画风：`hj assets doodles` 查看；`vars` 是该手绘件开放的可调项 |
+| 图标 | `{ icon: building-bank, size: 280 }` | 兜底。5000+ 个线条图标，`hj assets icons <英文关键词>` 搜索。造型偏“界面图标”，手绘件里有的就别用它 |
 | 形状 | `{ shape: rect, w: 300, h: 180 }` | `rect ellipse circle diamond triangle cloud` |
 | 箭头 | `{ arrow: [a, b], curve: 0.2 }` | 起终点可以是元素 id（自动停在边缘外）、`"id.锚点"` 或 `[x, y]`。`curve` 弯曲程度（正负决定朝向）、`both: true` 双向、`head` 箭头大小、`pad` 离元素的距离 |
 | 连线 | `{ line: [a, b] }` | 同箭头，没有箭头尖 |

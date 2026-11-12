@@ -1,0 +1,14 @@
+desc: 灯泡 / 想明白了
+box: [170, 230]
+parts:
+  - path: "M85 30 C34 30 26 92 60 124 L60 150 L110 150 L110 124 C144 92 136 30 85 30 Z"
+    fill: "yellow"
+    fillAlpha: 0.6
+  - line: [62, 166, 108, 166]
+  - line: [68, 182, 102, 182]
+  - line: [85, 14, 85, 0]
+    color: "orange"
+  - line: [30, 40, 18, 28]
+    color: "orange"
+  - line: [140, 40, 152, 28]
+    color: "orange"

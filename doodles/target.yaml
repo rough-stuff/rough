@@ -1,0 +1,14 @@
+desc: 靶子 / 目标
+box: [200, 200]
+parts:
+  - circle: [100, 100, 172]
+  - circle: [100, 100, 112]
+    color: "red"
+  - circle: [100, 100, 50]
+    color: "red"
+    fill: "red"
+    fillAlpha: 0.85
+    fillStyle: "solid"
+  - line: [100, 100, 178, 22]
+    pen: 9
+  - poly: [[150, 22], [178, 22], [178, 50]]

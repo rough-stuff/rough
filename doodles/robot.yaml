@@ -1,0 +1,29 @@
+desc: 机器人 / AI
+box: [180, 220]
+parts:
+  - line: [90, 40, 90, 18]
+  - circle: [90, 12, 16]
+    color: "red"
+    fill: "red"
+    fillAlpha: 0.9
+    fillStyle: "solid"
+  - rect: [40, 40, 100, 80]
+    fill: "blue"
+    fillAlpha: 0.2
+  - circle: [68, 76, 20]
+    color: "blue"
+    fill: "blue"
+    fillAlpha: 0.9
+    fillStyle: "solid"
+  - circle: [112, 76, 20]
+    color: "blue"
+    fill: "blue"
+    fillAlpha: 0.9
+    fillStyle: "solid"
+  - line: [70, 102, 110, 102]
+  - rect: [30, 126, 120, 74]
+    fill: "gray"
+    fillAlpha: 0.3
+  - line: [30, 142, 8, 178]
+  - line: [150, 142, 172, 178]
+  - circle: [90, 162, 26]

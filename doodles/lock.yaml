@@ -1,0 +1,13 @@
+desc: 锁 / 写进法律 / 保障
+box: [160, 200]
+parts:
+  - path: "M46 92 L46 58 C46 16 114 16 114 58 L114 92"
+  - rect: [24, 92, 112, 96]
+    color: "orange"
+    fill: "yellow"
+    fillAlpha: 0.6
+  - circle: [80, 132, 20]
+    fill: "ink"
+    fillStyle: "solid"
+  - line: [80, 140, 80, 162]
+    pen: 9

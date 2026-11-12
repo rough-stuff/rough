@@ -1,0 +1,12 @@
+from: "七十多年前"
+intent: 【时间线】三个年代，各长出一个画面：机器、分钱、机房。
+pattern:
+  kind: timeline
+  events:
+    - { label: 70年前, item: { doodle: machine } }
+    - { label: "1982", item: { doodle: safe } }
+    - { label: 今天, item: { doodle: server } }
+beats:
+  - { at: "七十多年前", intent: 画时间轴和第一个节点, do: [{ step: axis }, { step: event.1 }] }
+  - { at: "一九八二年", intent: 第二个节点, do: [{ step: event.2 }] }
+  - { at: "今天", lead: 1.3, intent: 第三个节点, do: [{ step: event.3 }] }

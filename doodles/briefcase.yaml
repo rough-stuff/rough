@@ -1,0 +1,11 @@
+desc: 公文包 / 上班
+box: [200, 170]
+parts:
+  - path: "M72 50 L72 26 L128 26 L128 50"
+  - rect: [15, 50, 170, 106]
+    fill: "orange"
+    fillAlpha: 0.35
+  - line: [15, 96, 185, 96]
+  - rect: [90, 86, 20, 20]
+    fill: "yellow"
+    fillStyle: "solid"

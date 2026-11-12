@@ -1,0 +1,22 @@
+desc: 存钱罐
+box: [250, 200]
+parts:
+  - ellipse: [112, 108, 172, 122]
+    color: "red"
+    fill: "red"
+    fillAlpha: 0.22
+  - ellipse: [204, 104, 40, 48]
+    color: "red"
+  - poly: [[66, 58], [74, 22], [102, 50]]
+    color: "red"
+  - line: [72, 162, 72, 188]
+    color: "red"
+  - line: [150, 162, 150, 188]
+    color: "red"
+  - circle: [164, 86, 9]
+    fill: "ink"
+    fillStyle: "solid"
+  - line: [92, 52, 134, 48]
+    pen: 9
+  - curve: [[26, 100], [10, 90], [14, 112], [2, 106]]
+    color: "red"

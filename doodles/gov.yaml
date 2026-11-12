@@ -1,0 +1,17 @@
+desc: 政府（圆顶、旗子）
+box: [220, 210]
+parts:
+  - line: [110, 40, 110, 6]
+  - poly: [[110, 6], [140, 14], [110, 24]]
+    close: true
+    color: "red"
+    fill: "red"
+    fillAlpha: 0.7
+  - path: "M58 88 C58 26 162 26 162 88"
+  - rect: [28, 88, 164, 96]
+    fill: "blue"
+    fillAlpha: 0.22
+  - rect: [56, 108, 14, 76]
+  - rect: [150, 108, 14, 76]
+  - rect: [92, 130, 36, 54]
+  - line: [8, 188, 212, 188]

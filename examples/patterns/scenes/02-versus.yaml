@@ -1,0 +1,13 @@
+from: "同一份钱"
+intent: 【两相对比】上面是今天：一小袋钱；下面是以后：三倍大的一袋。
+pattern:
+  kind: versus
+  left: { doodle: moneybag, size: 200 }
+  leftTitle: 今天
+  right: { doodle: moneybag, size: 500 }
+  rightTitle: 以后
+beats:
+  - { at: "同一份钱", intent: 画出“今天”的一小袋钱, do: [{ step: left }] }
+  - { at: "很便宜", intent: 画分隔线, do: [{ step: divide }] }
+  - { at: "等到工资没了", intent: 画出“以后”那一大袋, do: [{ step: right }] }
+  - { at: "贵了三倍", intent: 大袋旁写下 ×3, do: [{ draw: { text: "×3", size: 150, color: red, rightOf: right, gap: 30 } }] }

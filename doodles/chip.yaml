@@ -1,0 +1,32 @@
+desc: 芯片
+box: [200, 200]
+parts:
+  - rect: [46, 46, 108, 108]
+    color: "purple"
+    fill: "purple"
+  - rect: [76, 76, 48, 48]
+    color: "purple"
+  - line: [70, 46, 70, 22]
+    color: "purple"
+  - line: [100, 46, 100, 22]
+    color: "purple"
+  - line: [130, 46, 130, 22]
+    color: "purple"
+  - line: [70, 154, 70, 178]
+    color: "purple"
+  - line: [100, 154, 100, 178]
+    color: "purple"
+  - line: [130, 154, 130, 178]
+    color: "purple"
+  - line: [46, 70, 22, 70]
+    color: "purple"
+  - line: [46, 100, 22, 100]
+    color: "purple"
+  - line: [46, 130, 22, 130]
+    color: "purple"
+  - line: [154, 70, 178, 70]
+    color: "purple"
+  - line: [154, 100, 178, 100]
+    color: "purple"
+  - line: [154, 130, 178, 130]
+    color: "purple"

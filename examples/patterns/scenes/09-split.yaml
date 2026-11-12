@@ -1,0 +1,16 @@
+from: "每产出一百块"
+intent: 【怎么分】一整条代表 100 块，涂出工资的 53 和资本的 47；老板提着钱走出画面。
+pattern:
+  kind: split
+  area: ["2%", "3%", "96%", "51%"]
+  total: 100块
+  parts:
+    - { label: 工资, value: 53 }
+    - { label: 资本, value: 47 }
+elements:
+  boss: { figure: stand, face: smug, wear: [tophat], carry: { doodle: moneybag, hand: left }, size: 380, at: ["66%", "78%"] }
+beats:
+  - { at: "每产出一百块", intent: 画出完整的一条, do: [{ step: whole }] }
+  - { at: "工资拿走", intent: 涂出工资那一段, do: [{ step: part.1 }] }
+  - { at: "剩下的归资本", intent: 涂出资本那一段，下面画出老板, do: [{ step: part.2 }, { draw: boss }] }
+  - { at: "老板提着钱", intent: 老板提着钱袋走向左边, do: [{ walk: boss, by: [-420, 0], dur: 1.4 }] }

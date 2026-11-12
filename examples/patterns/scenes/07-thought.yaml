@@ -1,0 +1,10 @@
+from: "很多人觉得"
+intent: 【想法】小人头上冒出泡泡，里面是一袋钱；随后泡泡被擦掉。
+pattern:
+  kind: thought
+  who: { figure: think, face: happy }
+  content: { doodle: moneybag }
+beats:
+  - { at: "很多人觉得", intent: 画出小人, do: [{ step: who }] }
+  - { at: "以后有人养", intent: 头上冒出想着钱袋的泡泡, do: [{ step: bubble }] }
+  - { at: "可是凭什么呢", intent: 泡泡被擦掉，小人愣住, do: [{ step: pop }, { pose: who, to: shrug, face: surprised, with: prev }] }

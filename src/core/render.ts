@@ -124,11 +124,13 @@ function paperTexture(env: Env, W: number, H: number): any {
   cv = env.createCanvas(W, H);
   const x = cv.getContext('2d'), r = rng(7);
   x.fillStyle = THEME.paper; x.fillRect(0, 0, W, H);
-  // 大块的明暗不匀
-  const sw = Math.ceil(W / 150), sh = Math.ceil(H / 150), small = env.createCanvas(sw, sh), sx = small.getContext('2d'), sd = sx.createImageData(sw, sh);
-  for (let i = 0; i < sw * sh; i++) { const v = r(); sd.data[4 * i] = 120; sd.data[4 * i + 1] = 95; sd.data[4 * i + 2] = 60; sd.data[4 * i + 3] = v * v * 11; }
-  sx.putImageData(sd, 0, 0);
-  x.imageSmoothingEnabled = true; x.imageSmoothingQuality = 'high'; x.drawImage(small, 0, 0, W, H);
+  // 大块的明暗不匀：许多很淡的柔边色团叠在一起
+  for (let i = 0; i < 46; i++) {
+    const px = r() * W, py = r() * H, rad = 180 + r() * 420, dark = r() < 0.55;
+    const g = x.createRadialGradient(px, py, 0, px, py, rad);
+    g.addColorStop(0, dark ? 'rgba(120,95,60,0.045)' : 'rgba(255,255,255,0.09)'); g.addColorStop(1, dark ? 'rgba(120,95,60,0)' : 'rgba(255,255,255,0)');
+    x.fillStyle = g; x.fillRect(px - rad, py - rad, rad * 2, rad * 2);
+  }
   // 细颗粒
   const id = x.getImageData(0, 0, W, H), d = id.data;
   for (let i = 0; i < d.length; i += 4) { const n = (r() + r() - 1) * 6; d[i] += n; d[i + 1] += n; d[i + 2] += n * 0.9; }
@@ -157,7 +159,7 @@ export function stateAt(tl: TL, t: number): ElState {
   if (tl.appear) { const k = span(t, tl.appear.t, tl.appear.t + tl.appear.dur); if (tl.appear.kind === 'pop') st.scale *= Math.max(0.01, outBack(k)); else st.alpha *= k; }
   for (const m of tl.moves) {
     if (t < m.t0) break;
-    const k = ease(span(t, m.t0, m.t1));
+    const k = m.linear ? span(t, m.t0, m.t1) : ease(span(t, m.t0, m.t1));
     if (m.path && m.base) {
       // 先滑到轨迹起点，再沿轨迹走
       const cum = cumLen({ pts: m.path }), p = pointAt(m.path, cum, k);
@@ -242,7 +244,11 @@ export function drawFrame(ctx: any, c: Compiled, t: number, env: Env, o: FrameOp
   // 纸面铺在世界坐标里：镜头移动时纸纹跟着画一起走
   const tex = paperTexture(env, W, H);
   world(ctx);
-  for (let i = Math.floor(vx0 / W); i * W < vx1; i++) for (let j = Math.floor(vy0 / H); j * H < vy1; j++) ctx.drawImage(tex, i * W - 0.5, j * H - 0.5, W + 1, H + 1);
+  for (let i = Math.floor(vx0 / W); i * W < vx1; i++) for (let j = Math.floor(vy0 / H); j * H < vy1; j++) {
+    // 相邻两块互为镜像，接缝处纹理连续
+    ctx.save(); ctx.translate(i * W + (i & 1 ? W : 0), j * H + (j & 1 ? H : 0)); ctx.scale(i & 1 ? -1 : 1, j & 1 ? -1 : 1);
+    ctx.drawImage(tex, -0.5, -0.5, W + 1, H + 1); ctx.restore();
+  }
   let pen: { p: Pt; scene: number } | null = null;
   const groups = new Map<number, { tl: TL; st: ElState }[]>();
   let curScene = -1;

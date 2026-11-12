@@ -73,6 +73,28 @@ test('确认：只调细节不改变分镜版本，改“画什么”才改变',
   const s = readFileSync(f, 'utf8');
   writeFileSync(f, s.replace('size: 560', 'size: 540'));
   assert.equal(compile(d).planHash, h0);
-  writeFileSync(f, s.replace('intent: 旁边画出存钱罐', 'intent: 旁边画出一个保险箱'));
+  writeFileSync(f, s.replace('画出小人，和旁边的存钱罐', '画出小人，和旁边的保险箱'));
   assert.notEqual(compile(d).planHash, h0);
+});
+
+test('表现手法：九种都能在竖屏和横屏下展开，示例零警告', () => {
+  const c = compile('examples/patterns');
+  assert.deepEqual(lint(c).filter(i => i.level !== 'info'), []);
+  assert.equal(c.scenes.length, 9);
+  const d = tmp();
+  cpSync('examples/patterns', d, { recursive: true });
+  const pf = join(d, 'project.yaml');
+  writeFileSync(pf, readFileSync(pf, 'utf8').replace('format: portrait', 'format: landscape'));
+  const errors = lint(compile(d)).filter(i => i.level === 'error');
+  assert.deepEqual(errors, []);
+});
+
+test('表现手法：写错步骤名时列出可用步骤', () => {
+  const d = tmp();
+  cpSync('examples/patterns', d, { recursive: true });
+  const f = join(d, 'scenes/01-cycle.yaml');
+  writeFileSync(f, readFileSync(f, 'utf8').replace('step: result', 'step: finish'));
+  const msgs = lint(compile(d)).filter(i => i.level === 'error').map(i => i.msg).join('\n');
+  assert.match(msgs, /finish/);
+  assert.match(msgs, /go\.1/);
 });

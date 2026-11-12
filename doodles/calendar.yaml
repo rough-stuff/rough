@@ -1,0 +1,24 @@
+desc: 日历（标出一天）
+box: [190, 200]
+parts:
+  - rect: [15, 36, 160, 150]
+  - line: [15, 76, 175, 76]
+  - line: [55, 20, 55, 52]
+    pen: 9
+  - line: [135, 20, 135, 52]
+    pen: 9
+  - rect: [40, 96, 28, 26]
+    color: "gray"
+  - rect: [82, 96, 28, 26]
+    color: "gray"
+  - rect: [124, 96, 28, 26]
+    color: "gray"
+  - rect: [40, 138, 28, 26]
+    color: "gray"
+  - rect: [82, 138, 28, 26]
+    color: "red"
+    fill: "red"
+    fillAlpha: 0.8
+    fillStyle: "solid"
+  - rect: [124, 138, 28, 26]
+    color: "gray"

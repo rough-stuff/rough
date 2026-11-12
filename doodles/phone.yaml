@@ -1,0 +1,8 @@
+desc: 手机
+box: [130, 220]
+parts:
+  - rect: [15, 10, 100, 200]
+    fill: "gray"
+    fillAlpha: 0.2
+  - line: [50, 26, 80, 26]
+  - circle: [65, 190, 13]

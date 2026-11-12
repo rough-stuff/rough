@@ -1,0 +1,19 @@
+desc: 自动化机器（机械臂）
+box: [230, 210]
+parts:
+  - rect: [20, 160, 110, 34]
+    fill: "gray"
+    fillAlpha: 0.3
+  - circle: [75, 150, 34]
+    fill: "orange"
+  - line: [75, 150, 120, 62]
+    pen: 12
+    color: "orange"
+  - circle: [120, 62, 24]
+    fill: "orange"
+  - line: [120, 62, 188, 96]
+    pen: 12
+    color: "orange"
+  - poly: [[188, 96], [206, 84], [212, 104]]
+  - poly: [[188, 96], [196, 118], [214, 112]]
+  - line: [150, 196, 224, 196]

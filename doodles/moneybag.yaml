@@ -1,0 +1,14 @@
+desc: 钱袋
+box: [190, 220]
+vars: {"text": "¥"}
+parts:
+  - poly: [[66, 56], [50, 20], [95, 36], [140, 20], [124, 56]]
+  - path: "M66 56 C10 100 10 202 95 202 C180 202 180 100 124 56 Z"
+    color: "green"
+    fill: "green"
+  - line: [62, 57, 128, 57]
+    pen: 9
+  - text: "$text"
+    at: [95, 134]
+    size: 64
+    color: "green"

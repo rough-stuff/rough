@@ -39,6 +39,8 @@ npx hj render work/<项目名>                   # 正式成片 out/video.mp4
 
 ## 一个场景长什么样
 
+大多数场景应该从一种**表现手法**起步（见 directing.md 第二节和 reference 的“表现手法”），下面是不用手法、从零摆元素的写法：
+
 ```yaml
 # scenes/03-loop.yaml
 from: "咱们跟着一百块钱"          # 这个场景从哪句口播开始
@@ -46,8 +48,8 @@ intent: 公司、政府、你站成三角，一张钞票绕一圈回到原点，
 enter: pan                        # pan 镜头平移到新板面 / wipe 擦掉重来 / cut 直接切
 
 elements:                         # 画什么、放哪儿
-  company: { icon: building-factory, size: 280, at: [200, 300], label: 公司 }
-  gov:     { icon: building-bank, size: 280, at: [760, 300], label: 政府 }
+  company: { doodle: factory, size: 280, at: [200, 300], label: 公司 }
+  gov:     { doodle: gov, size: 280, at: [760, 300], label: 政府 }
   you:     { figure: stand, size: 420, at: [480, 950] }
   bill:    { doodle: banknote, size: 190, at: company.bottom, dy: 80 }
   tax:     { arrow: [company, gov], curve: -0.2 }
@@ -70,17 +72,19 @@ beats:                            # 什么时候、怎么动
 
 | 你要做的事 | 读 |
 |---|---|
-| 想清楚每句话画什么（**最重要**） | [docs/directing.md](docs/directing.md) |
+| 想清楚每段话画什么（**最重要，先读这个**） | [docs/directing.md](docs/directing.md) |
 | 查某个字段、动作、元素怎么写 | [docs/reference.md](docs/reference.md) |
 | 用户提了修改意见 | [docs/revising.md](docs/revising.md) |
 | 要给配音方提要求 / 自己生成配音 | [docs/voice-guide.md](docs/voice-guide.md) |
-| 看一个完整能跑的例子 | [examples/compound/](examples/compound/) |
+| 看九种表现手法各长什么样 | [examples/patterns/](examples/patterns/) |
+| 看一个从零摆元素的完整例子 | [examples/compound/](examples/compound/) |
 
-找素材：
+找手法和素材：
 
 ```bash
-npx hj assets icons factory        # 搜 5000+ 线条图标（英文关键词）
-npx hj assets doodles              # 内置手绘件（钞票、硬币、气泡、K 线……）
+npx hj patterns                    # 九种表现手法：自带构图和动作编排（先看这个）
+npx hj assets doodles              # 47 个手绘件，和小人同一画风（首选）
+npx hj assets icons factory        # 5000+ 线条图标，英文关键词搜索（兜底）
 npx hj assets figure               # 小人的姿势、表情、配饰
 npx hj assets sheet --out sheet.png   # 把上面这些画成一张图，直接看长相
 ```
@@ -95,7 +99,8 @@ src/core/
   alignment.ts    时间表加载、口播锚点解析、字幕切分
   strokes.ts      rough 输出 → 可按时间重放的笔画
   text.ts         手写字体字形 + 按笔顺书写
-  figure.ts       火柴人：姿势、表情、配饰
+  figure.ts       火柴人：姿势、表情、配饰、手持物
+  patterns.ts     表现手法：九种自带构图与编排的场景骨架
   icons.ts        Tabler 图标
   elements.ts     元素构建与相对布局
   compile.ts      分镜 → 绝对时间线（动作排程、镜头、擦除）

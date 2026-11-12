@@ -1,0 +1,18 @@
+desc: 银行（山墙、柱子）
+box: [220, 200]
+parts:
+  - poly: [[110, 12], [208, 72], [12, 72]]
+    close: true
+    fill: "yellow"
+  - line: [24, 88, 196, 88]
+  - rect: [40, 90, 16, 78]
+  - rect: [82, 90, 16, 78]
+  - rect: [124, 90, 16, 78]
+  - rect: [166, 90, 16, 78]
+  - rect: [14, 170, 192, 20]
+    fill: "gray"
+    fillAlpha: 0.3
+  - text: "¥"
+    at: [110, 50]
+    size: 30
+    color: "orange"

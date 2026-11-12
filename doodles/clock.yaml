@@ -1,0 +1,13 @@
+desc: 钟 / 时间
+box: [200, 200]
+parts:
+  - circle: [100, 100, 172]
+    fill: "blue"
+    fillAlpha: 0.15
+  - line: [100, 100, 100, 48]
+    pen: 9
+  - line: [100, 100, 138, 118]
+    pen: 9
+  - circle: [100, 100, 12]
+    fill: "ink"
+    fillStyle: "solid"
