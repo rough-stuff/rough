@@ -7,6 +7,7 @@ pattern:
     - { doodle: goods }
     - { doodle: cart }
     - { doodle: banknote, vars: { text: 工资 } }
+  links: [造出, 要卖给, 得有]
 beats:
   - { at: "机器造出货", intent: 画出机器人，再连到货, do: [{ step: item.1 }, { step: item.2 }] }
   - { at: "货要有人买", intent: 连到购物车, do: [{ step: item.3 }] }

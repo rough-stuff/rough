@@ -44,7 +44,11 @@ export function lint(c: Compiled): Issue[] {
       // 3. 画得太赶
       if (tl.compress != null && tl.compress < 0.4) add('warn', where, `要用自然速度的 ${(1 / tl.compress).toFixed(1)} 倍才画得完（${(tl.drawT1! - tl.drawT0!).toFixed(2)} 秒），会像快进。简化它、给它更多时间（节拍加 lead 提前起笔），或拆到两拍`);
     }
-    if (textChars > 36) add('warn', sc.file, `这个场景板书共 ${textChars} 个字，偏多。想想哪些可以换成图形或小人的动作`);
+    if (textChars > 110) add('warn', sc.file, `这个场景板书共 ${textChars} 个字，偏多。批注要短：数字、名字、出处，一条不超过十个字`);
+    // 信息密度：一块板讲了这么久，上面应该已经是一张内容丰富的图
+    const dur = sc.t1 - sc.t0, things = shown.filter(t => t.el.kind !== 'mark').length, want = Math.max(6, Math.round(dur / 2.4));
+    if (dur >= 8 && things < want) add('warn', sc.file, `信息密度偏低：这个场景讲了 ${dur.toFixed(0)} 秒，板上一共只出现了 ${things} 样东西（这个时长建议不少于 ${want} 样）。画面稀疏会显得内容单薄。往上加“第二层信息”：给箭头写小字（label）、给关键元素加批注（note：数字、名字、出处）、补一个小图表或再放一种手法（pattern 写成列表、各占一块 area）`);
+    for (const tl of shown) if (tl.el.kind === 'text' && (tl.el.src.size ?? 72) < 34) add('warn', `${sc.file} / 元素 ${tl.el.id}`, `字号 ${tl.el.src.size} 太小，手机上看不清，至少 36`);
     const visual = shown.filter(t => !['text', 'mark'].includes(t.el.kind));
     if (shown.length && !visual.length) add('warn', sc.file, '这个场景只有文字，没有任何图形或小人——这就是“像 PPT”。至少用一个画面元素来演示正在讲的事');
     // 画面太空

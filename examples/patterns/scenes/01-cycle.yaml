@@ -5,10 +5,14 @@ pattern:
     - { id: company, doodle: factory, label: 公司 }
     - { id: gov, doodle: gov, label: 政府 }
     - { id: you, figure: stand, label: 你 }
+  flows: [交税, 发钱, 消费]
   result: "+0"
+elements:
+  n1: { note: 出去100, target: a1, side: bottom, gap: 36, color: red }
+  n2: { note: 回来100, target: a3, side: left, gap: 40, color: green }
 beats:
   - { at: "一百块从公司", intent: 画出公司和它手边的一百块, do: [{ step: show.1 }, { step: token }] }
-  - { at: "先交给政府", intent: 画出政府，钞票沿箭头滑过去, do: [{ step: show.2 }, { step: go.1 }] }
+  - { at: "先交给政府", intent: 画出政府，钞票沿箭头滑过去, do: [{ step: show.2 }, { step: go.1 }, { draw: n1 }] }
   - { at: "再发到你手里", intent: 画出你，钞票滑到你这儿, do: [{ step: show.3 }, { step: go.2 }] }
-  - { at: "你又花回公司", intent: 钞票滑回公司，圈闭合, do: [{ step: go.3 }] }
+  - { at: "你又花回公司", intent: 钞票滑回公司，圈闭合, do: [{ step: go.3 }, { draw: n2 }] }
   - { at: "多赚了零", lead: 0.7, intent: 圈中央写下 +0, do: [{ step: result }] }

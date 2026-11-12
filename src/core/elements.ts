@@ -21,13 +21,13 @@ export interface El {
   rebuild?: (pose: Pose, face: string) => Stroke[];
 }
 
-export const KINDS = ['text', 'figure', 'icon', 'doodle', 'parts', 'shape', 'arrow', 'line', 'mark', 'chart'] as const;
+export const KINDS = ['text', 'figure', 'icon', 'doodle', 'parts', 'shape', 'arrow', 'line', 'mark', 'chart', 'note'] as const;
 const POS_KEYS = ['at', 'rightOf', 'leftOf', 'above', 'below'];
 const COMMON = ['id', 'at', 'rightOf', 'leftOf', 'above', 'below', 'gap', 'align', 'anchor', 'dx', 'dy', 'size', 'color', 'label', 'labelSize', 'rough', 'w', 'h', 'fill', 'fillStyle', 'fillAlpha', 'fillGap', 'pen'];
 const FIELDS: Record<string, string[]> = {
   text: ['lineGap'], figure: ['face', 'wear', 'accent', 'pose', 'carry'], icon: [], doodle: ['vars'], parts: ['box'],
   shape: [], arrow: ['curve', 'head', 'both', 'pad'], line: ['curve', 'pad'], mark: ['target', 'pad'],
-  chart: ['data', 'labels', 'highlight', 'values', 'unit'],
+  chart: ['data', 'labels', 'highlight', 'values', 'unit'], note: ['target', 'side'],
 };
 
 const DOODLE_DIR = join(fileURLToPath(new URL('.', import.meta.url)), '../../doodles');
@@ -123,7 +123,7 @@ export function buildElement(ctx: BuildCtx, id: string, src: any): El {
     if (!POSES[poseName]) throw new SrcError(where, `没有姿势 "${poseName}"。可用：${Object.keys(POSES).join(' ')}`);
     if (!FACES[face]) throw new SrcError(where, `没有表情 "${face}"。可用：${Object.keys(FACES).join(' ')}`);
     for (const a of wear) if (!ACCESSORIES.includes(a)) throw new SrcError(where, `没有配饰 "${a}"。可用：${ACCESSORIES.join(' ')}`);
-    const spec: FigureSpec = { size: src.size ?? 360, color: st.color, pose: POSES[poseName], face, accessories: wear, accent: src.accent ? color(src.accent) : undefined, seed };
+    const spec: FigureSpec = { size: src.size ?? 320, color: st.color, pose: POSES[poseName], face, accessories: wear, accent: src.accent ? color(src.accent) : undefined, seed };
     const r = figureStrokes(spec);
     el.strokes = r.strokes; el.anchors = r.anchors; el.figure = { spec, dx: 0, dy: 0, labelStrokes: [] };
     if (src.carry) { // 手里拿的东西：跟着手走
@@ -173,6 +173,30 @@ export function buildElement(ctx: BuildCtx, id: string, src: any): El {
       head(p1, bow ? mid : p0, 11);
       if (src.both) head(p0, bow ? mid : p1, 17);
     }
+    if (src.label) { // 箭头上的小字：写在中点、鼓起的那一侧
+      const t = textStrokes(String(src.label), { size: src.labelSize ?? 42, color: st.color });
+      const nx = -dy / L, ny = dx / L, side = bow >= 0 ? 1 : -1, off = Math.abs(nx) * t.w / 2 + Math.abs(ny) * t.h / 2 + 24;
+      let lx = mid[0] + nx * side * off, ly = mid[1] + ny * side * off;
+      if (!bow && Math.abs(nx) < 0.3) ly = mid[1] - off; // 水平直线：字写在上面
+      translateStrokes(t.strokes, lx - t.w / 2, ly - t.h / 2);
+      el.strokes.push(...t.strokes); el.text = String(src.label); el.missing = t.missing;
+    }
+    placed = true;
+  } else if (kind === 'note') {
+    // 批注：一行小字贴在目标旁边，用一条细线牵过去。用来补数字、名字、出处这类“第二层信息”
+    const tg = parseRef(ctx, src.target, where);
+    if (!tg.el) throw new SrcError(where, 'note 需要 target: 元素 id（批注贴在谁旁边）');
+    const t = textStrokes(String(src.note), { size: src.size ?? 40, color: color(src.color, THEME.colors.gray), align: 'left' });
+    const b = tg.el.box, gap = src.gap ?? 54, side = src.side ?? 'right';
+    if (!['right', 'left', 'top', 'bottom'].includes(side)) throw new SrcError(where, 'note 的 side 只能是 right left top bottom');
+    const cx = b.x + b.w / 2, cy = b.y + b.h / 2;
+    const tx = side === 'right' ? b.x + b.w + gap : side === 'left' ? b.x - gap - t.w : cx - t.w / 2;
+    const ty = side === 'top' ? b.y - gap - t.h : side === 'bottom' ? b.y + b.h + gap : cy - t.h / 2;
+    translateStrokes(t.strokes, tx, ty);
+    const from: Pt = side === 'right' ? [tx - 10, ty + t.h / 2] : side === 'left' ? [tx + t.w + 10, ty + t.h / 2] : side === 'top' ? [cx, ty + t.h + 8] : [cx, ty - 8];
+    const to: Pt = side === 'right' ? [b.x + b.w + 8, cy] : side === 'left' ? [b.x - 8, cy] : side === 'top' ? [cx, b.y - 8] : [cx, b.y + b.h + 8];
+    el.strokes = [...R.line(from[0], from[1], to[0], to[1], { ...st, color: color(src.color, THEME.colors.gray), w: 3.5, rough: 0.8 }), ...t.strokes];
+    el.text = String(src.note); el.missing = t.missing;
     placed = true;
   } else if (kind === 'mark') {
     const targets = (Array.isArray(src.target) ? src.target : [src.target]).map((t: any) => parseRef(ctx, t, where));
@@ -201,7 +225,7 @@ export function buildElement(ctx: BuildCtx, id: string, src: any): El {
   // 标签：写在元素正下方，属于元素的一部分，跟着一起画
   const core = boxOf(el.strokes);
   let labelStrokes: Stroke[] = [];
-  if (src.label) {
+  if (src.label && kind !== 'arrow' && kind !== 'line') {
     const t = textStrokes(String(src.label), { size: src.labelSize ?? 46, color: st.color });
     translateStrokes(t.strokes, core.x + core.w / 2 - t.w / 2, core.y + core.h + 14);
     labelStrokes = t.strokes; el.text = (el.text ?? '') + String(src.label); el.missing = [...(el.missing ?? []), ...t.missing];

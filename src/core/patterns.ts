@@ -25,7 +25,7 @@ export const PATTERNS: Record<string, Pattern> = {
   cycle: {
     title: '循环流转',
     when: '钱、货、信息在几方之间转一圈（税收转移、资金回流、互相做生意）。重点是“转”这个动作，以及转完之后的结果。',
-    params: ['nodes: 2–5 个参与方（元素定义，建议带 label）', 'token: 流转的东西（默认一张钞票）', 'result: 转完后写在圈中央的结论（如 "+0"），可省'],
+    params: ['nodes: 2–5 个参与方（元素定义，建议带 label）', 'token: 流转的东西（默认一张钞票）', 'flows: 每条箭头上的小字（如 ["交税", "发钱", "消费"]），可省', 'result: 转完后写在圈中央的结论（如 "+0"），可省'],
     steps: ['show.N 画出第 N 个参与方', 'show.all 依次画出全部', 'token 画出流转物（在第 1 个参与方旁边）', 'go.N 画第 N 条箭头（N→N+1），流转物同时沿箭头滑过去', 'result 圈中央写下结论并圈起来'],
     build(p, c) {
       const nodes = list(c, p.nodes, 'nodes', 2, 5), n = nodes.length, A = c.A;
@@ -39,7 +39,7 @@ export const PATTERNS: Record<string, Pattern> = {
       // 流转物的“停靠点”：第 1 方朝圈内的那个角。最后一条箭头指回这里，圈在这儿闭合
       const dl = Math.hypot(gx - pos[0][0], gy - pos[0][1]) || 1;
       const tk = n === 2 ? [pos[0][0] + s * 0.2, pos[0][1] + s * 0.95] : [pos[0][0] + ((gx - pos[0][0]) / dl) * s * 0.85, pos[0][1] + ((gy - pos[0][1]) / dl) * s * 0.85];
-      for (let i = 0; i < n; i++) E.push([`a${i + 1}`, { arrow: [ids[i], i === n - 1 && n > 2 ? [r(tk[0] + s * 0.1), r(tk[1] + s * 0.28)] : ids[(i + 1) % n]], curve: n === 2 ? -0.32 : -0.16, pad: 26 }]);
+      for (let i = 0; i < n; i++) E.push([`a${i + 1}`, { arrow: [ids[i], i === n - 1 && n > 2 ? [r(tk[0] + s * 0.1), r(tk[1] + s * 0.28)] : ids[(i + 1) % n]], curve: n === 2 ? -0.32 : -0.16, pad: 26, ...(p.flows?.[i] ? { label: String(p.flows[i]) } : {}) }]);
       E.push(['token', el(p.token ?? { doodle: 'banknote' }, { at: [r(tk[0]), r(tk[1])] }, r(s * 0.5))]);
       const steps: Record<string, any[]> = { 'show.all': [{ draw: ids }], token: [{ draw: 'token' }] };
       ids.forEach((id, i) => { steps[`show.${i + 1}`] = [{ draw: id }]; steps[`go.${i + 1}`] = [{ draw: `a${i + 1}` }, { move: 'token', along: `a${i + 1}`, with: 'prev', dur: 0.75 }]; });
@@ -82,7 +82,7 @@ export const PATTERNS: Record<string, Pattern> = {
   chain: {
     title: '因果链',
     when: '一环扣一环的推理（AI 造货 → 货要有人买 → 人没工资 → 卖不掉）。每说到一环就长出一环；要推翻时把其中一条箭头打叉。',
-    params: ['items: 2–5 个环节（元素定义）'],
+    params: ['items: 2–5 个环节（元素定义）', 'links: 每条箭头上的小字（如 ["卖给", "需要"]），可省'],
     steps: ['item.N 画出第 N 环（第 2 环起会先画出连过来的箭头）', 'break.N 把第 N 环和下一环之间的箭头打叉，后面那环晃一下'],
     build(p, c) {
       const items = list(c, p.items, 'items', 2, 5), n = items.length, A = c.A;
@@ -94,7 +94,7 @@ export const PATTERNS: Record<string, Pattern> = {
       items.forEach((it, i) => {
         const at = zig ? [r(A.x + A.w * (i % 2 ? 0.74 : 0.26)), r(A.y + s * 0.5 + ((A.h - s) * i) / (n - 1))] : [r(A.x + (A.w * (i + 0.5)) / n), r(A.y + A.h / 2)];
         E.push([ids[i], el(it, { at }, r(s))]);
-        if (i > 0) E.push([`l${i}`, { arrow: [ids[i - 1], ids[i]], pad: 22 }]);
+        if (i > 0) E.push([`l${i}`, { arrow: [ids[i - 1], ids[i]], pad: 22, ...(p.links?.[i - 1] ? { label: String(p.links[i - 1]) } : {}) }]);
       });
       const steps: Record<string, any[]> = {};
       ids.forEach((id, i) => { steps[`item.${i + 1}`] = i ? [{ draw: `l${i}` }, { draw: id }] : [{ draw: id }]; if (i < n - 1) steps[`break.${i + 1}`] = [{ draw: { mark: 'cross', target: `l${i + 1}`, pad: 18 } }, { shake: ids[i + 1] }]; });
@@ -165,7 +165,7 @@ export const PATTERNS: Record<string, Pattern> = {
   timeline: {
     title: '时间线',
     when: '按年代讲的事（七十多年前 → 1982 → 今年）。讲到哪一年，时间线上就长出哪一年的东西。',
-    params: ['events: 2–5 个节点，每个 { label, item? }。label 是年份/时间，item 是那一年的画面（元素定义）'],
+    params: ['events: 2–5 个节点，每个 { label, item?, note? }。label 是年份/时间，item 是那一年的画面（元素定义），note 是一行小字说明'],
     steps: ['axis 画时间轴', 'event.N 画出第 N 个节点：刻度、时间、画面'],
     build(p, c) {
       const ev = list(c, p.events, 'events', 2, 5), n = ev.length, A = c.A, v = c.portrait;
@@ -179,6 +179,7 @@ export const PATTERNS: Record<string, Pattern> = {
           E.push([`k${k}`, { shape: 'circle', size: 30, fill: 'ink', fillStyle: 'solid', fillAlpha: 1, at: [r(ax), r(y)] }]);
           E.push([`y${k}`, { text: String(e.label), size: ts, at: [r(ax - 40), r(y)], anchor: 'right' }]);
           if (e.item) { E.push([idOf(e.item, `e${k}`), el(e.item, { at: [r(ax + 60 + (A.x + A.w - ax - 60) / 2), r(y)] }, r(s))]); draw.push(idOf(e.item, `e${k}`)); }
+          if (e.note) { E.push([`m${k}`, { text: String(e.note), size: 40, color: 'gray', below: `y${k}`, gap: 10, align: 'end' }]); draw.push(`m${k}`); }
           steps[`event.${k}`] = [{ draw }];
         });
       } else {
@@ -189,6 +190,7 @@ export const PATTERNS: Record<string, Pattern> = {
           E.push([`k${k}`, { shape: 'circle', size: 30, fill: 'ink', fillStyle: 'solid', fillAlpha: 1, at: [r(x), r(ay)] }]);
           E.push([`y${k}`, { text: String(e.label), size: ts, at: [r(x), r(ay + ts * 1.1)] }]);
           if (e.item) { E.push([idOf(e.item, `e${k}`), el(e.item, { at: [r(x), r(ay - 50 - s / 2)] }, r(s))]); draw.push(idOf(e.item, `e${k}`)); }
+          if (e.note) { E.push([`m${k}`, { text: String(e.note), size: 40, color: 'gray', below: `y${k}`, gap: 8 }]); draw.push(`m${k}`); }
           steps[`event.${k}`] = [{ draw }];
         });
       }

@@ -189,7 +189,7 @@ const commands: Record<string, () => Promise<void> | void> = {
     const amix: string[] = [];
     if (audio && existsSync(audio)) { inputs.push('-ss', String(from), '-t', String(to - from), '-i', audio); amix.push(`[${amix.length + 1}:a]`); }
     else console.log('  （没有配音文件，成片只有落笔音效）');
-    if (c.meta.sfx !== false) { const sfx = join(outDir, 'sfx.wav'); writeSfx(c, sfx, c.meta.sfxVolume ?? 1); inputs.push('-ss', String(from), '-t', String(to - from), '-i', sfx); amix.push(`[${amix.length + 1}:a]`); }
+    if (c.meta.sfx !== false) { const sfx = join(outDir, 'sfx.wav'); const r = writeSfx(c, sfx); console.log(`  音效：${r.mode === 'sparse' ? '稀疏' : '密集'}模式，全片 ${r.count} 声（平均每分钟 ${((r.count / c.duration) * 60).toFixed(0)} 声）`); inputs.push('-ss', String(from), '-t', String(to - from), '-i', sfx); amix.push(`[${amix.length + 1}:a]`); }
     const ff = ['-y', '-loglevel', 'error', ...inputs];
     if (amix.length > 1) ff.push('-filter_complex', `${amix.join('')}amix=inputs=${amix.length}:normalize=0[a]`, '-map', '0:v', '-map', '[a]');
     else if (amix.length === 1) ff.push('-map', '0:v', '-map', '1:a');

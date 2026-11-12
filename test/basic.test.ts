@@ -73,7 +73,7 @@ test('确认：只调细节不改变分镜版本，改“画什么”才改变',
   const s = readFileSync(f, 'utf8');
   writeFileSync(f, s.replace('size: 560', 'size: 540'));
   assert.equal(compile(d).planHash, h0);
-  writeFileSync(f, s.replace('画出小人，和旁边的存钱罐', '画出小人，和旁边的保险箱'));
+  writeFileSync(f, s.replace('intent: 画出小人和存钱罐', 'intent: 画出小人和保险箱'));
   assert.notEqual(compile(d).planHash, h0);
 });
 
@@ -97,4 +97,24 @@ test('表现手法：写错步骤名时列出可用步骤', () => {
   const msgs = lint(compile(d)).filter(i => i.level === 'error').map(i => i.msg).join('\n');
   assert.match(msgs, /finish/);
   assert.match(msgs, /go\.1/);
+});
+
+test('一块板放两种手法：自动起名的元素不撞名，步骤带前缀', () => {
+  const d = tmp();
+  cpSync('examples/patterns', d, { recursive: true });
+  const f = join(d, 'scenes/04-bars.yaml');
+  writeFileSync(f, `from: "按公式该发"
+intent: 上半板柱子被砍，下半板一条走势
+pattern:
+  - { kind: bars, area: ["5%", "2%", "90%", "48%"], items: [{ label: 法定, value: 3800, cutTo: 1200 }, { label: 去年, value: 1300 }] }
+  - { kind: trend, area: ["5%", "52%", "90%", "46%"], points: [{ value: 3, label: A }, { value: 2, label: B }, { value: 1, label: C }] }
+beats:
+  - { at: "按公式该发", intent: 画柱子, do: [{ step: bars.axis }, { step: bars.bar.1 }, { step: bars.bar.2 }] }
+  - { at: "最后只批了", intent: 砍柱子并画走势, do: [{ step: bars.cut.1 }, { step: trend.axis }, { step: trend.all }, { draw: { note: 砍了, target: bars_n1, side: bottom } }] }
+`);
+  const c = compile(d), errors = lint(c).filter(i => i.level === 'error');
+  assert.deepEqual(errors, []);
+  const ids = c.tls.filter(t => t.scene === 3).map(t => t.el.id);
+  assert.ok(ids.includes('bars_axis') && ids.includes('trend_axisX'));
+  assert.equal(new Set(ids).size, ids.length);
 });

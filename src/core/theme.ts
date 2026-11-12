@@ -12,8 +12,8 @@ export const THEME = {
   colors: { ink: '#24211e', red: '#d9433a', blue: '#2f6fb7', green: '#3c8f4f', yellow: '#f2b830', orange: '#e8792b', purple: '#7556c2', gray: '#8a8580', paper: '#f8f5ed' } as Record<string, string>,
   pen: 7,
   rough: 0.9,
-  textSize: 84,
+  textSize: 72,
   /** “自然”书写速度：用来估算每个动作本来要画多久 */
-  pace: { px: 2400, penUp: 0.05, min: 0.2 },
+  pace: { px: 3000, penUp: 0.05, min: 0.18 },
 };
 export const color = (c: string | undefined, fallback = THEME.ink): string => (c ? THEME.colors[c] ?? c : fallback);

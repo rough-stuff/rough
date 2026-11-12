@@ -47,7 +47,7 @@ export function naturalDraw(el: El): number {
   return Math.max(THEME.pace.min, d);
 }
 /** 一笔占多少“时间份额”：上色的排线是快速涂抹，只算三分之一 */
-const weight = (s: any) => ((s.under ? 0.35 : 1) * s.len + penUp(s));
+const weight = (s: any) => ((s.under ? 0.2 : 1) * s.len + penUp(s) * (s.under ? 0.4 : 1));
 const penUp = (s: { kind: string; len: number }) => (s.kind === 'fglyph' ? 40 : s.kind === 'wipe' ? 10 : (s as any).flat ? 10 : Math.min(75, 18 + s.len * 0.3));
 
 export function loadProject(dir: string): { meta: any; scenes: { file: string; src: any }[] } {
@@ -135,17 +135,33 @@ export function compile(dir: string): Compiled {
     let steps: Record<string, any[]> = {};
     const fromPattern = new Set<string>();
     if (src.pattern != null) {
-      const ps = typeof src.pattern === 'string' ? { kind: src.pattern } : src.pattern, pat = PATTERNS[ps?.kind];
-      if (!pat) err(file, `pattern.kind 写一种表现手法：${Object.keys(PATTERNS).join(' ')}（hj patterns 查看说明）`);
-      else {
-        const B = fmt.board, pc = (v: any, total: number) => (typeof v === 'string' && v.endsWith('%') ? (parseFloat(v) / 100) * total : +v);
+      // 一块板上可以放多种手法（写成列表，各占一块 area）。多于一种时，步骤名要带前缀：<name>.<步骤>
+      const specs: any[] = (Array.isArray(src.pattern) ? src.pattern : [src.pattern]).map((x: any) => (typeof x === 'string' ? { kind: x } : x));
+      const multi = specs.length > 1, B = fmt.board;
+      const pc = (v: any, total: number) => (typeof v === 'string' && v.endsWith('%') ? (parseFloat(v) / 100) * total : +v);
+      const REF_KEYS = new Set(['draw', 'erase', 'move', 'hide', 'shake', 'pulse', 'nod', 'pop', 'fade', 'target', 'along', 'at', 'arrow', 'line', 'above', 'below', 'rightOf', 'leftOf', 'to']);
+      specs.forEach((ps, pi) => {
+        const pat = PATTERNS[ps?.kind];
+        if (!pat) { err(file, `pattern.kind 写一种表现手法：${Object.keys(PATTERNS).join(' ')}（hj patterns 查看说明）`); return; }
+        const name = String(ps.name ?? ps.kind);
+        if (multi && !(Array.isArray(ps.area) && ps.area.length === 4)) { err(file, `一块板上放多种手法时，每种都要写 area: [x, y, w, h] 划出自己的地盘（手法 ${name}）`); return; }
         const a = Array.isArray(ps.area) && ps.area.length === 4 ? { x: pc(ps.area[0], B.w), y: pc(ps.area[1], B.h), w: pc(ps.area[2], B.w), h: pc(ps.area[3], B.h) } : { x: 20, y: 20, w: B.w - 40, h: B.h - 40 };
         try {
-          const out = pat.build(ps, { fmt, A: a, portrait: a.h > a.w, fail: (m: string) => { throw new SrcError(`${file} / 手法 ${ps.kind}`, m); } });
-          for (const [eid, esrc] of out.elements) { addEl(eid, esrc); fromPattern.add(eid); }
-          steps = out.steps;
+          const out = pat.build(ps, { fmt, A: a, portrait: a.h > a.w, fail: (m: string) => { throw new SrcError(`${file} / 手法 ${name}`, m); } });
+          // 多种手法并存时，给自动起名的元素加前缀，避免撞名
+          const userIds = new Set<string>(); JSON.stringify(ps, (k, v) => { if (k === 'id' && typeof v === 'string') userIds.add(v); return v; });
+          const ren = new Map<string, string>();
+          if (multi) for (const [eid] of out.elements) if (!userIds.has(eid)) ren.set(eid, `${name}_${eid}`);
+          const fix = (v: any, key?: string): any => {
+            if (typeof v === 'string') { if (key && !REF_KEYS.has(key)) return v; const [h, ...rest] = v.split('.'); return ren.has(h) ? [ren.get(h), ...rest].join('.') : v; }
+            if (Array.isArray(v)) return v.map(x => fix(x, key));
+            if (v && typeof v === 'object') return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, fix(x, k)]));
+            return v;
+          };
+          for (const [eid, esrc] of out.elements) { const nid = ren.get(eid) ?? eid; addEl(nid, fix(esrc)); fromPattern.add(nid); }
+          for (const [sn, acts] of Object.entries(out.steps)) { const fixed = fix(acts); steps[`${name}.${sn}`] = fixed; if (!multi) steps[sn] = fixed; }
         } catch (e: any) { if (e instanceof SrcError) err(file, e.message); else throw e; }
-      }
+      });
     }
     if (src.elements && typeof src.elements !== 'object') err(file, 'elements 应该是 "id: 定义" 的映射');
     for (const [eid, esrc] of Object.entries(src.elements ?? {})) addEl(eid, esrc);
@@ -370,7 +386,7 @@ export function compile(dir: string): Compiled {
   // 镜头：按时间排好
   camEvents.sort((a, b) => a.t0 - b.t0);
   const subs = meta.subtitles === false ? [] : buildSubtitles(al, meta.subtitleMaxChars ?? fmt.subMax);
-  const planHash = createHash('sha256').update(JSON.stringify({ format: fmt.name, scenes: srcScenes.map(s => [s.src.from, s.src.intent, s.src.enter, typeof s.src.pattern === 'string' ? s.src.pattern : s.src.pattern?.kind ?? null, (s.src.beats ?? []).map((b: any) => [b?.at, b?.intent])]) })).digest('hex').slice(0, 16);
+  const planHash = createHash('sha256').update(JSON.stringify({ format: fmt.name, scenes: srcScenes.map(s => [s.src.from, s.src.intent, s.src.enter, [].concat(s.src.pattern ?? []).map((x: any) => (typeof x === 'string' ? x : x?.kind)), (s.src.beats ?? []).map((b: any) => [b?.at, b?.intent])]) })).digest('hex').slice(0, 16);
   tls.sort((a, b) => a.order - b.order);
   return { dir, meta, fmt, fps, al, duration, scenes, tls, erases, cams: camEvents, subs, issues, planHash };
 }
@@ -382,9 +398,10 @@ function describe(el: El): string {
   if (el.kind === 'figure') { const f = typeof s.figure === 'string' ? { pose: s.figure } : s.figure ?? {}; return `小人 ${el.id}${lab}[${s.pose ?? f.pose ?? 'stand'}/${s.face ?? f.face ?? 'happy'}]`; }
   if (el.kind === 'icon') return `图标 ${s.icon}${lab}`;
   if (el.kind === 'doodle') return `手绘件 ${s.doodle}${el.text ? `“${el.text}”` : ''}`;
-  if (el.kind === 'arrow') return `箭头 ${JSON.stringify(s.arrow).replace(/"/g, '')}`;
+  if (el.kind === 'arrow') return `箭头 ${JSON.stringify(s.arrow).replace(/"/g, '')}${s.label ? `“${s.label}”` : ''}`;
   if (el.kind === 'line') return `连线 ${JSON.stringify(s.line).replace(/"/g, '')}`;
   if (el.kind === 'mark') return `标记 ${s.mark}→${[].concat(s.target).join(',')}`;
+  if (el.kind === 'note') return `批注“${s.note}”→${s.target}`;
   if (el.kind === 'chart') return `${s.chart === 'bar' ? '柱状图' : '折线图'} ${el.id}`;
   if (el.kind === 'shape') return `形状 ${s.shape} ${el.id}${lab}`;
   return `图形 ${el.id}${lab}`;

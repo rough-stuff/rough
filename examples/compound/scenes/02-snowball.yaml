@@ -1,23 +1,45 @@
 from: "时间越长"
-intent: 一条越翘越高的曲线，像雪球越滚越快；最后把“本金”划掉，圈出“时间”。
+intent: 上半板：一条越翘越高的曲线，雪球沿着它越滚越大，关键点旁边批注倍数。下半板：小人指着两个词——“本金”被划掉，“时间”被圈出来。
 enter: pan
+pattern:
+  kind: trend
+  area: [10, 10, 940, 800]
+  unit: ""
+  points:
+    - { label: 第1年, value: 110 }
+    - { label: 第10年, value: 259 }
+    - { label: 第20年, value: 673 }
+    - { label: 第30年, value: 1745 }
 elements:
-  growth: { chart: line, data: [1, 1.2, 1.6, 2.3, 3.6, 6, 10], w: 800, h: 560, color: blue, highlight: { 6: red }, at: [480, 400] }
-  ball:   { shape: circle, size: 70, color: blue, fill: blue, at: [130, 500] }
-  me:     { figure: cheer, face: joy, size: 400, at: [810, 1010] }
-  base:   { text: "本金", size: 130, at: [160, 1010] }
-  time:   { text: "时间", size: 170, color: red, at: [530, 1010] }
+  ball:  { shape: circle, size: 60, color: blue, fill: blue, at: d1 }
+  n2:    { note: 2.6倍, target: d2, side: top, gap: 40, size: 48 }
+  n3:    { note: 6.7倍, target: d3, side: top, gap: 40, size: 48 }
+  n4:    { note: 17倍, target: d4, side: left, color: red, gap: 120, size: 68 }
+  me:    { figure: cheer, face: joy, size: 330, at: [820, 1050] }
+  base:  { text: "本金", size: 110, at: [170, 1060] }
+  time:  { text: "时间", size: 150, color: red, at: [500, 1060] }
 beats:
   - at: "时间越长"
-    intent: 画坐标轴和一条先平后陡的增长曲线
+    intent: 画坐标轴，线从第 1 年画到第 10 年，批注 2.6 倍
     do:
-      - draw: growth
+      - { step: axis }
+      - { step: to.1 }
+      - { step: to.2 }
+      - draw: n2
   - at: "这个雪球"
-    intent: 一个雪球沿着曲线滚上去，越滚越大
+    intent: 一个雪球出现在起点；线继续画到第 20 年，批注 6.7 倍
     do:
       - draw: ball
-      - { move: ball, along: growth, dur: 1.2 }
-      - { scale: ball, to: 2.4, dur: 1.2, with: prev }
+      - { step: to.3 }
+      - { move: ball, along: s3, with: prev, dur: 0.6 }
+      - draw: n3
+  - at: "滚得越快"
+    intent: 线猛地翘到第 30 年，雪球跟着滚上去并变大，批注 17 倍
+    do:
+      - { step: to.4 }
+      - { move: ball, along: s4, with: prev, dur: 0.7 }
+      - { scale: ball, to: 2.6, with: prev, dur: 0.7 }
+      - draw: n4
   - at: "所以复利"
     intent: 小人欢呼出场
     do:
@@ -28,7 +50,7 @@ beats:
       - draw: base
       - draw: { mark: cross, target: base }
   - at: "是时间"
-    intent: 写下红色的“时间”，圈起来强调
+    intent: 写下红色的“时间”，圈起来，小人指着它
     do:
       - draw: time
       - draw: { mark: circle, target: time, pad: 0 }

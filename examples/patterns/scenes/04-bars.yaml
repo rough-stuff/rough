@@ -5,6 +5,10 @@ pattern:
   area: ["8%", "5%", "67%", "90%"]
   items:
     - { label: 每人, value: 3800, cutTo: 1200, color: green }
+elements:
+  law:  { doodle: document, size: 200, at: ["84%", "22%"], label: 法定公式 }
+  cut:  { note: 议会砍的, target: n1, side: bottom, color: red }
 beats:
-  - { at: "按公式该发", intent: 画出底线和 3800 的柱子, do: [{ step: axis }, { step: bar.1 }] }
-  - { at: "最后只批了", intent: 上半截被擦掉，写上 1200, do: [{ step: cut.1 }] }
+  - { at: "按公式", intent: 右上角画出一份文件，标“法定公式”；画出底线, do: [{ draw: law }, { step: axis }] }
+  - { at: "该发三千八", intent: 画出 3800 的柱子, do: [{ step: bar.1 }] }
+  - { at: "最后只批了", intent: 上半截被擦掉，写上 1200, do: [{ step: cut.1 }, { draw: cut }] }

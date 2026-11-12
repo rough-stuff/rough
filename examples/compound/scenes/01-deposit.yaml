@@ -1,55 +1,72 @@
 from: "你存一百块"
-intent: 小人把一张 100 块塞进存钱罐，罐子每年吐出利息；第二年吐出的比第一年多一块，多出来的那一块是“利息的利息”。
+intent: 上半板：小人把 100 块存进存钱罐，年利率 10%。下半板：一张两行的小账——第 1 年 100 生出 10，这 10 滚进本金，第 2 年 110 生出 11，多出来的 1 被圈出来。
 elements:
-  me:    { figure: stand, face: happy, size: 560, at: [200, 370] }
-  bill:  { doodle: banknote, size: 230, at: me.handR, dx: 150, dy: -110 }
-  pig:   { doodle: piggy, size: 400, at: [690, 400], label: 存钱罐, labelSize: 56 }
-  rate:  { text: "10%", size: 130, color: red, above: pig, gap: 10 }
-  y1:    { text: "第1年", size: 76, color: gray, at: [60, 860], anchor: left }
-  c1:    { doodle: coin, size: 170, vars: { text: "10" }, rightOf: y1, gap: 70 }
-  y2:    { text: "第2年", size: 76, color: gray, below: y1, gap: 150 }
-  c2:    { doodle: coin, size: 170, vars: { text: "10" }, rightOf: y2, gap: 70 }
-  plus:  { text: "+1", size: 150, color: red, rightOf: c2, gap: 110 }
-  loop:  { arrow: [c1.right, plus.top], curve: -0.3, color: red, pad: 30 }
+  me:    { figure: stand, face: happy, size: 380, at: [150, 250] }
+  bill:  { doodle: banknote, size: 170, at: me.handR, dx: 120, dy: -80 }
+  pig:   { doodle: piggy, size: 330, at: [730, 250], label: 存钱罐 }
+  dep:   { arrow: [[330, 250], [540, 250]], label: 存入 }
+  rate:  { text: "10%", size: 110, color: red, above: pig, gap: 6 }
+  rateN: { note: 年利率, target: rate, side: left, gap: 40 }
+  rule:  { line: [[30, 560], [930, 560]], color: gray, rough: 1.5 }
+  y1:    { text: "第1年", size: 60, color: gray, at: [40, 690], anchor: left }
+  b1:    { text: "100", size: 84, rightOf: y1, gap: 50 }
+  m1:    { text: "×10%", size: 56, color: gray, rightOf: b1, gap: 26 }
+  e1:    { arrow: [[560, 690], [650, 690]] }
+  c1:    { doodle: coin, size: 150, vars: { text: "10" }, at: [760, 690] }
+  y2:    { text: "第2年", size: 60, color: gray, at: [40, 960], anchor: left }
+  b2:    { text: "110", size: 84, color: blue, rightOf: y2, gap: 50 }
+  m2:    { text: "×10%", size: 56, color: gray, rightOf: b2, gap: 26 }
+  e2:    { arrow: [[560, 960], [650, 960]] }
+  c2:    { doodle: coin, size: 150, vars: { text: "11" }, at: [760, 960] }
+  roll:  { arrow: [c1.bottom, b2.top], color: blue, label: 滚进本金 }
+  extra: { note: 多出的1是利息的利息, target: c2, side: bottom, color: red, gap: 60 }
 beats:
   - at: "你存一百块"
-    intent: 画出小人，和旁边的存钱罐
+    intent: 画出小人和存钱罐
     do:
       - draw: me
       - draw: pig
   - at: "年利率"
-    intent: 小人手里多了一张 100 块，递向存钱罐
+    intent: 小人递出一张 100 块，箭头指向存钱罐，标“存入”
     do:
       - draw: bill
       - { pose: me, to: give-right, with: prev }
+      - draw: dep
   - at: "百分之十"
-    intent: 钞票滑进存钱罐，罐子上方写下红色的 10%
+    intent: 钞票滑进存钱罐；罐子上方写红色 10%，旁边批注“年利率”
     do:
       - { move: bill, to: pig.top, dur: 0.4 }
       - { hide: bill }
       - { pose: me, to: stand, with: prev }
       - draw: rate
-      - { nod: pig, with: prev }
+      - draw: rateN
   - at: "第一年"
-    intent: 第 1 年：罐子吐出一枚 10 块的硬币
+    intent: 画一条分隔线，下面开始记账：第 1 年，本金 100
     do:
-      - draw: y1
-      - draw: c1
+      - draw: rule
+      - draw: [y1, b1]
+  - at: "你赚了十块"
+    intent: 写上 ×10%，箭头指向一枚 10 块的硬币
+    do:
+      - draw: [m1, e1, c1]
   - at: "第二年呢"
-    intent: 第 2 年：小人歪头想；先画出同样一枚 10 块
+    intent: 第 2 年；小人歪头想
     do:
       - { pose: me, to: think, face: thinking }
       - draw: y2
-      - draw: c2
+  - at: "不是十块"
+    intent: 去年那枚硬币画一条蓝箭头滚进本金：第 2 年的本金变成 110
+    do:
+      - draw: roll
+      - draw: [b2, m2]
   - at: "是十一块"
-    intent: 硬币旁边多出一个红色的 +1，小人吃惊
+    intent: 箭头指向一枚 11 块的硬币，小人吃惊
     do:
-      - draw: plus
+      - draw: [e2, c2]
       - { face: me, to: surprised, with: prev }
-      - { pulse: plus }
   - at: "去年的利息"
-    intent: 从第 1 年的硬币画一条红箭头指向 +1：这一块是利息生出来的
+    intent: 把 11 圈起来，下面批注：多出的 1 是利息的利息
     do:
-      - draw: loop
-      - { pose: me, to: point-down-right, face: happy }
-      - draw: { mark: circle, target: plus, pad: 4 }
+      - draw: { mark: circle, target: c2, pad: 2 }
+      - draw: extra
+      - { pose: me, to: point-down-right, face: happy, with: prev }

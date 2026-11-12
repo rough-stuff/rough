@@ -25,7 +25,9 @@
 | `audio` | 无 | 配音文件。没有则成片只有落笔音效 |
 | `subtitles` | `true` | 字幕 |
 | `subtitleMaxChars` | 竖 13 / 横 24 | 每行字幕最多字数 |
-| `sfx` / `sfxVolume` | `true` / 1 | 落笔音效及音量倍数。默认已经很轻，是垫在配音下面的一层沙沙声 |
+| `sfx` | `true` | 落笔音效。`true`：稀疏模式，每落一次笔一声很轻的短响，两声之间至少隔 0.9 秒；`full`：更密；`false`：关 |
+| `sfxVolume` | 1 | 音效音量倍数 |
+| `sfxSamples` | 无 | 用真实录音替换合成音：`{ pen: sfx/pen.wav, mark: sfx/circle.wav, erase: sfx/wipe.wav }`（16-bit WAV，路径相对项目目录）。合成音不如录音自然，有条件就换 |
 | `pen` | `false` | 显示一个极小的笔尖 |
 | `tail` | 0.6 | 口播结束后多留几秒 |
 
@@ -85,6 +87,8 @@ beats:
 - 给角色写 `id`，之后就能在自己的动作里引用它（换姿势、圈起来、推镜头）。没写 id 的，用手法自动起的名字（`hj check` 报错信息里会列出）。
 - `{ step: 名字 }` 上可以加 `at`、`with: prev`、`delay`，作用于这一步的第一个动作。
 - `area: [x, y, w, h]` 让手法只占画板的一部分（可用百分比），剩下的地方放自己的元素。
+- **一块板放多种手法**：`pattern` 写成列表，每种都写 `area`。这时步骤名要带前缀 `<kind>.<步骤>`（如 `cycle.go.1`、`bars.cut.1`）；同一种手法用两次时给它们各写一个 `name` 当前缀。
+- `cycle` 的 `flows`、`chain` 的 `links` 给每条箭头写小字；`timeline` 的事件可以带 `note`。
 - 手法展开后就是普通元素。位置不满意时，可以把 `hj check` 通过后的那个元素在 `elements` 里重新定义一个，或者干脆不用手法、照着它的布局自己摆。
 
 ## 口播锚点
@@ -171,7 +175,8 @@ beats:
 | 手绘件 | `{ doodle: banknote, size: 200, vars: { text: "100" } }` | **首选**。47 个，和小人同一画风：`hj assets doodles` 查看；`vars` 是该手绘件开放的可调项 |
 | 图标 | `{ icon: building-bank, size: 280 }` | 兜底。5000+ 个线条图标，`hj assets icons <英文关键词>` 搜索。造型偏“界面图标”，手绘件里有的就别用它 |
 | 形状 | `{ shape: rect, w: 300, h: 180 }` | `rect ellipse circle diamond triangle cloud` |
-| 箭头 | `{ arrow: [a, b], curve: 0.2 }` | 起终点可以是元素 id（自动停在边缘外）、`"id.锚点"` 或 `[x, y]`。`curve` 弯曲程度（正负决定朝向）、`both: true` 双向、`head` 箭头大小、`pad` 离元素的距离 |
+| 批注 | `{ note: 写进州宪法, target: safe, side: right }` | 一行小字贴在目标旁边，用细线牵过去。`side`: `right`（默认）`left top bottom`；`gap` 距离；`size` 默认 40；默认灰色。用来补数字、名字、出处 |
+| 箭头 | `{ arrow: [a, b], curve: 0.2, label: 交税 }` | 起终点可以是元素 id（自动停在边缘外）、`"id.锚点"` 或 `[x, y]`。`curve` 弯曲程度（正负决定朝向）、`both: true` 双向、`head` 箭头大小、`pad` 离元素的距离、`label` 写在箭头中段的小字（`labelSize` 默认 42） |
 | 连线 | `{ line: [a, b] }` | 同箭头，没有箭头尖 |
 | 标记 | `{ mark: circle, target: x }` | `circle box underline strike cross highlight check burst`。`target` 可以是数组；`pad` 调松紧；默认红色 |
 | 图表 | `{ chart: bar, data: [3800, 1200], labels: [法定, 实发], values: true }` | `bar` / `line`。`highlight: 1` 或 `highlight: {1: red}` 标红某项；`unit` 数值后缀；`w`、`h` |
@@ -207,4 +212,4 @@ parts:                       # 按书写顺序排列，坐标在 box 内
 | 级别 | 情况 |
 |---|---|
 | 错误 | 锚点在口播里找不到；引用了不存在的元素；缺 `intent`；板书照抄口播 ≥7 字；元素整个在画板外 |
-| 警告 | 画得太赶（超过自然速度 2.5 倍）；一拍的动作拖过了下一拍；画面静止超过 4.2 秒；元素重叠、出界；画面太空；纯文字场景；板书太多；弹出/淡入用得太多；卡点落在时间不可靠的字上；锚点有歧义 |
+| 警告 | 画得太赶（超过自然速度 2.5 倍）；一拍的动作拖过了下一拍；画面静止超过 4.2 秒；元素重叠、出界；画面太空；纯文字场景；信息密度偏低（讲得久、东西少）；板书太多；字号太小；弹出/淡入用得太多；卡点落在时间不可靠的字上；锚点有歧义 |
