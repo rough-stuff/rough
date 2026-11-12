@@ -19,11 +19,17 @@ export interface El {
   path?: number[];            // 箭头/线的走向，可作移动轨迹
   figure?: { spec: FigureSpec; dx: number; dy: number; labelStrokes: Stroke[]; prop?: { strokes: Stroke[]; hand: 'handL' | 'handR' } };
   rebuild?: (pose: Pose, face: string) => Stroke[];
+  /** 允许压在哪些元素上（它是明确叠放在这些元素上的，如气泡里的内容） */
+  over: Set<string>;
+  /** 参与避让的占位框（批注只算文字，不算那条细线） */
+  solid: Box;
+  /** 被引擎自动挪动的距离 */
+  nudged?: Pt;
 }
 
 export const KINDS = ['text', 'figure', 'icon', 'doodle', 'parts', 'shape', 'arrow', 'line', 'mark', 'chart', 'note'] as const;
 const POS_KEYS = ['at', 'rightOf', 'leftOf', 'above', 'below'];
-const COMMON = ['id', 'at', 'rightOf', 'leftOf', 'above', 'below', 'gap', 'align', 'anchor', 'dx', 'dy', 'size', 'color', 'label', 'labelSize', 'rough', 'w', 'h', 'fill', 'fillStyle', 'fillAlpha', 'fillGap', 'pen'];
+const COMMON = ['id', 'at', 'rightOf', 'leftOf', 'above', 'below', 'gap', 'align', 'anchor', 'dx', 'dy', 'size', 'color', 'label', 'labelSize', 'rough', 'w', 'h', 'fill', 'fillStyle', 'fillAlpha', 'fillGap', 'pen', 'near', 'overlap'];
 const FIELDS: Record<string, string[]> = {
   text: ['lineGap'], figure: ['face', 'wear', 'accent', 'pose', 'carry'], icon: [], doodle: ['vars'], parts: ['box'],
   shape: [], arrow: ['curve', 'head', 'both', 'pad'], line: ['curve', 'pad'], mark: ['target', 'pad'],
@@ -75,7 +81,71 @@ export function buildParts(parts: any[], k: number, base: Style, vars: Record<st
   return { strokes: out, text };
 }
 
-export interface BuildCtx { scene: string; fmt: Format; els: Map<string, El>; projectDir?: string }
+export interface BuildCtx {
+  scene: string; fmt: Format; els: Map<string, El>; projectDir?: string;
+  /** 每个元素在画面上存在的时间段 [出现, 消失]。有它才启用自动避让 */
+  life?: Map<string, [number, number]>;
+  note?: (where: string, msg: string) => void;
+}
+
+// ── 自动避让：手绘的板面上东西不互相压着。这里是底层机制，不靠写分镜的人自己看 ──
+const NON_SOLID = new Set(['mark', 'arrow', 'line']);
+/** 和 el 同时存在、且不允许被它压住的元素的占位框 */
+function obstacles(ctx: BuildCtx, el: { id: string; over: Set<string>; src: any }, skip: string[] = []): Box[] {
+  if (!ctx.life || el.src?.overlap === true) return [];
+  const me = ctx.life.get(el.id);
+  if (!me) return [];
+  const out: Box[] = [];
+  for (const o of ctx.els.values()) {
+    if (o.id === el.id || NON_SOLID.has(o.kind) || o.src?.overlap === true || skip.includes(o.id)) continue;
+    if (el.over.has(o.id) || o.over.has(el.id)) continue;
+    const lf = ctx.life.get(o.id);
+    if (!lf || Math.max(me[0], lf[0]) >= Math.min(me[1], lf[1])) continue;
+    out.push(o.solid);
+  }
+  return out;
+}
+/** b（外扩 pad）是否压到任何一个障碍。两个方向都重叠超过 8px 才算，紧挨着不算 */
+function hits(b: Box, obs: Box[], pad = 0): boolean {
+  for (const o of obs) {
+    const ox = Math.min(b.x + b.w + pad, o.x + o.w) - Math.max(b.x - pad, o.x), oy = Math.min(b.y + b.h + pad, o.y + o.h) - Math.max(b.y - pad, o.y);
+    if (ox > 8 && oy > 8) return true;
+  }
+  return false;
+}
+const inBoard = (b: Box, B: Box, m = 0) => b.x >= -m && b.y >= -m && b.x + b.w <= B.w + m && b.y + b.h <= B.h + m;
+/** 离原位最近的空位：一圈一圈往外找 */
+function nearestFree(b: Box, obs: Box[], B: Box): Pt | null {
+  for (let rad = 24; rad <= 720; rad += 24) {
+    const n = Math.max(12, Math.round(rad / 9));
+    let best: Pt | null = null;
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2, dx = Math.cos(a) * rad, dy = Math.sin(a) * rad * 0.9;
+      const c = { x: b.x + dx, y: b.y + dy, w: b.w, h: b.h };
+      if (inBoard(c, B, 4) && !hits(c, obs, 14)) { best = [dx, dy]; break; }
+    }
+    if (best) return best;
+  }
+  return null;
+}
+/** 没写位置的元素：像人在板上找地方写一样，从上到下、从左到右找第一块放得下的空地；写了 near 就找离它最近的 */
+function autoSpot(b: Box, obs: Box[], B: Box, near?: Pt): Pt | null {
+  let best: Pt | null = null, bestScore = Infinity;
+  for (let y = 10; y + b.h <= B.h - 6; y += 26) for (let x = 14; x + b.w <= B.w - 10; x += 26) {
+    const c = { x, y, w: b.w, h: b.h };
+    if (hits(c, obs, 22)) continue;
+    const score = near ? Math.hypot(x + b.w / 2 - near[0], y + b.h / 2 - near[1]) : y * 1.6 + x * 0.35;
+    if (score < bestScore) { bestScore = score; best = [x - b.x, y - b.y]; }
+  }
+  return best;
+}
+function shiftEl(el: El, dx: number, dy: number) {
+  translateStrokes(el.strokes, dx, dy);
+  if (el.path) for (let i = 0; i < el.path.length; i += 2) { el.path[i] += dx; el.path[i + 1] += dy; }
+  for (const k of Object.keys(el.anchors)) el.anchors[k] = [el.anchors[k][0] + dx, el.anchors[k][1] + dy];
+  if (el.figure) { el.figure.dx += dx; el.figure.dy += dy; }
+  el.box = boxOf(el.strokes);
+}
 
 function parseRef(ctx: BuildCtx, ref: any, where: string): { pt: Pt; el?: El; explicit: boolean } {
   if (Array.isArray(ref)) return { pt: [num(ref[0], ctx.fmt.board.w, where), num(ref[1], ctx.fmt.board.h, where)], explicit: true };
@@ -111,7 +181,7 @@ export function buildElement(ctx: BuildCtx, id: string, src: any): El {
   const B = ctx.fmt.board;
   const seed = hash(ctx.scene + '/' + id);
   const st: Style = { color: color(src.color), w: src.pen ?? THEME.pen, rough: src.rough ?? THEME.rough, seed, fill: src.fill ? color(src.fill) : undefined, fillStyle: src.fillStyle, fillAlpha: src.fillAlpha, fillGap: src.fillGap };
-  const el: El = { id, scene: ctx.scene, kind, src, strokes: [], box: { x: 0, y: 0, w: 0, h: 0 }, anchors: {} };
+  const el: El = { id, scene: ctx.scene, kind, src, strokes: [], box: { x: 0, y: 0, w: 0, h: 0 }, anchors: {}, over: new Set(), solid: { x: 0, y: 0, w: 0, h: 0 } };
   let placed = false; // arrow/line/mark 直接画在场景坐标里
 
   if (kind === 'text') {
@@ -128,7 +198,7 @@ export function buildElement(ctx: BuildCtx, id: string, src: any): El {
     el.strokes = r.strokes; el.anchors = r.anchors; el.figure = { spec, dx: 0, dy: 0, labelStrokes: [] };
     if (src.carry) { // 手里拿的东西：跟着手走
       const { hand, ...psrc } = src.carry;
-      const prop = buildElement({ ...ctx, els: new Map() }, id + '.carry', { size: Math.round(spec.size * 0.28), ...psrc, at: [0, 0] });
+      const prop = buildElement({ ...ctx, els: new Map(), life: undefined }, id + '.carry', { size: Math.round(spec.size * 0.28), ...psrc, at: [0, 0] });
       const h = hand === 'left' ? 'handL' : 'handR', pc = prop.anchors.center;
       el.figure.prop = { strokes: cloneStrokes(prop.strokes, -pc[0], -pc[1]), hand: h };
       el.strokes.push(...cloneStrokes(el.figure.prop.strokes, r.anchors[h][0], r.anchors[h][1]));
@@ -163,8 +233,15 @@ export function buildElement(ctx: BuildCtx, id: string, src: any): El {
     const pad = src.pad ?? 18;
     const p0 = a.el && !a.explicit ? exitPoint(a.el.box, pad, a.pt, b.pt) : a.pt;
     const p1 = b.el && !b.explicit ? exitPoint(b.el.box, pad, b.pt, a.pt) : b.pt;
-    const dx = p1[0] - p0[0], dy = p1[1] - p0[1], L = Math.hypot(dx, dy) || 1, bow = (src.curve ?? 0) * L;
-    const mid: Pt = [(p0[0] + p1[0]) / 2 - (dy / L) * bow, (p0[1] + p1[1]) / 2 + (dx / L) * bow];
+    const dx = p1[0] - p0[0], dy = p1[1] - p0[1], L = Math.hypot(dx, dy) || 1;
+    const midOf = (cv: number): Pt => [(p0[0] + p1[0]) / 2 - (dy / L) * cv * L, (p0[1] + p1[1]) / 2 + (dx / L) * cv * L];
+    // 线不从别的东西身上穿过去：按给定的弯度试，穿了就换一个弯度绕开
+    const blockers = obstacles(ctx, el, [a.el?.id ?? '', b.el?.id ?? '']);
+    const crosses = (cv: number) => { const m = midOf(cv); for (let i = 1; i < 12; i++) { const t = i / 12, u = 1 - t, c1x = 2 * m[0] - (p0[0] + p1[0]) / 2, c1y = 2 * m[1] - (p0[1] + p1[1]) / 2; const x = u * u * p0[0] + 2 * u * t * c1x + t * t * p1[0], y = u * u * p0[1] + 2 * u * t * c1y + t * t * p1[1]; if (hits({ x: x - 5, y: y - 5, w: 10, h: 10 }, blockers, -2)) return true; } return false; };
+    const want = src.curve ?? 0;
+    const curveUsed = [want, 0.22, -0.22, 0.36, -0.36, 0.5, -0.5].find(cv => !crosses(cv)) ?? want;
+    if (curveUsed !== want) ctx.note?.(where, `连线会从别的元素身上穿过，已自动改成弯度 ${curveUsed} 绕开`);
+    const bow = curveUsed * L, mid = midOf(curveUsed);
     el.strokes = bow ? R.curve([p0, mid, p1], { ...st, rough: Math.min(st.rough, 0.6) }) : R.line(p0[0], p0[1], p1[0], p1[1], st);
     el.path = (el.strokes[0] as any).pts.slice();
     if (kind === 'arrow') {
@@ -178,6 +255,9 @@ export function buildElement(ctx: BuildCtx, id: string, src: any): El {
       const nx = -dy / L, ny = dx / L, side = bow >= 0 ? 1 : -1, off = Math.abs(nx) * t.w / 2 + Math.abs(ny) * t.h / 2 + 24;
       let lx = mid[0] + nx * side * off, ly = mid[1] + ny * side * off;
       if (!bow && Math.abs(nx) < 0.3) ly = mid[1] - off; // 水平直线：字写在上面
+      // 小字压到别的东西就换到线的另一侧
+      const lblObs = obstacles(ctx, el), lb = (x: number, y: number) => ({ x: x - t.w / 2, y: y - t.h / 2, w: t.w, h: t.h });
+      if (hits(lb(lx, ly), lblObs, 6)) { const ax = 2 * mid[0] - lx, ay = 2 * mid[1] - ly; if (!hits(lb(ax, ay), lblObs, 6)) { lx = ax; ly = ay; } }
       translateStrokes(t.strokes, lx - t.w / 2, ly - t.h / 2);
       el.strokes.push(...t.strokes); el.text = String(src.label); el.missing = t.missing;
     }
@@ -187,14 +267,26 @@ export function buildElement(ctx: BuildCtx, id: string, src: any): El {
     const tg = parseRef(ctx, src.target, where);
     if (!tg.el) throw new SrcError(where, 'note 需要 target: 元素 id（批注贴在谁旁边）');
     const t = textStrokes(String(src.note), { size: src.size ?? 40, color: color(src.color, THEME.colors.gray), align: 'left' });
-    const b = tg.el.box, gap = src.gap ?? 54, side = src.side ?? 'right';
-    if (!['right', 'left', 'top', 'bottom'].includes(side)) throw new SrcError(where, 'note 的 side 只能是 right left top bottom');
+    const b = tg.el.box, gap = src.gap ?? 54, sideWant = src.side ?? 'right';
+    if (!['right', 'left', 'top', 'bottom'].includes(sideWant)) throw new SrcError(where, 'note 的 side 只能是 right left top bottom');
     const cx = b.x + b.w / 2, cy = b.y + b.h / 2;
-    const tx = side === 'right' ? b.x + b.w + gap : side === 'left' ? b.x - gap - t.w : cx - t.w / 2;
-    const ty = side === 'top' ? b.y - gap - t.h : side === 'bottom' ? b.y + b.h + gap : cy - t.h / 2;
+    const spot = (sd: string): Pt => [sd === 'right' ? b.x + b.w + gap : sd === 'left' ? b.x - gap - t.w : cx - t.w / 2, sd === 'top' ? b.y - gap - t.h : sd === 'bottom' ? b.y + b.h + gap : cy - t.h / 2];
+    // 想放的那一侧放不下（出界或压到东西）就换一侧
+    const nObs = obstacles(ctx, el, [tg.el.id]);
+    const okSide = (sd: string) => { const q = spot(sd), bx = { x: q[0], y: q[1], w: t.w, h: t.h }; return inBoard(bx, B, 2) && !hits(bx, nObs, 8); };
+    const side = [sideWant, 'right', 'left', 'bottom', 'top'].find(okSide) ?? sideWant;
+    let [tx, ty] = spot(side);
+    if (ctx.life && !okSide(side)) { // 四边都放不下：就近找一块空地，细线照样牵回去
+      tx = Math.min(Math.max(tx, 0), B.w - t.w); ty = Math.min(Math.max(ty, 0), B.h - t.h);
+      const sp = hits({ x: tx, y: ty, w: t.w, h: t.h }, [...nObs, tg.el.solid], 8) ? nearestFree({ x: tx, y: ty, w: t.w, h: t.h }, [...nObs, tg.el.solid], B) : [0, 0] as Pt;
+      if (sp) { tx += sp[0]; ty += sp[1]; }
+    }
+    el.solid = { x: tx, y: ty, w: t.w, h: t.h };
     translateStrokes(t.strokes, tx, ty);
-    const from: Pt = side === 'right' ? [tx - 10, ty + t.h / 2] : side === 'left' ? [tx + t.w + 10, ty + t.h / 2] : side === 'top' ? [cx, ty + t.h + 8] : [cx, ty - 8];
-    const to: Pt = side === 'right' ? [b.x + b.w + 8, cy] : side === 'left' ? [b.x - 8, cy] : side === 'top' ? [cx, b.y - 8] : [cx, b.y + b.h + 8];
+    // 细线从文字朝向目标的那条边出发，到目标最近的边
+    const tcx = tx + t.w / 2, tcy = ty + t.h / 2, horiz = Math.abs(tcx - cx) / (b.w + t.w) > Math.abs(tcy - cy) / (b.h + t.h);
+    const from: Pt = horiz ? [tcx < cx ? tx + t.w + 10 : tx - 10, tcy] : [tcx, tcy < cy ? ty + t.h + 8 : ty - 8];
+    const to: Pt = horiz ? [tcx < cx ? b.x - 8 : b.x + b.w + 8, Math.min(Math.max(tcy, b.y + 6), b.y + b.h - 6)] : [Math.min(Math.max(tcx, b.x + 6), b.x + b.w - 6), tcy < cy ? b.y - 8 : b.y + b.h + 8];
     el.strokes = [...R.line(from[0], from[1], to[0], to[1], { ...st, color: color(src.color, THEME.colors.gray), w: 3.5, rough: 0.8 }), ...t.strokes];
     el.text = String(src.note); el.missing = t.missing;
     placed = true;
@@ -235,18 +327,21 @@ export function buildElement(ctx: BuildCtx, id: string, src: any): El {
 
   if (!placed) {
     const keys = POS_KEYS.filter(k => k in src);
-    if (keys.length !== 1) throw new SrcError(where, `需要且只能有一种定位方式：at / rightOf / leftOf / above / below（现在有 ${keys.length} 种）`);
+    if (keys.length > 1) throw new SrcError(where, `只能有一种定位方式：at / rightOf / leftOf / above / below（现在有 ${keys.length} 种）。也可以都不写，让引擎自动找空位`);
     const b = el.box, gap = src.gap ?? 40;
-    let tx = 0, ty = 0;
-    if ('at' in src) {
+    let tx = 0, ty = 0, auto = false;
+    if (!keys.length) { auto = true; tx = B.w / 2 - (b.x + b.w / 2); ty = B.h / 2 - (b.y + b.h / 2); }
+    else if ('at' in src) {
       const r = parseRef(ctx, src.at, where);
       const an = src.anchor ?? 'center';
       const ax = /left/i.test(an) ? b.x : /right/i.test(an) ? b.x + b.w : b.x + b.w / 2;
       const ay = /top/i.test(an) ? b.y : /bottom/i.test(an) ? b.y + b.h : b.y + b.h / 2;
       tx = r.pt[0] - ax; ty = r.pt[1] - ay;
+      if (r.el) { el.over.add(r.el.id); for (const o of r.el.over) el.over.add(o); } // 明确叠放在它上面
     } else {
       const key = keys[0], ref = ctx.els.get(String(src[key]));
       if (!ref) throw new SrcError(where, `${key} 引用了不存在（或定义在它后面）的元素 "${src[key]}"`);
+      for (const o of ref.over) el.over.add(o); // 挨着气泡里的东西摆，自己也在气泡里
       const rb = ref.box, al = src.align ?? 'center';
       const alignX = () => (al === 'start' ? rb.x - b.x : al === 'end' ? rb.x + rb.w - b.x - b.w : rb.x + rb.w / 2 - b.x - b.w / 2);
       const alignY = () => (al === 'start' ? rb.y - b.y : al === 'end' ? rb.y + rb.h - b.y - b.h : rb.y + rb.h / 2 - b.y - b.h / 2);
@@ -256,18 +351,35 @@ export function buildElement(ctx: BuildCtx, id: string, src: any): El {
       else { ty = rb.y - gap - b.y - b.h; tx = alignX(); }
     }
     tx += src.dx ?? 0; ty += src.dy ?? 0;
-    translateStrokes(el.strokes, tx, ty);
-    if (el.path) for (let i = 0; i < el.path.length; i += 2) { el.path[i] += tx; el.path[i + 1] += ty; }
-    for (const k of Object.keys(el.anchors)) el.anchors[k] = [el.anchors[k][0] + tx, el.anchors[k][1] + ty];
-    el.box = boxOf(el.strokes);
+    if (el.figure) { el.figure.dx = 0; el.figure.dy = 0; el.figure.labelStrokes = labelStrokes; }
+    shiftEl(el, tx, ty);
+    if (ctx.life) {
+      const obs = obstacles(ctx, el);
+      if (auto) {
+        const near = src.near != null ? parseRef(ctx, src.near, where).pt : undefined;
+        const sp = autoSpot(el.box, obs, B, near);
+        if (sp) shiftEl(el, sp[0], sp[1]); else ctx.note?.(where, '板上已经没有放得下它的空地了（没写位置，由引擎自动找空位）。擦掉一些旧内容、缩小它，或换一块板');
+      } else {
+        // 出了画板就拉回来；压到同时存在的东西就挪到最近的空位
+        const bx = el.box;
+        if (!inBoard(bx, B) && bx.w <= B.w && bx.h <= B.h) {
+          const cx = Math.min(Math.max(bx.x, 0), B.w - bx.w) - bx.x, cy = Math.min(Math.max(bx.y, 0), B.h - bx.h) - bx.y;
+          shiftEl(el, cx, cy); el.nudged = [cx, cy];
+        }
+        if (hits(el.box, obs)) {
+          const sp = nearestFree(el.box, obs, B);
+          if (sp) { shiftEl(el, sp[0], sp[1]); el.nudged = [(el.nudged?.[0] ?? 0) + sp[0], (el.nudged?.[1] ?? 0) + sp[1]]; }
+        }
+        if (el.nudged && Math.hypot(el.nudged[0], el.nudged[1]) > 30) ctx.note?.(where, `按你写的位置它会${hits({ x: el.box.x - el.nudged[0], y: el.box.y - el.nudged[1], w: el.box.w, h: el.box.h }, obs) ? '压到别的元素' : '超出画板'}，已自动挪开 (${el.nudged[0].toFixed(0)}, ${el.nudged[1].toFixed(0)})。想自己定位置就改它的坐标；确实要叠放就写 overlap: true`);
+      }
+    }
     if (el.figure) {
-      el.figure.dx = tx; el.figure.dy = ty; el.figure.labelStrokes = labelStrokes;
       const fg = el.figure;
       el.rebuild = (pose, face) => { const r = figureStrokes({ ...fg.spec, pose, face }); translateStrokes(r.strokes, fg.dx, fg.dy); return [...r.strokes, ...(fg.prop ? cloneStrokes(fg.prop.strokes, r.anchors[fg.prop.hand][0] + fg.dx, r.anchors[fg.prop.hand][1] + fg.dy) : []), ...fg.labelStrokes]; };
     }
   } else if (src.dx || src.dy) { translateStrokes(el.strokes, src.dx ?? 0, src.dy ?? 0); el.box = boxOf(el.strokes); }
   setAnchors(el);
-  void B;
+  if (kind !== 'note') el.solid = el.box;
   return el;
 }
 

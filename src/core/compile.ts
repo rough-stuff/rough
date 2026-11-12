@@ -4,7 +4,7 @@ import { join, basename } from 'node:path';
 import { createHash } from 'node:crypto';
 import YAML from 'yaml';
 import { loadAlignment, resolveAnchor, buildSubtitles, type Alignment, type SubLine } from './alignment';
-import { buildElement, SrcError, KINDS, type El } from './elements';
+import { buildElement, SrcError, KINDS, type El, type BuildCtx } from './elements';
 import { POSES, FACES, type Pose } from './figure';
 import { FORMATS, THEME, type Format } from './theme';
 import { type Pt, type Box, unionBox, polyLen } from './strokes';
@@ -119,7 +119,9 @@ export function compile(dir: string): Compiled {
     // ── 元素 ──
     const els = new Map<string, El>();
     const local = new Map<string, TL>();
-    const ctx = { scene: id, fmt, els, projectDir: dir };
+    const life = new Map<string, [number, number]>();
+    const pending: [string, any][] = [];
+    const ctx: BuildCtx = { scene: id, fmt, els, projectDir: dir, life, note: (w, m) => issues.push({ level: 'info', where: w.replace(`场景 ${id}`, file), msg: m }) };
     const addEl = (eid: string, esrc: any): TL | null => {
       if (els.has(eid)) { err(`${file} / 元素 ${eid}`, 'id 重复了'); return local.get(eid)!; }
       try {
@@ -158,13 +160,13 @@ export function compile(dir: string): Compiled {
             if (v && typeof v === 'object') return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, fix(x, k)]));
             return v;
           };
-          for (const [eid, esrc] of out.elements) { const nid = ren.get(eid) ?? eid; addEl(nid, fix(esrc)); fromPattern.add(nid); }
+          for (const [eid, esrc] of out.elements) { const nid = ren.get(eid) ?? eid; pending.push([nid, fix(esrc)]); fromPattern.add(nid); }
           for (const [sn, acts] of Object.entries(out.steps)) { const fixed = fix(acts); steps[`${name}.${sn}`] = fixed; if (!multi) steps[sn] = fixed; }
         } catch (e: any) { if (e instanceof SrcError) err(file, e.message); else throw e; }
       });
     }
     if (src.elements && typeof src.elements !== 'object') err(file, 'elements 应该是 "id: 定义" 的映射');
-    for (const [eid, esrc] of Object.entries(src.elements ?? {})) addEl(eid, esrc);
+    for (const [eid, esrc] of Object.entries(src.elements ?? {})) pending.push([eid, esrc]);
 
     // ── 节拍 ──
     const beats: any[] = Array.isArray(src.beats) ? src.beats : [];
@@ -180,6 +182,39 @@ export function compile(dir: string): Compiled {
         return { t: r.time - (b.lead ?? 0), shaky: r.shaky };
       } catch (e: any) { err(where, e.message); return { t: NaN, shaky: false }; }
     });
+    // 把 {step: 名字} 换成手法给出的那组动作；写在 step 上的 at/with/delay 作用于这组动作的第一个
+    const expand = (list: any, where?: string): any[] => {
+      const acts: any[] = [];
+      for (const a of Array.isArray(list) ? list : []) {
+        if (a && typeof a === 'object' && 'step' in a) {
+          const st = steps[String(a.step)];
+          if (!st) { if (where) err(where, `没有叫 "${a.step}" 的步骤。${Object.keys(steps).length ? '本场景可用：' + Object.keys(steps).join(' ') : '本场景没有使用表现手法（pattern）'}`); continue; }
+          st.forEach((x, i) => { const { step: _s, ...rest } = a; void _s; acts.push(i === 0 ? { ...x, ...rest } : { ...x }); });
+        } else acts.push(a);
+      }
+      return acts;
+    };
+    // 预扫一遍节拍：每个元素什么时候出现、什么时候被擦掉。只有同时在板上的元素才需要互相避让
+    beats.forEach((b, bi) => {
+      const bt = beatTimes[bi].t;
+      if (Number.isNaN(bt)) return;
+      expand(b?.do).forEach((a, ai) => {
+        if (!a || typeof a !== 'object') return;
+        const verb = ['draw', 'pop', 'fade', 'erase', 'hide'].find(v => v in a);
+        if (!verb) return;
+        const tgs: any[] = Array.isArray(a[verb]) ? a[verb] : [a[verb]];
+        tgs.forEach((tg, ti) => {
+          if (verb === 'erase' || verb === 'hide') {
+            if (tg === 'all') { for (const lf of life.values()) if (lf[1] === Infinity && lf[0] < bt) lf[1] = bt; }
+            else if (typeof tg === 'string' && life.has(tg)) life.get(tg)![1] = bt;
+          } else {
+            const eid = tg && typeof tg === 'object' ? String(tg.id ?? `_${bi + 1}_${ai + 1}${ti ? '_' + ti : ''}`) : String(tg);
+            if (!life.has(eid)) life.set(eid, [bt, Infinity]);
+          }
+        });
+      });
+    });
+    for (const [eid, esrc] of pending) addEl(eid, esrc);
     let pos = new Map<string, Pt>(); // 元素当前位移
     const poseNow = new Map<string, { pose: Pose; face: string }>();
     let lastEnd = t0;
@@ -196,15 +231,7 @@ export function compile(dir: string): Compiled {
       const beat: CBeat = { at: b.at, t: bt, tEnd: next, intent: String(b.intent ?? ''), actions: [], say: endUnit.map(u => u.display).join(''), shaky: beatTimes[bi].shaky, compress: 1 };
       scene.beats.push(beat);
       if (!beat.intent) err(where, '缺少 intent：用一句人话说明这一拍画面上发生什么');
-      // 把 {step: 名字} 换成手法给出的那组动作；写在 step 上的 at/with/delay 作用于这组动作的第一个
-      const acts: any[] = [];
-      for (const a of Array.isArray(b.do) ? b.do : []) {
-        if (a && typeof a === 'object' && 'step' in a) {
-          const st = steps[String(a.step)];
-          if (!st) { err(where, `没有叫 "${a.step}" 的步骤。${Object.keys(steps).length ? '本场景可用：' + Object.keys(steps).join(' ') : '本场景没有使用表现手法（pattern）'}`); continue; }
-          st.forEach((x, i) => { const { step: _s, ...rest } = a; void _s; acts.push(i === 0 ? { ...x, ...rest } : { ...x }); });
-        } else acts.push(a);
-      }
+      const acts = expand(b.do, where);
       if (!acts.length) warn(where, '这一拍没有动作（do 为空）');
 
       // 展开动作

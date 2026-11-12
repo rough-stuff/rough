@@ -119,7 +119,7 @@ export const PATTERNS: Record<string, Pattern> = {
         const k = i + 1, x = A.x + slot * (i + 0.5), col = it.color ?? 'blue', keep = it.cutTo != null ? +it.cutTo : +it.value;
         E.push([`b${k}`, { shape: 'rect', w: r(bw), h: r(H(keep)), at: [r(x), r(base - H(keep) / 2)], color: col, fill: col }]);
         const draw = [`b${k}`];
-        if (it.cutTo != null) { E.push([`b${k}top`, { shape: 'rect', w: r(bw), h: r(H(it.value) - H(keep)), at: [r(x), r(base - H(keep) - (H(it.value) - H(keep)) / 2)], color: col, fill: col }]); draw.push(`b${k}top`); }
+        if (it.cutTo != null) { E.push([`b${k}top`, { shape: 'rect', w: r(bw), h: r(H(it.value) - H(keep)), at: [r(x), r(base - H(keep) - (H(it.value) - H(keep)) / 2)], color: col, fill: col, overlap: true }]); draw.push(`b${k}top`); }
         E.push([`v${k}`, { text: `${it.value}${unit}`, size: r(ts), color: col, at: [r(x), r(base - H(it.value) - ts * 0.75)] }]);
         if (it.label) E.push([`t${k}`, { text: String(it.label), size: r(ts * 0.9), at: [r(x), r(base + ts * 0.8)] }]);
         steps[`bar.${k}`] = [{ draw: [...draw, `v${k}`, ...(it.label ? [`t${k}`] : [])] }];
@@ -254,7 +254,7 @@ export const PATTERNS: Record<string, Pattern> = {
       parts.forEach((q, i) => {
         const k = i + 1, w = (W * +q.value) / sum, x = x0 + acc + w / 2, col = q.color ?? cols[i];
         acc += w;
-        E.push([`p${k}`, { shape: 'rect', w: r(w - 10), h: r(h - 14), at: [r(x), r(cy)], color: col, fill: col, fillAlpha: 0.55, rough: 0.6 }]);
+        E.push([`p${k}`, { shape: 'rect', w: r(w - 10), h: r(h - 14), at: [r(x), r(cy)], color: col, fill: col, fillAlpha: 0.55, rough: 0.6, overlap: true }]);
         E.push([`pl${k}`, { text: `${q.label ?? ''}\n${q.value}${unit}`, size: r(ts), color: col, at: [r(x), r(cy + h / 2 + ts * 1.5)] }]);
         steps[`part.${k}`] = [{ draw: [`p${k}`, `pl${k}`] }];
       });

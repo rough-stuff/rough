@@ -2,6 +2,7 @@
 import { existsSync, mkdirSync, writeFileSync, readFileSync, copyFileSync, readdirSync, rmSync } from 'node:fs';
 import { join, resolve, basename } from 'node:path';
 import { spawn } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { createCanvas, Path2D } from '@napi-rs/canvas';
 import YAML from 'yaml';
 import { compile, type Compiled, type CScene } from '../core/compile';
@@ -232,6 +233,11 @@ const commands: Record<string, () => Promise<void> | void> = {
       if (name && name !== k) continue;
       console.log(`■ ${k}  ${p.title}\n  什么时候用：${p.when}`);
       if (name) { console.log('  参数：'); for (const x of p.params) console.log('    ' + x); console.log('    area: [x, y, w, h]  只占画板的一部分（可省，默认整块画板），留出地方放自己的元素'); console.log('  步骤（在节拍的 do 里写 {step: 名字}）：'); for (const x of p.steps) console.log('    ' + x); }
+      if (name) { // 附上一个能直接照着改的完整场景
+        const ex = join(fileURLToPath(new URL('../../examples/patterns/scenes', import.meta.url)));
+        const f = existsSync(ex) ? readdirSync(ex).find(x => x.includes('-' + k + '.')) : undefined;
+        if (f) console.log(`  照着改的完整例子（examples/patterns/scenes/${f}）：\n\n` + readFileSync(join(ex, f), 'utf8').split('\n').map(l => '    ' + l).join('\n'));
+      }
       console.log('');
     }
     if (!name) console.log('hj patterns <名字> 查看参数和步骤。九种手法的实际效果见 examples/patterns/');

@@ -66,11 +66,12 @@ export function lint(c: Compiled): Issue[] {
       if (Math.max(a0, b0) >= Math.min(a1, b1)) continue;
       const refs = (x: TL, y: TL) => typeof x.el.src.at === 'string' && x.el.src.at.split('.')[0] === y.el.id;
       if (refs(a, b) || refs(b, a)) continue;
-      const ov = inter(a.el.box, b.el.box) / Math.max(1, Math.min(a.el.box.w * a.el.box.h, b.el.box.w * b.el.box.h));
+      const ov = inter(a.el.solid, b.el.solid) / Math.max(1, Math.min(a.el.box.w * a.el.box.h, b.el.box.w * b.el.box.h));
       // 小的整个装在大的容器里（气泡里的字、框里的图）是有意为之
       const big = a.el.box.w * a.el.box.h > b.el.box.w * b.el.box.h ? a : b;
       if (ov > 0.9 && ['doodle', 'shape', 'parts'].includes(big.el.kind)) continue;
-      if (ov > 0.06) add('warn', sc.file, `元素 "${a.el.id}" 和 "${b.el.id}" 重叠了 ${(ov * 100).toFixed(0)}%，会互相压住。挪开（dx/dy 或换定位），或确认是有意为之`);
+      if (a.el.over.has(b.el.id) || b.el.over.has(a.el.id) || a.el.src.overlap === true || b.el.src.overlap === true) continue;
+      if (ov > 0.06) add('warn', sc.file, `元素 "${a.el.id}" 和 "${b.el.id}" 重叠了 ${(ov * 100).toFixed(0)}%，引擎没能自动挪开（板上太挤，找不到空位）。减少这块板上的东西、缩小它们，或者先擦掉一部分`);
     }
     // 5. 画面静止太久
     const acts = sc.beats.flatMap(b => b.actions).sort((x, y) => x.t0 - y.t0);
@@ -115,6 +116,13 @@ export function planMarkdown(c: Compiled): string {
       const texts = b.actions.flatMap(a => a.ids).map(id => c.tls.find(t => t.scene === sc.index && t.el.id === id)?.el).filter(e => e?.text && b.actions.some(a => ['draw', 'pop', 'fade'].includes(a.verb) && a.ids.includes(e!.id))).map(e => e!.text!.replace(/\n/g, ' / '));
       L.push(`| ${fmtT(b.t)} | ${b.say || '—'} | ${b.intent} | ${[...new Set(texts)].join('、')} |`);
     }
+    L.push('');
+  }
+  // 没解决的质量警告原样交给用户看，不让它们被悄悄带过去
+  const warns = c.issues.filter(i => i.level === 'warn');
+  if (warns.length) {
+    L.push('## 尚未解决的质量警告', '', '下面是自动检查发现、但写分镜的人没有处理的问题。确认前请留意：', '');
+    for (const w of warns) L.push(`- **${w.where}**：${w.msg}`);
     L.push('');
   }
   return L.join('\n');

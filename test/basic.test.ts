@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, cpSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, cpSync, readFileSync, writeFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createCanvas, Path2D } from '@napi-rs/canvas';
@@ -117,4 +117,37 @@ beats:
   const ids = c.tls.filter(t => t.scene === 3).map(t => t.el.id);
   assert.ok(ids.includes('bars_axis') && ids.includes('trend_axisX'));
   assert.equal(new Set(ids).size, ids.length);
+});
+
+test('自动避让：堆在同一点、不写位置、写到板外的元素，最后都在板内且互不重叠', () => {
+  const d = tmp();
+  cpSync('examples/patterns', d, { recursive: true });
+  for (const f of ['01-cycle', '02-versus', '03-chain', '05-trend', '06-timeline', '07-thought', '08-equation', '09-split']) writeFileSync(join(d, `scenes/${f}.yaml`), '');
+  const f = join(d, 'scenes/04-bars.yaml');
+  writeFileSync(f, `intent: 压力测试
+elements:
+  a: { doodle: factory, size: 280, at: [480, 400], label: 公司 }
+  b: { doodle: gov, size: 280, at: [480, 400] }
+  c: { figure: stand, size: 360, at: [500, 420] }
+  d: { doodle: banknote, size: 200, at: [480, 400] }
+  e: { text: "+0", size: 150, at: [470, 410] }
+  f: { doodle: robot, size: 240 }
+  g: { doodle: server, size: 220 }
+  h: { text: "53%", size: 110 }
+  i: { doodle: moneybag, size: 200, near: c }
+  j: { doodle: chip, size: 180, at: [1500, 300] }
+  n: { note: 一条批注, target: e }
+  inside: { doodle: bubble, size: 300, at: [200, 1050] }
+  word: { text: "嗯", size: 80, at: inside }
+beats:
+  - { at: "一百块从公司", intent: 全部画出来, do: [{ draw: [a, b, c, d, e, f, g, h, i, j, n, inside, word] }] }
+`);
+  for (const x of readdirSync(join(d, 'scenes'))) if (!readFileSync(join(d, 'scenes', x), 'utf8').trim()) rmSync(join(d, 'scenes', x));
+  const c = compile(d), B = c.fmt.board, els = c.tls.map(t => t.el);
+  assert.deepEqual(lint(c).filter(i => i.level === 'error'), []);
+  for (const e of els) assert.ok(e.solid.x >= -6 && e.solid.y >= -6 && e.solid.x + e.solid.w <= B.w + 6 && e.solid.y + e.solid.h <= B.h + 6, `${e.id} 出界`);
+  const ov = (p: any, q: any) => Math.min(p.x + p.w, q.x + q.w) - Math.max(p.x, q.x) > 8 && Math.min(p.y + p.h, q.y + q.h) - Math.max(p.y, q.y) > 8;
+  for (const p of els) for (const q of els) if (p.id < q.id && !(p.id === 'inside' && q.id === 'word')) assert.ok(!ov(p.solid, q.solid), `${p.id} 和 ${q.id} 重叠`);
+  const word = els.find(e => e.id === 'word')!, bub = els.find(e => e.id === 'inside')!;
+  assert.ok(ov(word.solid, bub.solid), '明确叠放在气泡上的文字不应该被挪走');
 });
