@@ -46,7 +46,12 @@ export class RoughGenerator {
   }
 
   private _o(options?: Options): ResolvedOptions {
-    return options ? Object.assign({}, this.defaultOptions, options) : this.defaultOptions;
+    const defaults = this.defaultOptions;
+    if (!options && Object.getPrototypeOf(defaults) !== Object.prototype) {
+      return defaults;
+    }
+    // The renderer stores the randomizer on the options for each shape.
+    return Object.assign({}, defaults, options);
   }
 
   private _d(shape: string, sets: OpSet[], options: ResolvedOptions): Drawable {
